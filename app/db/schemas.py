@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from app.db.models import ReportStatus, ReportType
+from typing import List
 
 class Token(BaseModel):
     access_token: str
@@ -19,6 +20,35 @@ class Report(BaseModel):
     original_file_path: str | None = None
     summary_text: str | None = None
     audio_file_path: str | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class ChatMessageCreate(BaseModel):
+    content: str
+
+
+class ChatMessage(BaseModel):
+    id: int
+    session_id: int
+    created_at: datetime
+    role: str
+    content: str
+
+    class Config:
+        from_attributes = True
+
+
+class ChatSessionCreate(BaseModel):
+    title: str = "New Conversation"
+
+
+class ChatSession(BaseModel):
+    id: int
+    created_at: datetime
+    title: str
+    messages: List[ChatMessage] = []
 
     class Config:
         from_attributes = True

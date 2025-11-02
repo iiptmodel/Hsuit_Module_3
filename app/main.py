@@ -79,5 +79,5 @@ app.include_router(page_router, tags=["Pages"])
 
 @app.get("/", include_in_schema=False)
 def read_root():
-    """Redirects root to the dashboard (no authentication required)."""
-    return RedirectResponse("/dashboard")
+    """Redirects root to the chat interface."""
+    return RedirectResponse("/chat")

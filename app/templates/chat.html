@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediScan AI - Intelligent Medical Analysis</title>
+    <link rel="stylesheet" href="/static/css/chat.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Dashboard Stats Panel -->
+    <div class="dashboard-panel">
+        <div class="dashboard-header">
+            <div class="logo-section">
+                <div class="logo-icon">🏥</div>
+                <div class="logo-text">
+                    <h1>MediScan AI</h1>
+                    <p class="tagline">Intelligent Medical Analysis with Guardrails</p>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="total-reports">0</div>
+                        <div class="stat-label">Reports</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💬</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="total-chats">0</div>
+                        <div class="stat-label">Chats</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-content">
+                        <div class="stat-value">MedGemma</div>
+                        <div class="stat-label">AI Model</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔒</div>
+                    <div class="stat-content">
+                        <div class="stat-value">Protected</div>
+                        <div class="stat-label">Guardrails Active</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="chat-sidebar">
+            <div class="sidebar-header">
+                <h2>Chat Sessions</h2>
+                <button class="btn-new-session" id="newSessionBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    New Chat
+                </button>
+            </div>
+            <div class="session-list" id="sessionList">
+                <!-- Sessions will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+            <!-- Welcome Screen -->
+            <div class="welcome-screen" id="welcomeScreen">
+                <div class="welcome-content">
+                    <div class="welcome-icon">🏥</div>
+                    <h2>Welcome to MediScan AI</h2>
+                    <p>Your intelligent medical document analysis assistant</p>
+                    
+                    <div class="feature-cards">
+                        <div class="feature-card">
+                            <div class="feature-icon">📄</div>
+                            <h3>Document Analysis</h3>
+                            <p>Upload and analyze medical reports, lab results, and prescriptions</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🖼️</div>
+                            <h3>Image Analysis</h3>
+                            <p>AI-powered analysis of medical images and scans</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">💬</div>
+                            <h3>Interactive Chat</h3>
+                            <p>Ask questions about your medical documents</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🔒</div>
+                            <h3>Safe & Secure</h3>
+                            <p>Protected with medical guardrails - no diagnosis or prescriptions</p>
+                        </div>
+                    </div>
+
+                    <div class="quick-start">
+                        <h3>Get Started</h3>
+                        <p>Create a new chat session or upload a medical document to begin</p>
+                        <button class="btn-primary" id="quickStartBtn">Start New Session</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Screen -->
+            <div class="chat-screen" id="chatScreen" style="display: none;">
+                <div class="chat-header">
+                    <div class="session-info">
+                        <h2 id="sessionTitle">Medical Analysis Chat</h2>
+                        <span class="session-status">● Active</span>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="btn-icon" id="clearChatBtn" title="Clear Chat">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M19 7L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 7M10 11V17M14 11V17M15 7V4C15 3.44772 14.5523 3 14 3H10C9.44772 3 9 3.44772 9 4V7M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="messages-container" id="messagesContainer">
+                    <!-- Messages will be loaded here -->
+                </div>
+
+                <!-- File Upload Area -->
+                <div class="file-upload-area" id="fileUploadArea">
+                    <div class="uploaded-files" id="uploadedFiles" style="display: none;">
+                        <!-- Uploaded files preview will appear here -->
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-area">
+                    <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.bmp,.tiff" style="display: none;">
+                    <button class="btn-attach" id="attachBtn" title="Attach File">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M21.4 7.5C21.4 6.1 20.3 5 18.9 5H5.1C3.7 5 2.6 6.1 2.6 7.5V16.5C2.6 17.9 3.7 19 5.1 19H18.9C20.3 19 21.4 17.9 21.4 16.5V7.5Z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M7 9L12 13L17 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="Type your message or question here... (You can also attach files)"
+                            rows="1"
+                        ></textarea>
+                    </div>
+                    <button class="btn-send" id="sendBtn" disabled>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/chat.js"></script>
+</body>
+</html>
