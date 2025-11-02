@@ -6,9 +6,10 @@ import logging
 from pathlib import Path
 
 from app.db import schemas, models
-from app.api.deps import get_db, get_current_user
+from app.api.deps import get_db
 # Import services directly
 from app.services import parser_service, summarizer_service, tts_service
+from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,6 @@ def upload_text_report(
     text_content: str = Form(...),
     language: str = Form(...),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
 ):
     """
     Submits and PROCESSES a new text-based report synchronously.
@@ -35,7 +35,7 @@ def upload_text_report(
     """
     # 1. Create initial report in DB
     new_report = models.Report(
-        owner_id=current_user.id,
+        owner_id=None,
         language=language,
         report_type=models.ReportType.text,
         raw_text=text_content,
@@ -46,7 +46,7 @@ def upload_text_report(
     db.refresh(new_report)
     
     try:
-        logger.info(f"Processing text report {new_report.id} for user {current_user.id}")
+        logger.info(f"Processing text report {new_report.id}")
 
         # 2. Run Summarizer
         logger.info("Generating summary from text...")
@@ -90,7 +90,6 @@ def upload_file_report(
     language: str = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
 ):
     """
     Submits and PROCESSES a new file report (image, PDF, or document) synchronously.
@@ -100,7 +99,7 @@ def upload_file_report(
     """
 
     # 1. Save file and create initial report
-    file_path_str = f"{current_user.id}_{file.filename.replace(' ', '_')}"
+    file_path_str = f"{uuid4().hex}_{file.filename.replace(' ', '_')}"
     file_save_path = REPORTS_DIR / file_path_str
 
     with file_save_path.open("wb") as buffer:
@@ -111,7 +110,7 @@ def upload_file_report(
     is_image = file_extension in ['png', 'jpg', 'jpeg', 'bmp', 'tiff', 'gif']
 
     new_report = models.Report(
-        owner_id=current_user.id,
+        owner_id=None,
         language=language,
         report_type=models.ReportType.image,  # Keeping as image for now, could add more types
         original_file_path=str(f"media/reports/{file_path_str}"),
@@ -122,7 +121,7 @@ def upload_file_report(
     db.refresh(new_report)
 
     try:
-        logger.info(f"Processing file report {new_report.id} for user {current_user.id}, file: {file.filename}, type: {'image' if is_image else 'document'}")
+        logger.info(f"Processing file report {new_report.id}, file: {file.filename}, type: {'image' if is_image else 'document'}")
 
         if is_image:
             # 2a. For images, use MedGemma directly
@@ -174,12 +173,9 @@ def upload_file_report(
 
 
 @router.get("/", response_model=List[schemas.Report])
-def get_user_reports(
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
-):
-    """Gets a list of all reports for the current user."""
-    reports = db.query(models.Report).filter(models.Report.owner_id == current_user.id).order_by(models.Report.created_at.desc()).all()
+def get_reports(db: Session = Depends(get_db)):
+    """Gets a list of all reports (no authentication)."""
+    reports = db.query(models.Report).order_by(models.Report.created_at.desc()).all()
     return reports
 
 
@@ -187,13 +183,9 @@ def get_user_reports(
 def get_report_details(
     report_id: int,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
 ):
-    """Gets the status and details of a single report."""
-    report = db.query(models.Report).filter(
-        models.Report.id == report_id,
-        models.Report.owner_id == current_user.id
-    ).first()
+    """Gets the status and details of a single report (no authentication)."""
+    report = db.query(models.Report).filter(models.Report.id == report_id).first()
     
     if not report:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")

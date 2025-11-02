@@ -73,8 +73,7 @@ python download_models.py
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/api/v1/auth/register` | POST | Create account |
-| `/api/v1/auth/login` | POST | Get auth token |
+| Authentication endpoints | - | Disabled in development build |
 | `/api/v1/reports/upload-text` | POST | Analyze text report |
 | `/api/v1/reports/upload-file` | POST | Analyze image/PDF |
 | `/api/v1/reports/` | GET | List all reports |

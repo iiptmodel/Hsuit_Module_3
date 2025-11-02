@@ -1,11 +1,9 @@
-// Global token variable
-let authToken = localStorage.getItem('token');
+// No authentication in development mode — clear any stored token
+let authToken = null;
 
 // Helper to handle API requests
 async function apiRequest(endpoint, method = 'GET', body = null, headers = {}) {
-    const defaultHeaders = {
-        'Authorization': `Bearer ${authToken}`,
-    };
+    const defaultHeaders = {};
     if (!(body instanceof FormData)) {
         defaultHeaders['Content-Type'] = 'application/json';
     }
@@ -22,9 +20,9 @@ async function apiRequest(endpoint, method = 'GET', body = null, headers = {}) {
     try {
         const response = await fetch(`/api/v1${endpoint}`, config);
         if (response.status === 401) {
-            // Token is invalid or expired
-            logout();
-            return;
+            // In case an endpoint still requires auth, treat as an error
+            const err = await response.json().catch(()=>({detail:'Unauthorized'}));
+            throw new Error(err.detail || 'Unauthorized');
         }
         if (!response.ok) {
             const error = await response.json();
@@ -49,82 +47,18 @@ function setButtonLoading(button, isLoading) {
 }
 
 // --- Auth Functions ---
+// Auth functions removed in dev mode — login/register forms are disabled.
 function handleLogin(event) {
     event.preventDefault();
-    const form = event.target;
-    const button = form.querySelector('#submit-button');
-    const email = form.username.value;
-    const password = form.password.value;
-    const errorMessage = document.getElementById('error-message');
-
-    setButtonLoading(button, true);
-
-    // FastAPI's OAuth2 expects form-data, not JSON
-    const formData = new URLSearchParams();
-    formData.append('username', email);
-    formData.append('password', password);
-
-    fetch('/api/v1/auth/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: formData,
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(err => { throw new Error(err.detail) });
-        }
-        return response.json();
-    })
-    .then(data => {
-        authToken = data.access_token;
-        localStorage.setItem('token', authToken);
-        window.location.href = '/dashboard';
-    })
-    .catch(error => {
-        errorMessage.textContent = error.message;
-        setButtonLoading(button, false);
-    });
+    alert('Login is disabled in this development build.');
 }
 
 function handleRegister(event) {
     event.preventDefault();
-    const form = event.target;
-    const button = form.querySelector('#submit-button');
-    const email = form.email.value;
-    const password = form.password.value;
-    const errorMessage = document.getElementById('error-message');
-
-    setButtonLoading(button, true);
-    const body = { email, password };
-
-    fetch('/api/v1/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(err => { throw new Error(err.detail) });
-        }
-        return response.json();
-    })
-    .then(data => {
-        // Redirect to login after successful registration
-        window.location.href = '/login';
-    })
-    .catch(error => {
-        errorMessage.textContent = error.message;
-        setButtonLoading(button, false);
-    });
+    alert('Registration is disabled in this development build.');
 }
 
-function logout() {
-    localStorage.removeItem('token');
-    authToken = null;
-    window.location.href = '/login';
-}
+// Logout function removed - no authentication
 
 // --- Dashboard Functions ---
 
@@ -264,18 +198,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (path.includes('/login')) {
         document.getElementById('login-form')?.addEventListener('submit', handleLogin);
-    } 
+    }
     else if (path.includes('/register')) {
         document.getElementById('register-form')?.addEventListener('submit', handleRegister);
     }
     else if (path.includes('/dashboard')) {
-        if (!authToken) {
-            window.location.href = '/login'; // Redirect if no token
-            return;
-        }
-        // Dashboard page logic
+        // Dashboard page logic (no auth required)
         loadReports();
-        document.getElementById('logout-button')?.addEventListener('click', logout);
         document.getElementById('text-upload-form')?.addEventListener('submit', handleTextUpload);
         document.getElementById('file-upload-form')?.addEventListener('submit', handleFileUpload);
     }

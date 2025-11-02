@@ -3,17 +3,7 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from app.db.models import ReportStatus, ReportType # Import enums
 
-class UserBase(BaseModel):
-    email: EmailStr
 
-class UserCreate(UserBase):
-    password: str
-
-class User(UserBase):
-    id: int
-    
-    class Config:
-        from_attributes = True
 
 class Token(BaseModel):
     access_token: str
@@ -24,7 +14,6 @@ class TokenData(BaseModel):
 
 class Report(BaseModel):
     id: int
-    owner_id: int
     created_at: datetime
     language: str
     status: ReportStatus

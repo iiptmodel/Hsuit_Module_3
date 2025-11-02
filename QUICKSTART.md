@@ -115,21 +115,11 @@ uvicorn app.main:app --reload
 
 ## 🎯 First Time Usage
 
-### 1. Register Account
+### 1. Open the dashboard
 
-Visit: `http://localhost:8000/register`
+Visit: `http://localhost:8000/dashboard` — authentication is disabled in this development build so you can use the app immediately.
 
-- Enter email and password
-- Click "Register"
-
-### 2. Login
-
-Visit: `http://localhost:8000/login`
-
-- Use your credentials
-- Click "Login"
-
-### 3. Upload Medical Report
+### 2. Upload Medical Report
 
 Go to: `http://localhost:8000/dashboard`
 

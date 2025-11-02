@@ -23,7 +23,7 @@ This application:
   - **MedGemma** (`unsloth/medgemma-4b-it`) - Medical image and text analysis
   - **Docling** - Document parsing (PDFs, various medical document formats)
   - **Kokoro TTS** - Text-to-speech for voice output
-- **Authentication**: JWT-based auth with bcrypt password hashing
+- **Authentication**: Not required in this development build (authentication routes disabled). For production you can re-enable JWT auth.
 
 ### Project Structure
 ```
@@ -33,7 +33,7 @@ d:\Prushal/
 │   │   ├── __init__.py          # API router configuration
 │   │   ├── deps.py              # FastAPI dependencies
 │   │   └── endpoints/
-│   │       ├── auth.py          # Authentication endpoints
+│   │       ├── auth.py          # Authentication endpoints (disabled in dev build)
 │   │       └── reports.py       # Report upload & processing
 │   ├── core/
 │   │   ├── config.py            # App configuration
@@ -315,24 +315,20 @@ gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker
 ### 7. Access Application
 
 - **Homepage**: http://localhost:8000
-- **Login**: http://localhost:8000/login
-- **Register**: http://localhost:8000/register
-- **Dashboard**: http://localhost:8000/dashboard (after login)
+- **Dashboard**: http://localhost:8000/dashboard
 - **API Docs**: http://localhost:8000/docs (Swagger UI)
 - **API ReDoc**: http://localhost:8000/redoc
 
 ### 8. First-Time Usage
 
-1. **Register Account**: Go to `/register`, create user account
-2. **Login**: Use credentials to login at `/login`
-3. **Upload Report**: 
-   - Go to dashboard
-   - Upload text, image, or PDF medical report
-   - Select language for voice output
-4. **View Results**: 
-   - See AI-generated summary
-   - Listen to voice explanation
-   - Download audio file
+1. **Open the dashboard**: Go to `/dashboard` — authentication is disabled in this development build so you can use the app immediately.
+2. **Upload Report**:
+    - Upload text, image, or PDF medical report
+    - Select language for voice output
+3. **View Results**:
+    - See AI-generated summary
+    - Listen to voice explanation
+    - Download audio file
 
 ### 9. Troubleshooting
 
@@ -377,10 +373,10 @@ pip install -r requirements.txt --force-reinstall
 
 ## 📋 Features
 
-### 1. User Authentication
-- Register new accounts
-- Login with JWT tokens
-- Secure password hashing (bcrypt)
+### 1. User Authentication (development)
+- Authentication is disabled in this development build. The site is accessible
+    without registering or logging in. The original JWT-based auth code is still
+    present in the repository and can be re-enabled for production if needed.
 
 ### 2. Report Upload
 - **Text Reports**: Direct text input
@@ -412,20 +408,16 @@ Input → Parsing (Docling) → Analysis (MedGemma) → Summary → TTS (Kokoro)
 
 ## 🔧 API Endpoints
 
-### Authentication
-- `POST /api/v1/auth/register` - Register new user
-- `POST /api/v1/auth/login` - Login and get JWT token
-
-### Reports
+### Reports (public)
 - `POST /api/v1/reports/upload-text` - Submit text report
 - `POST /api/v1/reports/upload-file` - Submit image/document report
-- `GET /api/v1/reports/` - Get all user reports
+- `GET /api/v1/reports/` - Get all reports
 - `GET /api/v1/reports/{report_id}` - Get specific report details
 
-### Pages
-- `GET /login` - Login page
-- `GET /register` - Registration page
-- `GET /dashboard` - User dashboard (authenticated)
+### Pages (public)
+- `GET /login` - Login page (non-functional in dev)
+- `GET /register` - Registration page (non-functional in dev)
+- `GET /dashboard` - Dashboard (public in dev)
 
 ## 🧪 Example Usage
 

@@ -14,32 +14,23 @@ class ReportType(enum.Enum):
     text = "text"
     image = "image"
 
-class User(Base):
-    __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
-    
-    reports = relationship("Report", back_populates="owner")
+
 
 class Report(Base):
     __tablename__ = "reports"
     id = Column(Integer, primary_key=True, index=True)
-    owner_id = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     language = Column(String, nullable=False)
     status = Column(Enum(ReportStatus), default=ReportStatus.processing)
     report_type = Column(Enum(ReportType), nullable=False)
-    
+
     # For text input
     raw_text = Column(Text, nullable=True)
-    
+
     # For file input
     original_file_path = Column(String, nullable=True)
-    
+
     # Results
     summary_text = Column(Text, nullable=True)
     audio_file_path = Column(String, nullable=True)
-    
-    owner = relationship("User", back_populates="reports")

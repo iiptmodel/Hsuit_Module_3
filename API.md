@@ -9,73 +9,17 @@ Production: https://your-domain.com
 
 ## API Endpoints
 
-### Authentication
+### Authentication (development)
 
-#### Register New User
-
-**POST** `/api/v1/auth/register`
-
-Create a new user account.
-
-**Request Body**:
-```json
-{
-  "email": "user@example.com",
-  "password": "securepassword123"
-}
-```
-
-**Response** (201 Created):
-```json
-{
-  "id": 1,
-  "email": "user@example.com",
-  "created_at": "2025-11-03T12:00:00"
-}
-```
-
-**Errors**:
-- `400 Bad Request`: Email already registered
-- `422 Unprocessable Entity`: Invalid email format or weak password
-
----
-
-#### Login
-
-**POST** `/api/v1/auth/login`
-
-Authenticate and receive JWT token.
-
-**Request Body** (Form Data):
-```
-username: user@example.com
-password: securepassword123
-```
-
-**Response** (200 OK):
-```json
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer"
-}
-```
-
-**Errors**:
-- `401 Unauthorized`: Invalid credentials
-
-**Usage**:
-```javascript
-// Include token in subsequent requests
-headers: {
-  "Authorization": "Bearer <access_token>"
-}
-```
+Authentication endpoints are disabled in this development build. The original
+JWT-based register/login endpoints are preserved in the repository history but
+are not active by default. Reports endpoints are public; see Reports below.
 
 ---
 
 ### Reports
 
-All report endpoints require authentication (Bearer token).
+Report endpoints are public in this development build.
 
 #### Upload Text Report
 
