@@ -37,17 +37,13 @@ def on_startup():
     logger.info("FastAPI app starting up...")
     logger.info("Loading AI models (MedGemma, Kokoro, etc.)...")
 
-    try:
-        # Check and download models if needed
-        logger.info("Checking and downloading models...")
-        from download_models import check_and_download_models
-        check_and_download_models()
-        logger.info("Models downloaded successfully.")
-
-        # Import services to trigger model loading
-        logger.info("Loading AI services...")
-        from app.services import summarizer_service, parser_service, tts_service
-        logger.info("AI services loaded successfully.")
-    except Exception as e:
-        logger.error(f"Failed to load AI services: {e}", exc_info=True)
-        raise
+    # NOTE: we intentionally avoid downloading models or importing the
+    # heavyweight `app.services` module during FastAPI startup. Importing the
+    # services triggers model initialization and file writes (model caches)
+    # which can cause file-watchers (uvicorn/WatchFiles) to reload the app
+    # repeatedly in development. Instead, models are either:
+    #  - downloaded ahead-of-time by running `python download_models.py` (recommended),
+    #  - or initialized lazily the first time a request needs them.
+    logger.info("Skipping automatic model downloads at startup.")
+    logger.info("To pre-download models before running the server run: python download_models.py")
+    logger.info("AI services will be loaded lazily on first use.")

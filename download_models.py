@@ -13,10 +13,17 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
 os.makedirs(MODELS_DIR, exist_ok=True)
 
-# Set Hugging Face cache to project models directory
-os.environ["HF_HOME"] = MODELS_DIR
-os.environ["TRANSFORMERS_CACHE"] = os.path.join(MODELS_DIR, "transformers")
-os.environ["HF_HUB_CACHE"] = os.path.join(MODELS_DIR, "hub")
+if os.environ.get("FORCE_PROJECT_MODELS") == "1":
+    os.environ.setdefault("HF_HOME", MODELS_DIR)
+    os.environ.setdefault("TRANSFORMERS_CACHE", os.path.join(MODELS_DIR, "transformers"))
+    os.environ.setdefault("HF_HUB_CACHE", os.path.join(MODELS_DIR, "hub"))
+    print(f"Models will be saved to: {MODELS_DIR} (FORCE_PROJECT_MODELS=1)")
+else:
+    # Do not modify HF_HOME. Use the existing HF cache (typically under
+    # %USERPROFILE%\.cache\huggingface on Windows). Inform the user where
+    # the models will be written if they haven't already configured HF_HOME.
+    effective = os.environ.get("HF_HOME", os.path.join(os.path.expanduser("~"), ".cache", "huggingface"))
+    print(f"Models will be saved to: {effective} (system HF cache). To force project-local caching set FORCE_PROJECT_MODELS=1")
 
 print(f"Models will be saved to: {MODELS_DIR}")
 
