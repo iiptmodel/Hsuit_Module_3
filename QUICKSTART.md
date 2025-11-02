@@ -1,53 +1,189 @@
 # Quick Start Guide
 
-## First Time Setup
+## ⚡ Fast Setup (5 Minutes)
 
-1. **Activate virtual environment**:
-   ```powershell
-   .\myenv\Scripts\activate
+### 1. Activate Virtual Environment
+
+```powershell
+.\myenv\Scripts\Activate.ps1
+```
+
+### 2. Setup Neon Database (Free Cloud PostgreSQL)
+
+**Why Neon?** Serverless PostgreSQL with free tier - no local installation needed!
+
+#### Step-by-Step:
+
+1. **Create Account**: Go to [neon.tech](https://neon.tech) and sign up (free, no credit card)
+
+2. **Create Project**:
+   - Click "New Project"
+   - Name: `medanalysis`
+   - Region: Select closest to you
+   - Click "Create Project"
+
+3. **Get Connection String**:
+   - In dashboard, click "Connection Details"
+   - Copy the connection string (looks like):
+   ```
+   postgresql://alex:AbC123...@ep-cool-darkness-123456.us-east-2.aws.neon.tech/neondb?sslmode=require
    ```
 
-2. **Download models** (this will save them to `d:\Prushal\models\`):
+4. **Create .env File**:
    ```powershell
-   python download_models.py
+   # Copy example file
+   Copy-Item .env.example .env
+   
+   # Edit .env file and paste your Neon connection string
+   notepad .env
    ```
    
-   This may take 10-20 minutes depending on your internet speed.
-   Models will be saved to: `d:\Prushal\models\`
-
-3. **Configure database** (create `.env` file):
+   Update these lines:
    ```env
-   DATABASE_URL=postgresql://user:password@localhost/medanalysis_db
-   SECRET_KEY=your-secret-key-change-this
-   ALGORITHM=HS256
-   ACCESS_TOKEN_EXPIRE_MINUTES=30
+   DATABASE_URL=your-neon-connection-string-here
+   SECRET_KEY=run-this-to-generate: python -c "import secrets; print(secrets.token_urlsafe(32))"
    ```
 
-4. **Run the application**:
-   ```powershell
-   uvicorn app.main:app --reload
-   ```
+### 3. Generate Secret Key
 
-## Testing the Application
+```powershell
+# Generate secure random key
+python -c "import secrets; print(secrets.token_urlsafe(32))"
 
-### 1. Register a User
+# Copy output and paste into .env as SECRET_KEY
+```
+
+### 4. Install Dependencies
+
+```powershell
+# Upgrade pip
+python -m pip install --upgrade pip
+
+# Install PyTorch with CUDA (if you have NVIDIA GPU)
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+# OR for CPU only (slower)
+# pip install torch torchvision torchaudio
+
+# Install all other dependencies
+pip install -r requirements.txt
+```
+
+**Expected time**: 10-15 minutes
+
+### 5. Download AI Models
+
+```powershell
+# This downloads ~10GB to d:\Prushal\models\
+python download_models.py
+```
+
+**Expected time**: 15-30 minutes
+**Models saved to**: `d:\Prushal\models\`
+
+**What's being downloaded**:
+- MedGemma (medical AI) - ~8GB
+- Kokoro TTS (voice) - ~100MB
+- Docling dependencies - ~500MB
+
+### 6. Verify Setup
+
+```powershell
+# Run system tests
+python test_system.py
+```
+
+You should see:
+```
+✅ Python Version: PASSED
+✅ Dependencies: PASSED
+✅ Database Connection: PASSED
+✅ GPU/CUDA: PASSED (or WARNING if no GPU)
+✅ SYSTEM READY!
+```
+
+### 7. Run Application
+
+```powershell
+# Start the server
+uvicorn app.main:app --reload
+```
+
+**Server starts at**: `http://localhost:8000`
+
+---
+
+## 🎯 First Time Usage
+
+### 1. Register Account
+
 Visit: `http://localhost:8000/register`
 
+- Enter email and password
+- Click "Register"
+
 ### 2. Login
+
 Visit: `http://localhost:8000/login`
 
-### 3. Upload a Report
-Go to dashboard and upload:
-- Text report (e.g., "Blood test: cholesterol 240 mg/dL")
-- Image report (X-ray, scan)
-- PDF document (lab results)
+- Use your credentials
+- Click "Login"
+
+### 3. Upload Medical Report
+
+Go to: `http://localhost:8000/dashboard`
+
+**Try these examples**:
+
+#### Text Report
+```
+Blood Test Results:
+- Total Cholesterol: 240 mg/dL (High)
+- HDL Cholesterol: 45 mg/dL (Low)
+- LDL Cholesterol: 160 mg/dL (High)
+- Triglycerides: 175 mg/dL (Borderline High)
+```
+
+#### Image Report
+- Upload a chest X-ray image
+- Or any medical scan (PNG, JPG)
+
+#### PDF Report
+- Upload lab test PDF
+- Medical report document
 
 ### 4. View Results
-- See AI-generated summary
-- Listen to voice explanation
-- Download audio file
 
-## Architecture Flow
+After processing (5-15 seconds):
+- ✅ AI-generated summary (patient-friendly explanation)
+- ✅ Voice output (MP3 file)
+- ✅ Downloadable audio
+
+---
+
+## 📊 Understanding the Results
+
+### Example Input (Blood Test):
+```
+Glucose: 140 mg/dL
+HbA1c: 6.8%
+```
+
+### AI Output:
+```
+Your blood sugar level is slightly elevated at 140 mg/dL, and your HbA1c 
+of 6.8% indicates prediabetic range. This suggests your blood sugar has 
+been higher than normal over the past 2-3 months. Consider reducing sugar 
+intake, increasing physical activity, and consult your doctor for personalized 
+advice.
+```
+
+### Voice Output:
+- Natural female voice (American English)
+- Clear pronunciation of medical terms
+- ~30 second audio file
+
+---
 
 ```
 ┌──────────────┐

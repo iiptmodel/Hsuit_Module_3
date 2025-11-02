@@ -5,24 +5,24 @@ from fastapi.templating import Jinja2Templates
 from app.api.deps import get_current_user_optional
 from app.db.schemas import User
 
-router = APIRouter()
+page_router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
-@router.get("/login", response_class=HTMLResponse)
+@page_router.get("/login", response_class=HTMLResponse)
 async def read_login(request: Request, user: User | None = Depends(get_current_user_optional)):
     """Serves the login page. Redirects to dashboard if already logged in."""
     if user:
         return RedirectResponse(url="/dashboard")
     return templates.TemplateResponse("login.html", {"request": request})
 
-@router.get("/register", response_class=HTMLResponse)
+@page_router.get("/register", response_class=HTMLResponse)
 async def read_register(request: Request, user: User | None = Depends(get_current_user_optional)):
     """Serves the registration page. Redirects to dashboard if already logged in."""
     if user:
         return RedirectResponse(url="/dashboard")
     return templates.TemplateResponse("register.html", {"request": request})
 
-@router.get("/dashboard", response_class=HTMLResponse)
+@page_router.get("/dashboard", response_class=HTMLResponse)
 async def read_dashboard(request: Request, user: User | None = Depends(get_current_user_optional)):
     """Serves the dashboard page. Redirects to login if not authenticated."""
     if not user:
