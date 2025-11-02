@@ -17,6 +17,7 @@ if os.environ.get("FORCE_PROJECT_MODELS") == "1":
     os.environ.setdefault("HF_HOME", MODELS_DIR)
     os.environ.setdefault("TRANSFORMERS_CACHE", os.path.join(MODELS_DIR, "transformers"))
     os.environ.setdefault("HF_HUB_CACHE", os.path.join(MODELS_DIR, "hub"))
+    os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
     print(f"Models will be saved to: {MODELS_DIR} (FORCE_PROJECT_MODELS=1)")
 else:
     # Do not modify HF_HOME. Use the existing HF cache (typically under

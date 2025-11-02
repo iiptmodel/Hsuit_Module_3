@@ -15,6 +15,7 @@ os.makedirs(MODELS_DIR, exist_ok=True)
 os.environ["HF_HOME"] = MODELS_DIR
 os.environ["TRANSFORMERS_CACHE"] = os.path.join(MODELS_DIR, "transformers")
 os.environ["HF_HUB_CACHE"] = os.path.join(MODELS_DIR, "hub")
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +100,7 @@ def generate_summary_from_text(text: str, language: str) -> str:
             generation = generation[0][input_len:]
 
         decoded = processor.decode(generation, skip_special_tokens=True)
-        logger.info(f"Raw summary generated: {decoded[:100]}...")
+        logger.info(f"Raw summary generated: {decoded}")
 
         # Apply guardrail validation
         validated_summary = guardrail_validator(decoded)
@@ -148,7 +149,7 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
             generation = generation[0][input_len:]
 
         decoded = processor.decode(generation, skip_special_tokens=True)
-        logger.info(f"Raw summary generated: {decoded[:100]}...")
+        logger.info(f"Raw summary generated: {decoded}")
 
         # Apply guardrail validation
         validated_summary = guardrail_validator(decoded)

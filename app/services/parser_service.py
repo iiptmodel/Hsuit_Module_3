@@ -3,6 +3,9 @@ from docling.document_converter import DocumentConverter
 import logging
 import os
 
+# Disable symlinks for Windows compatibility
+os.environ["HF_HUB_DISABLE_SYMLINKS"] = "1"
+
 logger = logging.getLogger(__name__)
 
 # Initialize Docling converter
@@ -47,6 +50,7 @@ def extract_data_from_file(file_path: str) -> str:
 
         final_text = extracted_text.strip()
         logger.info(f"Text extraction completed. Total characters: {len(final_text)}")
+        logger.info(f"Extracted text preview: {final_text[:500]}")
         return final_text
 
     except Exception as e:
