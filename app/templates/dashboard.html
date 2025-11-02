@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Med Analyzer</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Med Analyzer Dashboard</h1>
+        <div class="user-info">
+            <span>Welcome, {{ user.email }}</span>
+            <button id="logout-button">Logout</button>
+        </div>
+    </header>
+
+    <main class="dashboard-main">
+        <section class="upload-section">
+            <h2>Analyze a New Report</h2>
+            <div class="form-container">
+                <form id="text-upload-form" class="upload-form">
+                    <h3>Analyze by Text</h3>
+                    <div class="form-group">
+                        <label for="text-content">Paste your report text or symptoms:</label>
+                        <textarea id="text-content" rows="5" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="text-language">Language (e.g., 'en', 'hi')</label>
+                        <input type="text" id="text-language" value="en" required>
+                    </div>
+                    <button type="submit" id="text-submit-button">Analyze Text</button>
+                </form>
+
+                <form id="file-upload-form" class="upload-form">
+                    <h3>Analyze by File (PDF/Image)</h3>
+                    <div class="form-group">
+                        <label for="file-upload">Upload your report file:</label>
+                        <input type="file" id="file-upload" accept=".pdf,.png,.jpg,.jpeg" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="file-language">Language (e.g., 'en', 'hi')</label>
+                        <input type="text" id="file-language" value="en" required>
+                    </div>
+                    <button type="submit" id="file-submit-button">Analyze File</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="reports-section">
+            <h2>Your Reports</h2>
+            <p id="loading-message">Loading reports...</p>
+            <div id="reports-list">
+                </div>
+        </section>
+    </main>
+
+    <template id="report-card-template">
+        <div class="report-card">
+            <h3 class="report-title">Report #<span class="report-id"></span> (<span class="report-type"></span>)</h3>
+            <p class="report-date"></p>
+            <div class="report-status">
+                <strong>Status:</strong> <span class="status-value"></span>
+            </div>
+            <div class="report-summary">
+                <strong>Summary:</strong>
+                <p class="summary-text"></p>
+            </div>
+            <div class="report-audio">
+                <strong>Audio:</strong>
+                <audio controls></audio>
+            </div>
+        </div>
+    </template>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
