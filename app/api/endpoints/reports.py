@@ -35,7 +35,6 @@ def upload_text_report(
     """
     # 1. Create initial report in DB
     new_report = models.Report(
-        owner_id=None,
         language=language,
         report_type=models.ReportType.text,
         raw_text=text_content,
@@ -86,6 +85,7 @@ def upload_text_report(
 
 
 @router.post("/upload-file", response_model=schemas.Report)
+@router.post("/upload-image", response_model=schemas.Report)
 def upload_file_report(
     language: str = Form(...),
     file: UploadFile = File(...),
@@ -110,7 +110,6 @@ def upload_file_report(
     is_image = file_extension in ['png', 'jpg', 'jpeg', 'bmp', 'tiff', 'gif']
 
     new_report = models.Report(
-        owner_id=None,
         language=language,
         report_type=models.ReportType.image,  # Keeping as image for now, could add more types
         original_file_path=str(f"media/reports/{file_path_str}"),
