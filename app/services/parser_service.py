@@ -1,14 +1,18 @@
-# app/services/parser_service.py
-from docling.document_converter import DocumentConverter
-import logging
 import os
 
-# Disable symlinks for Windows compatibility
-os.environ["HF_HUB_DISABLE_SYMLINKS"] = "1"
+os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS", "1")
+
+import logging
+from docling.document_converter import DocumentConverter
 
 logger = logging.getLogger(__name__)
 
-# Initialize Docling converter
+try:
+    import onnxruntime  # type: ignore
+    logger.info("onnxruntime is available and may be used by Docling/ONNX models.")
+except Exception:
+    logger.warning("onnxruntime is not installed. Docling may fall back to torch-based OCR/layout. Install onnxruntime for improved ONNX backend support.")
+
 logger.info("Initializing Docling converter...")
 try:
     converter = DocumentConverter()

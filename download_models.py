@@ -8,7 +8,6 @@ import os
 import sys
 import torch
 
-# Set cache directory to project root/models
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
 os.makedirs(MODELS_DIR, exist_ok=True)
@@ -20,9 +19,6 @@ if os.environ.get("FORCE_PROJECT_MODELS") == "1":
     os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
     print(f"Models will be saved to: {MODELS_DIR} (FORCE_PROJECT_MODELS=1)")
 else:
-    # Do not modify HF_HOME. Use the existing HF cache (typically under
-    # %USERPROFILE%\.cache\huggingface on Windows). Inform the user where
-    # the models will be written if they haven't already configured HF_HOME.
     effective = os.environ.get("HF_HOME", os.path.join(os.path.expanduser("~"), ".cache", "huggingface"))
     print(f"Models will be saved to: {effective} (system HF cache). To force project-local caching set FORCE_PROJECT_MODELS=1")
 

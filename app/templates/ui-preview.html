@@ -1,0 +1,162 @@
+/* 
+ * MedAnalyzer - Enhanced UI Test Page
+ * Use this to preview color schemes and components
+ */
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Component Preview - MedAnalyzer</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .preview-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        .component-section {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+        .component-section h2 {
+            font-family: 'Poppins', sans-serif;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        .color-box {
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+        }
+        .gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .gradient-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .gradient-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .color-green { background: #00d084; }
+        .color-orange { background: #f39c12; }
+        .color-red { background: #ff6b6b; }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-background">
+        <div class="gradient-circle circle-1"></div>
+        <div class="gradient-circle circle-2"></div>
+        <div class="gradient-circle circle-3"></div>
+    </div>
+
+    <div class="preview-container" style="position: relative; z-index: 1;">
+        <h1 style="font-family: 'Poppins', sans-serif; font-size: 3rem; text-align: center; margin-bottom: 3rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            MedAnalyzer UI Components
+        </h1>
+
+        <!-- Color Palette -->
+        <div class="component-section">
+            <h2>🎨 Color Palette</h2>
+            <div class="color-grid">
+                <div class="color-box gradient-primary">Primary Gradient</div>
+                <div class="color-box gradient-secondary">Secondary Gradient</div>
+                <div class="color-box gradient-success">Success Gradient</div>
+                <div class="color-box color-green">Success</div>
+                <div class="color-box color-orange">Processing</div>
+                <div class="color-box color-red">Error</div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="component-section">
+            <h2>🔘 Button Styles</h2>
+            <div class="button-grid">
+                <button class="submit-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" fill="currentColor"/>
+                    </svg>
+                    <span>Primary Button</span>
+                </button>
+                <button class="submit-btn" disabled>
+                    <span>Disabled Button</span>
+                </button>
+                <button class="submit-btn loading">
+                    <span>Loading...</span>
+                    <div class="btn-loader"></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Status Badges -->
+        <div class="component-section">
+            <h2>🏷️ Status Badges</h2>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <span class="status-value completed">Completed</span>
+                <span class="status-value processing">Processing</span>
+                <span class="status-value failed">Failed</span>
+            </div>
+        </div>
+
+        <!-- Typography -->
+        <div class="component-section">
+            <h2>📝 Typography</h2>
+            <h1 style="font-family: 'Poppins', sans-serif; font-size: 2.5rem; margin-bottom: 0.5rem;">Heading 1 - Poppins</h1>
+            <h2 style="font-family: 'Poppins', sans-serif; font-size: 2rem; margin-bottom: 0.5rem;">Heading 2 - Poppins</h2>
+            <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; margin-bottom: 1rem;">Heading 3 - Poppins</h3>
+            <p style="font-family: 'Inter', sans-serif; font-size: 1rem; line-height: 1.6; color: #2d3748;">
+                Body text uses Inter font with optimal line-height for readability. This creates a professional and clean reading experience across all devices.
+            </p>
+        </div>
+
+        <!-- Cards Preview -->
+        <div class="component-section">
+            <h2>🃏 Card Styles</h2>
+            <div class="report-card completed" style="margin-bottom: 1rem;">
+                <div class="report-card-header">
+                    <div class="report-badge">
+                        <span class="report-type-badge">PDF</span>
+                    </div>
+                    <div class="report-status-badge">
+                        <span class="status-value completed">Completed</span>
+                    </div>
+                </div>
+                <div class="report-card-body">
+                    <div class="report-meta">
+                        <h3 class="report-title">Medical Report #<span>123</span></h3>
+                        <p class="report-date">November 3, 2025, 10:30 AM</p>
+                    </div>
+                    <div class="report-summary" style="display: block;">
+                        <div class="summary-header">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M9 12H15M9 16H15M17 21H7C5.89543 21 5 20.1046 5 19V5C5 3.89543 5.89543 3 7 3H12.5858C12.851 3 13.1054 3.10536 13.2929 3.29289L18.7071 8.70711C18.8946 8.89464 19 9.149 19 9.41421V19C19 20.1046 18.1046 21 17 21Z" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            <strong>AI Analysis Summary</strong>
+                        </div>
+                        <p class="summary-text">This is a sample medical analysis summary showing how the AI-generated content will appear in the card. The text is well-formatted with proper spacing and styling.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

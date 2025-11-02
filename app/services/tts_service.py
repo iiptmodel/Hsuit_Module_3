@@ -1,4 +1,3 @@
-# app/services/tts_service.py
 import logging
 import os
 from kokoro import KPipeline
@@ -6,7 +5,6 @@ import soundfile as sf
 
 logger = logging.getLogger(__name__)
 
-# Load Kokoro TTS model once when the module is imported
 logger.info("Loading Kokoro TTS model...")
 try:
     pipeline = KPipeline(lang_code='a')  # American English

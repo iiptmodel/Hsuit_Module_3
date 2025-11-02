@@ -1,4 +1,3 @@
-# app/services/summarizer_service.py
 import logging
 import re
 import os
@@ -6,12 +5,10 @@ from transformers import AutoProcessor, AutoModelForImageTextToText
 from PIL import Image
 import torch
 
-# Set cache directory to project root/models
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
 os.makedirs(MODELS_DIR, exist_ok=True)
 
-# Set Hugging Face cache to project models directory
 os.environ["HF_HOME"] = MODELS_DIR
 os.environ["TRANSFORMERS_CACHE"] = os.path.join(MODELS_DIR, "transformers")
 os.environ["HF_HUB_CACHE"] = os.path.join(MODELS_DIR, "hub")
@@ -19,11 +16,17 @@ os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
 logger = logging.getLogger(__name__)
 
-# Load MedGemma model once when the module is imported
 MODEL_ID = "unsloth/medgemma-4b-it"
-logger.info(f"Loading MedGemma model: {MODEL_ID}")
+model = None
+processor = None
+_MODEL_AVAILABLE = False
+
+logger.info(f"Attempting to load MedGemma model: {MODEL_ID}")
 logger.info(f"Models directory: {MODELS_DIR}")
 try:
+    import torch
+    from transformers import AutoProcessor, AutoModelForImageTextToText
+
     model = AutoModelForImageTextToText.from_pretrained(
         MODEL_ID,
         dtype=torch.bfloat16,
@@ -31,10 +34,17 @@ try:
         cache_dir=MODELS_DIR,
     )
     processor = AutoProcessor.from_pretrained(MODEL_ID, use_fast=True, cache_dir=MODELS_DIR)
+    _MODEL_AVAILABLE = True
     logger.info("MedGemma VLM model loaded successfully.")
 except Exception as e:
-    logger.error(f"Failed to load MedGemma model: {e}", exc_info=True)
-    raise
+    logger.warning(
+        "MedGemma model could not be loaded at import time (torch/transformers may be missing or model unavailable): %s",
+        e,
+        exc_info=True,
+    )
+    model = None
+    processor = None
+    _MODEL_AVAILABLE = False
 
 def guardrail_validator(text: str) -> str:
     """
@@ -72,15 +82,21 @@ def generate_summary_from_text(text: str, language: str) -> str:
     """
     logger.info(f"Generating summary from text (length: {len(text)}, language: {language})")
     try:
+        # If the heavy ML model is not available, return a simple fallback
+        if not _MODEL_AVAILABLE or model is None or processor is None:
+            logger.warning("MedGemma model unavailable; returning lightweight fallback summary.")
+            snippet = text.strip().replace('\n', ' ')[:500]
+            return f"Basic summary (model unavailable): {snippet}"
+        
         messages = [
             {
                 "role": "system",
-                "content": [{"type": "text", "text": f"You are an expert medical assistant. Provide a clear, professional summary of the medical report in {language}. Do not make jokes, provide any diagnoses, give medical advice, or discuss mental health. Only summarize and explain the factual content of the report."}]
+                "content": [{"type": "text", "text": f"You are an expert medical assistant. You will receive EXTRACTED TEXT from a medical document or report. Analyze and summarize this text in {language}. Provide a clear, professional summary explaining the key findings, test results, and medical information present in the text. Do not make jokes, provide diagnoses, give medical advice, or discuss mental health. Only summarize and explain the factual content provided."}]
             },
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": text}
+                    {"type": "text", "text": f"Here is the extracted text from a medical document. Please analyze and summarize it:\n\n{text}"}
                 ]
             }
         ]
@@ -116,6 +132,9 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
     """
     logger.info(f"Generating summary from image: {image_path}, language: {language}")
     try:
+        if not _MODEL_AVAILABLE or model is None or processor is None:
+            logger.warning("MedGemma VLM model unavailable; cannot generate image summary. Returning error.")
+            return "Error: MedGemma model unavailable. Please install required ML dependencies (torch, transformers) or run the app on a machine with the model present."
         logger.info("Opening image file...")
         image = Image.open(image_path)
         logger.info(f"Image opened successfully: {image.format} {image.size}")
@@ -123,12 +142,12 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
         messages = [
             {
                 "role": "system",
-                "content": [{"type": "text", "text": f"You are an expert radiologist. Provide a clear, professional description of this medical image in {language}. Do not make jokes, provide any diagnoses, give medical advice, or discuss mental health. Only describe and explain the factual content visible in the image."}]
+                "content": [{"type": "text", "text": f"You are an expert medical assistant analyzing medical images and reports. You will receive a medical image (X-ray, scan, test report, lab result, etc.). Analyze the image and provide a clear, professional summary in {language}. Describe what you see: text, values, measurements, charts, or medical imagery. Explain the findings in simple terms. Do not make jokes, provide diagnoses, give medical advice, or discuss mental health. Only describe and summarize the factual content visible in the image."}]
             },
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": "Describe this medical image"},
+                    {"type": "text", "text": "Please analyze this medical document/image and provide a clear summary of the findings and information shown:"},
                     {"type": "image", "image": image}
                 ]
             }

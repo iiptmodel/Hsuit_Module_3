@@ -7,7 +7,6 @@ from pathlib import Path
 
 from app.db import schemas, models
 from app.api.deps import get_db
-# Import services directly
 from app.services import parser_service, summarizer_service, tts_service
 from uuid import uuid4
 
@@ -15,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Define media paths
 MEDIA_DIR = Path("media")
 REPORTS_DIR = MEDIA_DIR / "reports"
 AUDIO_DIR = MEDIA_DIR / "audio"
