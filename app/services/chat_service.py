@@ -67,31 +67,41 @@ PROHIBITED_PATTERNS = {
 def validate_user_query(query: str) -> Tuple[bool, str]:
     """
     Validate if user query is appropriate for medical assistant.
-    
+
     Checks for:
         - Minimum query length
         - Offensive language
         - Time-pass/off-topic queries
-    
+        - Allows common greetings
+
     Args:
         query: User's input message
-        
+
     Returns:
         Tuple[bool, str]: (is_valid, error_message)
             - is_valid: True if query passes all checks
             - error_message: Empty string if valid, error description if invalid
-            
+
     Example:
         >>> is_valid, error = validate_user_query("Explain this report")
         >>> print(is_valid)  # True
         >>> print(error)     # ""
     """
     query_lower = query.lower().strip()
-    
+
+    # Allow common greetings
+    greeting_patterns = [
+        r'^\b(hello|hi|hey|good (morning|afternoon|evening)|how are you|howdy|greetings)\b.*$',
+        r'.*\b(hello|hi|hey|good (morning|afternoon|evening)|how are you|howdy|greetings)\b.*$'
+    ]
+    is_greeting = any(re.search(pattern, query_lower) for pattern in greeting_patterns)
+    if is_greeting:
+        return True, ""
+
     # Check minimum length
     if len(query_lower) < 3:
         return False, "Please provide a more detailed question."
-    
+
     # Check for offensive content
     offensive_patterns = [
         r'\bfuck\b', r'\bshit\b', r'\bdamn\b',
@@ -103,7 +113,7 @@ def validate_user_query(query: str) -> Tuple[bool, str]:
                 False,
                 "Please keep the conversation professional and respectful."
             )
-    
+
     # Check for time-pass queries
     for pattern in PROHIBITED_PATTERNS['timepass']:
         if re.search(pattern, query_lower):
@@ -112,7 +122,7 @@ def validate_user_query(query: str) -> Tuple[bool, str]:
                 "I'm here to help with medical information and report analysis. "
                 "Please ask health-related questions."
             )
-    
+
     return True, ""
 
 
@@ -182,18 +192,26 @@ def apply_response_guardrails(response: str) -> str:
     return response
 
 
-def generate_chat_response(conversation_history: List[Dict[str, str]], user_message: str) -> str:
+def generate_chat_response(
+    conversation_history: List[Dict[str, str]], 
+    user_message: str,
+    image_path: str = None
+) -> str:
     """
     Generates a chat response using Ollama with strict medical guardrails.
+    Supports multimodal input (text + images) for MedGemma VLM.
 
     Args:
         conversation_history: List of previous messages [{"role": "user/assistant", "content": "..."}]
         user_message: The current user message
+        image_path: Optional path to medical image for direct VLM analysis
 
     Returns:
         AI response with guardrails applied
     """
     logger.info(f"Generating chat response for message: {user_message[:100]}...")
+    if image_path:
+        logger.info(f"Including image in analysis: {image_path}")
 
     # Validate user query first
     is_valid, error_msg = validate_user_query(user_message)
@@ -206,12 +224,14 @@ def generate_chat_response(conversation_history: List[Dict[str, str]], user_mess
 
 YOUR PRIMARY ROLES:
 1. Analyze and explain medical reports (blood tests, imaging, lab results, etc.)
-2. Break down complex medical terminology into simple, understandable language
-3. Explain what test results mean and their normal ranges
-4. Provide general health education and lifestyle recommendations
-5. Explain what medications do and their general purposes (WITHOUT prescribing)
+2. Analyze medical images (X-rays, CT scans, MRIs, ultrasounds) and describe visible findings
+3. Break down complex medical terminology into simple, understandable language
+4. Explain what test results mean and their normal ranges
+5. Provide general health education and lifestyle recommendations
+6. Explain what medications do and their general purposes (WITHOUT prescribing)
 
 WHAT YOU CAN DO:
+✓ Analyze medical images and describe what you observe
 ✓ Explain what high cholesterol means and general ways to manage it (diet, exercise)
 ✓ Describe what blood test values indicate (e.g., "HbA1c shows average blood sugar levels")
 ✓ Explain medical conditions in educational terms
@@ -223,7 +243,7 @@ STRICT RULES - WHAT YOU CANNOT DO:
 ✗ NEVER diagnose: Don't say "You have diabetes" - instead say "These results suggest elevated blood sugar levels that should be discussed with your doctor"
 ✗ NEVER prescribe: Don't say "Take 500mg of Metformin daily" - instead say "Metformin is commonly used to manage blood sugar, your doctor will determine the right dosage"
 ✗ NEVER provide personalized treatment plans
-✗ NEVER make jokes or engage in casual chitchat
+✗ NEVER make jokes or engage in casual chitchat (except for polite greetings)
 ✗ NEVER diagnose mental health conditions
 
 TONE & APPROACH:
@@ -231,6 +251,7 @@ TONE & APPROACH:
 - Use simple language while being accurate
 - Always encourage consulting healthcare professionals for diagnosis and treatment
 - Focus on helping patients understand their reports and ask better questions to their doctors
+- Respond politely to common greetings while redirecting to medical topics
 
 Remember: You EXPLAIN medical information to empower patients, you don't replace their doctor."""
 
@@ -241,13 +262,22 @@ Remember: You EXPLAIN medical information to empower patients, you don't replace
         for msg in conversation_history[-5:]:
             messages.append({"role": msg["role"], "content": msg["content"]})
 
-        # Add current user message
-        messages.append({"role": "user", "content": user_message})
+        # Add current user message with optional image
+        if image_path:
+            # For VLM: include image in the message
+            messages.append({
+                "role": "user",
+                "content": user_message,
+                "images": [image_path]  # MedGemma VLM will analyze this directly
+            })
+        else:
+            # Text-only message
+            messages.append({"role": "user", "content": user_message})
 
-        # Generate response using Ollama
-        logger.info("Generating chat response with Ollama...")
+        # Generate response using Ollama with MedGemma (supports vision)
+        logger.info("Generating chat response with MedGemma VLM...")
         response = ollama.chat(
-            model='alibayram/medgemma:4b',  # Using MedGemma for medical expertise
+            model='amsaravi/medgemma-4b-it:q8',  # Use local MedGemma variant
             messages=messages,
             options={
                 'temperature': 0.7,

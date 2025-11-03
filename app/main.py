@@ -13,6 +13,20 @@ from fastapi.responses import RedirectResponse
 from contextlib import asynccontextmanager
 import asyncio
 import importlib
+import uuid
+import contextvars
+import json
+from fastapi import Response
+import logging
+
+# Context variable for request id
+REQUEST_ID = contextvars.ContextVar("request_id", default=None)
+
+
+class RequestIDFilter(logging.Filter):
+    def filter(self, record):
+        record.request_id = REQUEST_ID.get() or "-"
+        return True
 
 # Optionally preload models on startup when PRELOAD_MODELS=1
 import download_models as _download_models
@@ -25,12 +39,15 @@ import logging
 from time import time
 from fastapi.responses import PlainTextResponse
 
-# Configure logging only once
+# Configure logging only once with request id support
 if not logging.getLogger().hasHandlers():
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-    )
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s %(levelname)-5s [%(request_id)s] [%(name)s] %(message)s")
+    handler.setFormatter(formatter)
+    handler.addFilter(RequestIDFilter())
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    root.addHandler(handler)
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +94,9 @@ app = FastAPI(
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     """Log incoming requests and their response status/time."""
+    # Assign a request id for tracing
+    req_id = str(uuid.uuid4())
+    REQUEST_ID.set(req_id)
     logger.debug("Start request: %s %s", request.method, request.url.path)
     start_time = time()
     try:
@@ -92,8 +112,16 @@ async def log_requests(request: Request, call_next):
 
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
-    logger.exception("Unhandled exception during request: %s %s", request.method, request.url.path)
-    return PlainTextResponse("Internal server error", status_code=500)
+    # Generate an error id to correlate logs and client
+    error_id = str(uuid.uuid4())
+    REQUEST_ID.set(error_id)
+    logger.exception("Unhandled exception during request: %s %s | error_id=%s", request.method, request.url.path, error_id)
+    # Return structured JSON error for easier debugging on client side
+    return Response(
+        content=json.dumps({"detail": "Internal server error", "error_id": error_id}),
+        status_code=500,
+        media_type="application/json",
+    )
 
 # Mount static & media
 app.mount("/static", StaticFiles(directory="app/static"), name="static")

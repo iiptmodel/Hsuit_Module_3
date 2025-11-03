@@ -22,13 +22,17 @@ CHAT_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 AUDIO_DIR = MEDIA_DIR / "audio"
 AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 
-def _generate_and_attach_tts(message_id: int, text: str, audio_filename: str):
-    """Background task to generate TTS audio and update the ChatMessage record."""
+async def _generate_and_attach_tts(message_id: int, text: str, audio_filename: str):
+    """Background task to generate TTS audio and update the ChatMessage record.
+
+    This runs asynchronously and notifies any connected websocket clients for the
+    chat session so the UI can show the audio player live without a reload.
+    """
     db = SessionLocal()
     try:
         audio_path = AUDIO_DIR / audio_filename
-        # Generate audio (this may raise)
-        tts_service.generate_speech(text, 'en', str(audio_path))
+        # Generate audio in a thread to avoid blocking the event loop
+        await __import__("asyncio").to_thread(tts_service.generate_speech, text, 'en', str(audio_path))
 
         # Attach path (use web-accessible relative path)
         rel_path = str(Path('media') / 'audio' / audio_filename)
@@ -38,6 +42,21 @@ def _generate_and_attach_tts(message_id: int, text: str, audio_filename: str):
             msg.audio_file_path = rel_path
             db.add(msg)
             db.commit()
+            db.refresh(msg)
+
+            # Notify connected websocket clients for this session (if any)
+            try:
+                # Local import to avoid circular import at module load
+                from app.api.ws import manager as ws_manager
+                payload = {
+                    "type": "audio_ready",
+                    "message_id": msg.id,
+                    "audio_file_path": rel_path
+                }
+                await ws_manager.send_json_to_session(msg.session_id, payload)
+                logger.info(f"Notified session {msg.session_id} about audio ready for message {msg.id}")
+            except Exception as e:
+                logger.warning(f"Failed to notify websocket clients for message {msg.id}: {e}")
     except Exception as e:
         logger.error(f"Background TTS generation failed for message {message_id}: {e}", exc_info=True)
     finally:
@@ -106,6 +125,8 @@ async def send_chat_message(
     
     # Process file if uploaded
     file_context = ""
+    image_path_for_vlm = None
+    
     if file and file.filename:
         try:
             # Save the uploaded file
@@ -122,14 +143,12 @@ async def send_chat_message(
             is_image = file_extension in ['png', 'jpg', 'jpeg', 'bmp', 'tiff', 'gif']
             
             if is_image:
-                # Process image with VLM
-                logger.info("Processing uploaded image with MedGemma VLM")
-                file_context = summarizer_service.generate_summary_from_image(
-                    str(file_save_path), "en"
-                )
-                file_context = f"\n\n[Image Analysis]\n{file_context}"
+                # For images: Pass directly to MedGemma VLM (no text extraction needed)
+                logger.info("Image will be analyzed directly by MedGemma VLM")
+                image_path_for_vlm = str(file_save_path)
+                file_context = f"\n\n[Medical Image Attached: {file.filename}]"
             else:
-                # Extract text from document
+                # For documents: Extract text
                 logger.info("Extracting text from uploaded document")
                 extracted_text = parser_service.extract_data_from_file(str(file_save_path))
                 file_context = f"\n\n[Document Content]\n{extracted_text[:2000]}"  # Limit to 2000 chars
@@ -173,7 +192,8 @@ async def send_chat_message(
         logger.info(f"Generating AI response for session {session_id}")
         ai_response_text = chat_service.generate_chat_response(
             conversation_history,
-            full_message  # Use full message with file context
+            full_message,  # Use full message with file context
+            image_path=image_path_for_vlm  # Pass image directly to VLM
         )
         
         # Save AI response

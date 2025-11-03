@@ -12,6 +12,10 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
 os.makedirs(MODELS_DIR, exist_ok=True)
 
+# If you are using a local Ollama server/model for MedGemma, set
+# USE_OLLAMA=1 in the environment to skip downloading large HF MedGemma artifacts.
+USE_OLLAMA = os.environ.get("USE_OLLAMA", "0") == "1"
+
 if os.environ.get("FORCE_PROJECT_MODELS") == "1":
     os.environ.setdefault("HF_HOME", MODELS_DIR)
     os.environ.setdefault("TRANSFORMERS_CACHE", os.path.join(MODELS_DIR, "transformers"))
@@ -70,7 +74,10 @@ def download_docling():
 def check_and_download_models():
     """Check if models are downloaded, if not, download them."""
     print("Checking and downloading models if needed...")
-    download_medgemma()
+    if USE_OLLAMA:
+        print("USE_OLLAMA=1 detected: skipping HF MedGemma download (using local Ollama model)")
+    else:
+        download_medgemma()
     download_kokoro()
     download_docling()
     print("All models checked/downloaded.")

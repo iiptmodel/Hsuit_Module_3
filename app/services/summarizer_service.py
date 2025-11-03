@@ -36,7 +36,7 @@ def generate_summary_from_text(text: str, language: str) -> str:
         ]
 
         resp = ollama.chat(
-            model='alibayram/medgemma:4b',
+            model='amsaravi/medgemma-4b-it:q8',
             messages=messages,
             options={"temperature": 0.0, "num_predict": 200}
         )
@@ -49,13 +49,53 @@ def generate_summary_from_text(text: str, language: str) -> str:
 
 
 def generate_summary_from_image(image_path: str, language: str) -> str:
-    """Extract text from the image and summarize using Ollama."""
-    logger.info(f"Generating image summary via parser+Ollama for {image_path}")
+    """
+    Analyze medical image directly using MedGemma VLM (Vision-Language Model).
+    MedGemma can process images directly without needing text extraction.
+    """
+    logger.info(f"Analyzing medical image directly with MedGemma VLM: {image_path}")
     try:
-        extracted = parser_service.extract_data_from_file(image_path)
-        if extracted.startswith('Error:'):
-            return extracted
-        return generate_summary_from_text(extracted, language)
+        system_prompt = (
+            "You are a medical assistant specialized in analyzing medical images. "
+            "Describe what you see in this medical image in clear, professional language. "
+            f"Provide your response in {language}. "
+            "Do NOT diagnose or prescribe. Focus on describing visible findings and what they typically indicate. "
+            "Always recommend consulting with a healthcare professional for proper diagnosis."
+        )
+
+        # Use Ollama's vision capability to analyze the image directly
+        messages = [
+            {
+                "role": "user",
+                "content": "Analyze this medical image and describe the findings. What can you see?",
+                "images": [image_path]  # Pass image directly to the model
+            }
+        ]
+
+        resp = ollama.chat(
+            model='amsaravi/medgemma-4b-it:q8',  # Use local MedGemma vision-enabled model
+            messages=messages,
+            options={
+                "temperature": 0.3,  # Lower temperature for more focused medical analysis
+                "num_predict": 300
+            }
+        )
+        
+        analysis = resp.get('message', {}).get('content', '')
+        logger.info(f"MedGemma VLM analysis completed: {analysis[:100]}...")
+        
+        # Apply guardrails to the response
+        return _guardrail_validator(analysis)
+        
     except Exception as e:
-        logger.error(f"Image summarization failed: {e}", exc_info=True)
-        return f"Error: Could not summarize image. {str(e)}"
+        logger.error(f"MedGemma VLM analysis failed: {e}", exc_info=True)
+        # Fallback to text extraction if VLM fails
+        logger.info("Falling back to text extraction method")
+        try:
+            extracted = parser_service.extract_data_from_file(image_path)
+            if extracted.startswith('Error:'):
+                return extracted
+            return generate_summary_from_text(extracted, language)
+        except Exception as fallback_error:
+            logger.error(f"Fallback text extraction also failed: {fallback_error}")
+            return f"Error: Could not analyze image. {str(e)}"

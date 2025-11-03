@@ -1,6 +1,7 @@
 // Chat Application State
 let currentSessionId = null;
 let uploadedFile = null;
+let sessionSocket = null;
 
 // DOM Elements
 const welcomeScreen = document.getElementById('welcomeScreen');
@@ -126,6 +127,8 @@ async function createNewSession() {
         chatScreen.style.display = 'flex';
         messagesContainer.innerHTML = '';
         sessionTitle.textContent = session.title;
+    // Open websocket for realtime updates for this session
+    setupWebsocket(currentSessionId);
         
         // Reload sessions list
         loadSessions();
@@ -160,6 +163,8 @@ async function loadSession(sessionId) {
         
         // Scroll to bottom
         scrollToBottom();
+    // Open websocket for realtime updates for this session
+    setupWebsocket(currentSessionId);
         
     } catch (error) {
         console.error('Error loading session:', error);
@@ -263,6 +268,7 @@ async function sendMessage() {
 function displayMessage(message) {
     const div = document.createElement('div');
     div.className = `message ${message.role}`;
+    if (message.id) div.dataset.messageId = message.id;
     
     const avatar = message.role === 'user' ? '👤' : '🤖';
     const time = new Date(message.created_at).toLocaleTimeString();
@@ -280,6 +286,75 @@ function displayMessage(message) {
     
     messagesContainer.appendChild(div);
     scrollToBottom();
+}
+
+function setupWebsocket(sessionId) {
+    // Close existing socket if any
+    try {
+        if (sessionSocket) {
+            sessionSocket.close();
+            sessionSocket = null;
+        }
+    } catch (e) {
+        console.warn('Error closing previous websocket', e);
+    }
+
+    if (!sessionId) return;
+
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const url = `${protocol}//${window.location.host}/api/v1/chat/ws/sessions/${sessionId}`;
+    sessionSocket = new WebSocket(url);
+
+    sessionSocket.onopen = () => {
+        console.info('WebSocket connected for session', sessionId);
+    };
+
+    sessionSocket.onmessage = (ev) => {
+        try {
+            const data = JSON.parse(ev.data);
+            if (data.type === 'audio_ready') {
+                handleAudioReady(data);
+            }
+        } catch (e) {
+            console.warn('Invalid websocket message', e);
+        }
+    };
+
+    sessionSocket.onclose = () => {
+        console.info('WebSocket closed for session', sessionId);
+    };
+
+    sessionSocket.onerror = (err) => {
+        console.warn('WebSocket error', err);
+    };
+}
+
+function handleAudioReady(payload) {
+    try {
+        const messageId = payload.message_id;
+        const audioPath = payload.audio_file_path;
+        const msgEl = messagesContainer.querySelector(`[data-message-id='${messageId}']`);
+        if (msgEl) {
+            // find .message-content and append audio if not present
+            const content = msgEl.querySelector('.message-content');
+            if (content && !content.querySelector('audio')) {
+                const audioDiv = document.createElement('div');
+                audioDiv.className = 'message-audio';
+                audioDiv.innerHTML = `<audio controls src="/${audioPath}"></audio>`;
+                // insert before message-time if exists
+                const timeEl = content.querySelector('.message-time');
+                if (timeEl) content.insertBefore(audioDiv, timeEl);
+                else content.appendChild(audioDiv);
+                scrollToBottom();
+            }
+        } else {
+            // If message element not found, optionally reload messages for the session
+            // Fallback: reload session messages to pick up audio path
+            loadSession(currentSessionId);
+        }
+    } catch (e) {
+        console.error('Failed to handle audio_ready websocket message', e);
+    }
 }
 
 function formatMessageContent(content) {
