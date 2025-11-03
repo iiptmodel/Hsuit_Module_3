@@ -6,6 +6,7 @@ import logging
 import shutil
 from pathlib import Path
 from uuid import uuid4
+import re
 
 from app.db import schemas, models
 from app.api.deps import get_db
@@ -195,6 +196,9 @@ async def send_chat_message(
             full_message,  # Use full message with file context
             image_path=image_path_for_vlm  # Pass image directly to VLM
         )
+
+        # Clean the response text by removing asterisks and extra whitespace
+        ai_response_text = re.sub(r'\*+', '', ai_response_text).strip()
         
         # Save AI response
         ai_message = models.ChatMessage(

@@ -269,10 +269,10 @@ function displayMessage(message) {
     const div = document.createElement('div');
     div.className = `message ${message.role}`;
     if (message.id) div.dataset.messageId = message.id;
-    
+
     const avatar = message.role === 'user' ? '👤' : '🤖';
     const time = new Date(message.created_at).toLocaleTimeString();
-    
+
     const audioHtml = message.audio_file_path ? `\n                <div class="message-audio"><audio controls src="/${message.audio_file_path}"></audio></div>` : '';
 
     div.innerHTML = `
@@ -283,9 +283,52 @@ function displayMessage(message) {
             <div class="message-time">${time}</div>
         </div>
     `;
-    
+
     messagesContainer.appendChild(div);
     scrollToBottom();
+
+    // For assistant messages without audio, poll for audio updates
+    if (message.role === 'assistant' && message.id && !message.audio_file_path) {
+        pollForAudio(message.id, div);
+    }
+}
+
+function pollForAudio(messageId, messageElement) {
+    let attempts = 0;
+    const maxAttempts = 30; // Poll for up to 30 seconds
+    const pollInterval = 1000; // Every 1 second
+
+    const poll = async () => {
+        if (attempts >= maxAttempts) return;
+
+        try {
+            const response = await fetch(`/api/v1/chat/sessions/${currentSessionId}/messages`);
+            const messages = await response.json();
+            const updatedMessage = messages.find(msg => msg.id === messageId);
+
+            if (updatedMessage && updatedMessage.audio_file_path) {
+                // Update the message element with audio
+                const content = messageElement.querySelector('.message-content');
+                if (content && !content.querySelector('audio')) {
+                    const audioDiv = document.createElement('div');
+                    audioDiv.className = 'message-audio';
+                    audioDiv.innerHTML = `<audio controls src="/${updatedMessage.audio_file_path}"></audio>`;
+                    const timeEl = content.querySelector('.message-time');
+                    if (timeEl) content.insertBefore(audioDiv, timeEl);
+                    else content.appendChild(audioDiv);
+                    scrollToBottom();
+                }
+                return; // Stop polling
+            }
+        } catch (error) {
+            console.warn('Error polling for audio:', error);
+        }
+
+        attempts++;
+        setTimeout(poll, pollInterval);
+    };
+
+    setTimeout(poll, pollInterval);
 }
 
 function setupWebsocket(sessionId) {
