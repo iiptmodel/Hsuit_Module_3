@@ -267,10 +267,13 @@ function displayMessage(message) {
     const avatar = message.role === 'user' ? '👤' : '🤖';
     const time = new Date(message.created_at).toLocaleTimeString();
     
+    const audioHtml = message.audio_file_path ? `\n                <div class="message-audio"><audio controls src="/${message.audio_file_path}"></audio></div>` : '';
+
     div.innerHTML = `
         <div class="message-avatar">${avatar}</div>
         <div class="message-content">
             ${formatMessageContent(message.content)}
+            ${audioHtml}
             <div class="message-time">${time}</div>
         </div>
     `;
@@ -316,10 +319,14 @@ function handleFileSelect(e) {
     const file = e.target.files[0];
     if (!file) return;
     
-    // Validate file type
-    const validTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 'image/bmp', 'image/tiff'];
+    // Validate file type (allow images, documents and common audio formats)
+    const validTypes = [
+        'application/pdf',
+        'image/png', 'image/jpeg', 'image/jpg', 'image/bmp', 'image/tiff',
+        'audio/wav', 'audio/x-wav', 'audio/mpeg', 'audio/mp3', 'audio/ogg', 'audio/webm'
+    ];
     if (!validTypes.includes(file.type)) {
-        showError('Please upload a PDF or image file (PNG, JPG, BMP, TIFF)');
+        showError('Please upload a PDF, image file (PNG, JPG, BMP, TIFF) or audio (WAV/MP3/OGG)');
         return;
     }
     
@@ -335,10 +342,32 @@ function handleFileSelect(e) {
 }
 
 function displayUploadedFile(file) {
-    const fileType = file.type.startsWith('image/') ? '🖼️' : '📄';
     const fileSize = formatFileSize(file.size);
-    
     uploadedFiles.style.display = 'block';
+
+    // If audio, show audio player
+    if (file.type.startsWith('audio/')) {
+        const audioURL = URL.createObjectURL(file);
+        uploadedFiles.innerHTML = `
+            <div class="file-preview">
+                <div class="file-icon">🔊</div>
+                <div class="file-info">
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-size">${fileSize}</div>
+                    <audio controls src="${audioURL}"></audio>
+                </div>
+                <button class="btn-remove-file" onclick="clearUploadedFile()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    // Image / document preview
+    const fileType = file.type.startsWith('image/') ? '🖼️' : '📄';
     uploadedFiles.innerHTML = `
         <div class="file-preview">
             <div class="file-icon">${fileType}</div>

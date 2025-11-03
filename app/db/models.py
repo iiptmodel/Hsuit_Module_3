@@ -46,6 +46,8 @@ class ChatMessage(Base):
     
     role = Column(String, nullable=False)  # "user" or "assistant"
     content = Column(Text, nullable=False)
+    # Optional path to TTS audio generated for assistant responses
+    audio_file_path = Column(String, nullable=True)
     
     # Relationship to session
     session = relationship("ChatSession", back_populates="messages")

@@ -1,118 +1,144 @@
 # Medical Report Analysis & Voice Summary System
 
-## 🎯 Project Objective
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com)
+[![CUDA](https://img.shields.io/badge/CUDA-11.8+-red.svg)](https://developer.nvidia.com/cuda-toolkit)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Build an intelligent system that analyzes patient medical reports, generates clear explanations, and provides output in voice format with medical guardrails.
+An intelligent AI-powered system that analyzes medical reports, generates clear explanations, and provides voice output with strict medical safety guardrails.
+
+## 🎯 Overview
 
 ### Problem Statement
-
-Patients often receive complex medical reports that are difficult to interpret. Understanding test results without medical assistance can be overwhelming and confusing.
+Patients often receive complex medical reports filled with technical jargon that are difficult to understand without medical training. This leads to confusion, anxiety, and delayed understanding of important health information.
 
 ### Solution
+This application provides a comprehensive medical document analysis platform featuring:
 
-This application provides:
-
-1. **Accepts medical reports** (text, images, PDFs)
-2. **Analyzes using AI** (MedGemma Vision-Language Model for medical understanding)
-3. **Generates clear explanations** (simplified medical terminology with safety guardrails)
-4. **Provides voice output** (Text-to-Speech in multiple languages)
-5. **Interactive chat** (Ask questions about your medical documents)
+- **📄 Multi-format Input**: Accepts text, images, and PDF medical reports
+- **🧠 AI-Powered Analysis**: Uses MedGemma Vision-Language Model for medical understanding
+- **📝 Clear Explanations**: Generates simplified medical terminology with safety guardrails
+- **🔊 Voice Output**: High-quality text-to-speech in multiple languages using Kokoro TTS
+- **💬 Interactive Chat**: Ask questions about your medical documents with AI assistance
+- **🔒 Medical Safety**: Strict guardrails prevent diagnoses, prescriptions, and inappropriate content
 
 ## 🏗️ Architecture
 
-### Tech Stack
+### Core Technologies
 
-- **Backend Framework**: FastAPI (async/await support)
-- **Database**: PostgreSQL (SQLAlchemy ORM) or SQLite (development)
-- **AI Models**:
-  - **MedGemma** (`unsloth/medgemma-4b-it`) - Medical image and text analysis
-  - **Docling** - Document parsing (PDFs, images, various medical document formats)
-  - **Kokoro TTS** - High-quality text-to-speech for voice output
-- **Security**: Medical guardrails prevent diagnosis, prescriptions, and inappropriate content
-- **Authentication**: JWT-based (disabled in development build)
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Backend** | FastAPI | High-performance async web framework |
+| **Database** | PostgreSQL/SQLite | Data persistence with SQLAlchemy ORM |
+| **AI Models** | MedGemma 4B | Medical vision-language understanding |
+| **Document Parsing** | Docling + OCR | Multi-tier PDF and image processing |
+| **Voice Synthesis** | Kokoro TTS | Natural-sounding speech generation |
+| **Security** | JWT + Guardrails | Authentication and medical safety |
+| **Frontend** | HTML5 + Vanilla JS | Responsive web interface |
+
+### AI Pipeline
+
+```
+Input (Text/Image/PDF)
+        ↓
+Document Parsing (Docling/OCR)
+        ↓
+MedGemma Analysis (8GB Model)
+        ↓
+Safety Guardrails Check
+        ↓
+Clear Explanation Generation
+        ↓
+Kokoro TTS Voice Synthesis
+        ↓
+Output (Text + Audio)
+```
 
 ### Project Structure
 
-```plaintext
+```
 d:\Prushal/
-├── app/
-│   ├── api/
-│   │   ├── __init__.py              # API router configuration
-│   │   ├── deps.py                  # FastAPI dependencies
-│   │   └── endpoints/
-│   │       ├── reports.py           # Report upload & processing
-│   │       └── chat.py              # Chat endpoints with file upload
-│   ├── core/
-│   │   ├── config.py                # App configuration
-│   │   └── security.py              # JWT & password utilities
-│   ├── db/
-│   │   ├── database.py              # Database connection
-│   │   ├── models.py                # SQLAlchemy models (Report, ChatSession, ChatMessage)
-│   │   └── schemas.py               # Pydantic schemas for validation
-│   ├── services/
-│   │   ├── parser_service.py        # Multi-tier PDF parsing (Docling + OCR fallback)
-│   │   ├── summarizer_service.py    # MedGemma AI analysis
-│   │   ├── tts_service.py           # Kokoro text-to-speech
-│   │   └── chat_service.py          # Chat with medical guardrails
-│   ├── static/
-│   │   ├── css/
-│   │   │   ├── style.css            # Main stylesheet
-│   │   │   └── chat.css             # Chat interface styles
-│   │   └── js/
-│   │       ├── app.js               # Main JavaScript
-│   │       └── chat.js              # Chat functionality
-│   ├── templates/
-│   │   └── chat.html                # Unified chat interface
-│   ├── main.py                      # FastAPI application entry
-│   └── pages.py                     # Template routes
-├── media/
-│   ├── reports/                     # Uploaded medical documents
-│   ├── audio/                       # Generated TTS audio files
-│   └── chat_uploads/                # Chat file attachments
-├── models/                          # Downloaded AI models (cached)
-├── myenv/                           # Python virtual environment
-├── requirements.txt                 # Python dependencies
-├── download_models.py               # Script to download AI models
-├── .env                             # Environment variables (DATABASE_URL, JWT_SECRET_KEY)
-├── README.md                        # This file
-├── QUICKSTART.md                    # Quick setup guide
-├── DOCUMENTATION.md                 # Detailed documentation
-└── DEPLOYMENT.md                    # Production deployment guide
+├── 📁 app/                          # Main application
+│   ├── 📁 api/                      # REST API endpoints
+│   │   ├── 📄 __init__.py           # API router configuration
+│   │   ├── 📄 deps.py               # FastAPI dependencies
+│   │   └── 📁 endpoints/            # API route handlers
+│   │       ├── 📄 reports.py        # Report processing endpoints
+│   │       └── 📄 chat.py           # Chat with file upload
+│   ├── 📁 core/                     # Core utilities
+│   │   ├── 📄 config.py             # App configuration
+│   │   └── 📄 security.py           # JWT & password utilities
+│   ├── 📁 db/                       # Database layer
+│   │   ├── 📄 database.py           # Connection management
+│   │   ├── 📄 models.py             # SQLAlchemy models
+│   │   └── 📄 schemas.py            # Pydantic schemas
+│   ├── 📁 services/                 # AI services
+│   │   ├── 📄 parser_service.py     # Multi-tier document parsing
+│   │   ├── 📄 summarizer_service.py # MedGemma AI analysis
+│   │   ├── 📄 tts_service.py        # Kokoro text-to-speech
+│   │   └── 📄 chat_service.py       # Chat with guardrails
+│   ├── 📁 static/                   # Static assets
+│   │   ├── 📁 css/                  # Stylesheets
+│   │   └── 📁 js/                   # JavaScript files
+│   ├── 📁 templates/                # HTML templates
+│   ├── 📄 main.py                   # FastAPI application
+│   └── 📄 pages.py                  # Web page routes
+├── 📁 media/                        # User-generated content
+│   ├── 📁 reports/                  # Uploaded medical documents
+│   ├── 📁 audio/                    # Generated voice files
+│   └── 📁 chat_uploads/             # Chat file attachments
+├── 📁 models/                       # AI models (~10GB)
+├── 📁 myenv/                        # Python virtual environment
+├── 📄 requirements.txt              # Python dependencies
+├── 📄 download_models.py            # Model download script
+├── 📄 .env                          # Environment configuration
+├── 📄 README.md                     # This file
+├── 📄 QUICKSTART.md                 # Quick setup guide
+├── 📄 DOCUMENTATION.md              # Technical documentation
+├── 📄 API.md                        # API reference
+├── 📄 DEPLOYMENT.md                 # Production deployment
+└── 📄 .gitignore                    # Git ignore rules
 ```
 
-## 📋 Prerequisites
+## ⚙️ System Requirements
 
-### Required Software
+### Minimum Hardware
+- **RAM**: 16GB (32GB recommended)
+- **Storage**: 30GB+ free space for AI models
+- **GPU**: NVIDIA GPU with 8GB+ VRAM (CUDA 11.8+)
+- **CPU**: Multi-core processor (4+ cores recommended)
 
-- **Python 3.11+** (Download from [python.org](https://www.python.org/downloads/))
-- **PostgreSQL 15+** (Optional - can use SQLite for development)
-- **Git** (for cloning repository)
-- **Tesseract OCR** (for OCR fallback in PDF parsing)
+### Software Prerequisites
+- **Python 3.11+** ([Download](https://python.org/downloads/))
+- **PostgreSQL 15+** (optional, SQLite for development)
+- **Git** ([Download](https://git-scm.com/downloads))
+- **Tesseract OCR** (for PDF OCR fallback)
 
-### Hardware Requirements
-
-- **RAM**: Minimum 16GB (32GB recommended for smooth model loading)
-- **Storage**: 30GB+ free space (for AI models and data)
-- **GPU**:
-  - NVIDIA GPU with 8GB+ VRAM recommended for faster inference
-  - CUDA 11.8+ or CUDA 12.1+ toolkit
-  - CPU-only mode supported but slower
-
-### System Requirements Check
+### System Compatibility Check
 
 ```powershell
-# Check Python version
-python --version  # Should be 3.11+
+# Verify Python version
+python --version  # Should show 3.11 or higher
 
 # Check available RAM
 systeminfo | findstr /C:"Total Physical Memory"
 
-# Check GPU (if NVIDIA)
-nvidia-smi
+# Check GPU (NVIDIA only)
+nvidia-smi  # Should display GPU information
 
 # Check disk space
 wmic logicaldisk get size,freespace,caption
 ```
+
+### GPU Support Details
+
+| GPU Memory | Performance | Recommendation |
+|------------|-------------|----------------|
+| 6GB | Basic functionality | Minimum viable |
+| 8GB | Good performance | Recommended |
+| 12GB+ | Optimal performance | Best experience |
+
+**Note**: CPU-only mode is supported but 5-10x slower than GPU acceleration.
 
 ## 🚀 Quick Start
 

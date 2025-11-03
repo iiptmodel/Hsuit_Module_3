@@ -21,6 +21,7 @@ Author: Medical Report Analysis System
 import logging
 import re
 from typing import List, Dict, Tuple
+import ollama
 from app.services import summarizer_service
 
 logger = logging.getLogger(__name__)
@@ -28,43 +29,37 @@ logger = logging.getLogger(__name__)
 # Prohibited topics and regex patterns for safety
 PROHIBITED_PATTERNS = {
     'diagnosis': [
-        r'\bdiagnos[ei]s?\b',
-        r'\byou have\b',
-        r'\byou are suffering from\b',
-        r'\byou might have\b',
-        r'\bit (seems|appears|looks) like you have\b'
+        r'\byou (definitely|certainly|clearly) have\b',
+        r'\byou are (definitely |certainly )?suffering from\b',
+        r'\bmy diagnosis is\b',
+        r'\bI (diagnose|confirm) (you have|that you have)\b',
+        r'\bthis confirms? (you have|that you have)\b'
     ],
     'prescription': [
-        r'\btake (this|these|the following)\b',
-        r'\bprescribe\b',
-        r'\bmedication\b.*\bdosage\b',
-        r'\b\d+\s*mg\b',
-        r'\btake.*pills?\b',
-        r'\bdrug\b.*\btreatment\b'
+        r'\bI (prescribe|recommend taking|suggest taking)\b',
+        r'\byou (should|must|need to) take \d+\s*mg\b',
+        r'\bstart (taking|medication|treatment with)\b.*\b\d+\s*mg\b',
+        r'\btake \w+ \d+\s*(mg|ml) (daily|twice|three times)\b',
+        r'\bprescription:?\s*\w+\s*\d+\s*mg\b',
+        r'\bI will prescribe\b'
     ],
     'jokes': [
-        r'\bjoke\b',
-        r'\bfunny\b',
-        r'\blaugh\b',
-        r'\bhaha\b',
-        r'\blol\b',
-        r'\bhumor\b',
+        r'\b(here\'s a|want to hear a|let me tell you a) joke\b',
+        r'\bhaha\b.*\bfunny\b',
+        r'\blol\b.*\bhilarious\b',
         r'\bpunchline\b'
     ],
     'timepass': [
-        r'\blet\'s chat about\b',
-        r'\btell me about yourself\b',
-        r'\bwhat do you like\b',
-        r'\bfavorite (movie|song|color|food)\b'
+        r'\blet\'s (chat|talk) about (movies|music|sports|weather)\b',
+        r'\btell me about (yourself|your hobbies|your life)\b',
+        r'\bwhat\'s? your favorite (movie|song|color|food)\b'
     ],
     'mental_health_diagnosis': [
-        r'\bdepression\b',
-        r'\banxiety disorder\b',
-        r'\bbipolar\b',
-        r'\bschizophrenia\b',
-        r'\bptsd\b',
-        r'\bmental illness\b',
-        r'\bpsychiatric\b'
+        r'\byou (have|are suffering from) (clinical )?depression\b',
+        r'\byou (have|are suffering from) (severe |chronic )?anxiety disorder\b',
+        r'\byou (have|are suffering from) bipolar( disorder)?\b',
+        r'\byou (have|are suffering from) schizophrenia\b',
+        r'\bI diagnose you with\b.*\b(depression|anxiety|bipolar|ptsd)\b'
     ]
 }
 
@@ -150,10 +145,11 @@ def apply_response_guardrails(response: str) -> str:
         if re.search(pattern, response_lower):
             logger.warning(f"Response contained diagnosis language: {pattern}")
             return (
-                "I apologize, but I cannot provide medical diagnoses. "
-                "I can help explain medical information, but any diagnosis "
-                "should come from a qualified healthcare provider. "
-                "Would you like me to explain any medical terms or concepts instead?"
+                "I can help you understand what these medical findings suggest, "
+                "but I cannot provide a definitive diagnosis. Based on the information, "
+                "I recommend discussing these results with your healthcare provider who can "
+                "properly evaluate your complete medical history and provide an accurate diagnosis. "
+                "Would you like me to explain what these findings typically indicate?"
             )
     
     # Check for prescription language
@@ -161,10 +157,11 @@ def apply_response_guardrails(response: str) -> str:
         if re.search(pattern, response_lower):
             logger.warning(f"Response contained prescription language: {pattern}")
             return (
-                "I apologize, but I cannot prescribe medications or "
-                "recommend specific treatments. Only licensed healthcare "
-                "providers can do that. I can explain what certain medications "
-                "do or help you understand medical information, though."
+                "I can explain how certain medications work and their general purposes, "
+                "but I cannot prescribe specific medications or dosages. "
+                "Your doctor will determine the appropriate medication and dosage based on "
+                "your individual health needs. Would you like me to explain what types of "
+                "treatments are commonly used for this condition instead?"
             )
     
     # Check for mental health diagnosis
@@ -187,103 +184,87 @@ def apply_response_guardrails(response: str) -> str:
 
 def generate_chat_response(conversation_history: List[Dict[str, str]], user_message: str) -> str:
     """
-    Generates a chat response using MedGemma with strict medical guardrails.
-    
+    Generates a chat response using Ollama with strict medical guardrails.
+
     Args:
         conversation_history: List of previous messages [{"role": "user/assistant", "content": "..."}]
         user_message: The current user message
-    
+
     Returns:
         AI response with guardrails applied
     """
     logger.info(f"Generating chat response for message: {user_message[:100]}...")
-    
+
     # Validate user query first
     is_valid, error_msg = validate_user_query(user_message)
     if not is_valid:
         return error_msg
-    
+
     try:
-        # Check if model is available
-        if not summarizer_service._MODEL_AVAILABLE or summarizer_service.model is None:
-            logger.warning("MedGemma model unavailable for chat")
-            return "I apologize, but the AI model is currently unavailable. Please try again later."
-        
-        # Build conversation context
-        messages = [
-            {
-                "role": "system",
-                "content": [{
-                    "type": "text",
-                    "text": """You are MedAnalyzer Assistant, a professional medical information assistant. Your role is to:
+        # Define system prompt
+        system_prompt = """You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results.
 
-1. Help users understand medical reports and test results
-2. Explain medical terminology in simple terms
-3. Provide factual medical information and education
-4. Answer health-related questions with evidence-based information
+YOUR PRIMARY ROLES:
+1. Analyze and explain medical reports (blood tests, imaging, lab results, etc.)
+2. Break down complex medical terminology into simple, understandable language
+3. Explain what test results mean and their normal ranges
+4. Provide general health education and lifestyle recommendations
+5. Explain what medications do and their general purposes (WITHOUT prescribing)
 
-STRICT RULES YOU MUST FOLLOW:
-- NEVER provide medical diagnoses (e.g., "you have diabetes")
-- NEVER prescribe medications or recommend specific treatments
-- NEVER make jokes, use humor, or engage in casual chitchat
-- NEVER discuss mental health diagnoses or psychiatric conditions
-- NEVER give personalized medical advice
-- Always recommend consulting healthcare professionals for diagnosis and treatment
-- Stay professional, factual, and educational
-- If asked about non-medical topics, politely redirect to medical information
+WHAT YOU CAN DO:
+✓ Explain what high cholesterol means and general ways to manage it (diet, exercise)
+✓ Describe what blood test values indicate (e.g., "HbA1c shows average blood sugar levels")
+✓ Explain medical conditions in educational terms
+✓ Suggest general lifestyle modifications (eat healthy, exercise, reduce stress)
+✓ Explain what types of medications exist and their general purposes
+✓ Answer "What does this test measure?" or "What does this result mean?"
 
-Remember: You explain medical information, you don't diagnose or treat."""
-                }]
-            }
-        ]
-        
+STRICT RULES - WHAT YOU CANNOT DO:
+✗ NEVER diagnose: Don't say "You have diabetes" - instead say "These results suggest elevated blood sugar levels that should be discussed with your doctor"
+✗ NEVER prescribe: Don't say "Take 500mg of Metformin daily" - instead say "Metformin is commonly used to manage blood sugar, your doctor will determine the right dosage"
+✗ NEVER provide personalized treatment plans
+✗ NEVER make jokes or engage in casual chitchat
+✗ NEVER diagnose mental health conditions
+
+TONE & APPROACH:
+- Be clear, empathetic, and educational
+- Use simple language while being accurate
+- Always encourage consulting healthcare professionals for diagnosis and treatment
+- Focus on helping patients understand their reports and ask better questions to their doctors
+
+Remember: You EXPLAIN medical information to empower patients, you don't replace their doctor."""
+
+        # Build conversation messages for Ollama
+        messages = [{"role": "system", "content": system_prompt}]
+
         # Add conversation history (last 5 messages to avoid token limits)
         for msg in conversation_history[-5:]:
-            messages.append({
-                "role": msg["role"],
-                "content": [{"type": "text", "text": msg["content"]}]
-            })
-        
+            messages.append({"role": msg["role"], "content": msg["content"]})
+
         # Add current user message
-        messages.append({
-            "role": "user",
-            "content": [{"type": "text", "text": user_message}]
-        })
-        
-        # Generate response
-        logger.info("Tokenizing chat input for MedGemma...")
-        inputs = summarizer_service.processor.apply_chat_template(
-            messages,
-            add_generation_prompt=True,
-            tokenize=True,
-            return_dict=True,
-            return_tensors="pt",
-            use_fast=True
-        ).to(summarizer_service.model.device, dtype=summarizer_service.torch.bfloat16)
-        
-        input_len = inputs["input_ids"].shape[-1]
-        logger.info(f"Input tokenized, length: {input_len}")
-        
-        logger.info("Generating chat response with MedGemma...")
-        with summarizer_service.torch.inference_mode():
-            generation = summarizer_service.model.generate(
-                **inputs,
-                max_new_tokens=300,
-                do_sample=False,
-                temperature=0.7,
-                top_p=0.9
-            )
-            generation = generation[0][input_len:]
-        
-        response = summarizer_service.processor.decode(generation, skip_special_tokens=True)
-        logger.info(f"Raw chat response generated: {response[:100]}...")
-        
+        messages.append({"role": "user", "content": user_message})
+
+        # Generate response using Ollama
+        logger.info("Generating chat response with Ollama...")
+        response = ollama.chat(
+            model='alibayram/medgemma:4b',  # Using MedGemma for medical expertise
+            messages=messages,
+            options={
+                'temperature': 0.7,
+                'top_p': 0.9,
+                'num_predict': 300
+            }
+        )
+
+        raw_response = response['message']['content']
+        logger.info(f"Raw chat response generated: {raw_response[:100]}...")
+
         # Apply guardrails to response
-        validated_response = apply_response_guardrails(response)
+        validated_response = apply_response_guardrails(raw_response)
         logger.info("Chat response validation completed")
-        
+
         return validated_response
-        
+
     except Exception as e:
         logger.error(f"Chat response generation failed: {e}", exc_info=True)
         return "I apologize, but I encountered an error processing your message. Please try rephrasing your question."

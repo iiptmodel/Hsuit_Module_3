@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
+from fastapi import BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import logging
@@ -8,7 +9,8 @@ from uuid import uuid4
 
 from app.db import schemas, models
 from app.api.deps import get_db
-from app.services import chat_service, parser_service, summarizer_service
+from app.services import chat_service, parser_service, summarizer_service, tts_service
+from app.db.database import SessionLocal
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +19,29 @@ router = APIRouter()
 MEDIA_DIR = Path("media")
 CHAT_UPLOADS_DIR = MEDIA_DIR / "chat_uploads"
 CHAT_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+AUDIO_DIR = MEDIA_DIR / "audio"
+AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+
+def _generate_and_attach_tts(message_id: int, text: str, audio_filename: str):
+    """Background task to generate TTS audio and update the ChatMessage record."""
+    db = SessionLocal()
+    try:
+        audio_path = AUDIO_DIR / audio_filename
+        # Generate audio (this may raise)
+        tts_service.generate_speech(text, 'en', str(audio_path))
+
+        # Attach path (use web-accessible relative path)
+        rel_path = str(Path('media') / 'audio' / audio_filename)
+
+        msg = db.query(models.ChatMessage).filter(models.ChatMessage.id == message_id).first()
+        if msg:
+            msg.audio_file_path = rel_path
+            db.add(msg)
+            db.commit()
+    except Exception as e:
+        logger.error(f"Background TTS generation failed for message {message_id}: {e}", exc_info=True)
+    finally:
+        db.close()
 
 
 @router.post("/sessions", response_model=schemas.ChatSession)
@@ -61,6 +86,7 @@ def get_chat_session(session_id: int, db: Session = Depends(get_db)):
 @router.post("/sessions/{session_id}/messages", response_model=schemas.ChatMessage)
 async def send_chat_message(
     session_id: int,
+    background_tasks: BackgroundTasks,
     content: str = Form(...),
     file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
@@ -159,9 +185,22 @@ async def send_chat_message(
         db.add(ai_message)
         db.commit()
         db.refresh(ai_message)
-        
+
+        # Schedule background TTS generation so the API stays snappy
+        try:
+            audio_filename = f"{uuid4().hex}_response.wav"
+            background_tasks.add_task(
+                _generate_and_attach_tts,
+                ai_message.id,
+                ai_response_text,
+                audio_filename,
+            )
+            logger.info(f"Scheduled background TTS for message {ai_message.id}")
+        except Exception as e:
+            logger.error(f"Failed to schedule background TTS: {e}", exc_info=True)
+
         logger.info(f"AI response saved in session {session_id}")
-        
+
         return ai_message
         
     except Exception as e:

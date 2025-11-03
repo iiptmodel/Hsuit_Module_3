@@ -11,6 +11,11 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from contextlib import asynccontextmanager
+import asyncio
+import importlib
+
+# Optionally preload models on startup when PRELOAD_MODELS=1
+import download_models as _download_models
 
 from app.db import models, database
 from app.api import api_router
@@ -36,7 +41,29 @@ models.Base.metadata.create_all(bind=database.engine)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("FastAPI starting...")
-    logger.info("AI services will be loaded lazily on first request.")
+    # If PRELOAD_MODELS is set to '1' (or environment variable not set and we choose to preload),
+    # run model downloads and import heavy service modules so models initialize before accepting requests.
+    preload = os.environ.get("PRELOAD_MODELS", "1")
+    if preload == "1":
+        logger.info("Preloading AI models and services before accepting requests...")
+        try:
+            # Run the potentially blocking downloads in a thread to avoid blocking the event loop
+            await asyncio.to_thread(_download_models.check_and_download_models)
+
+            # Import service modules which perform model initialization at import time
+            def _import_services():
+                importlib.import_module("app.services.tts_service")
+                importlib.import_module("app.services.parser_service")
+                importlib.import_module("app.services.summarizer_service")
+                importlib.import_module("app.services.chat_service")
+
+            await asyncio.to_thread(_import_services)
+            logger.info("AI models and services preloaded successfully.")
+        except Exception as e:
+            logger.exception("Failed to preload AI models: %s", e)
+            # Continue startup but warn that some endpoints may fail until models are available
+    else:
+        logger.info("AI services will be loaded lazily on first request.")
     yield
     logger.info("FastAPI shutting down...")
 

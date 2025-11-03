@@ -35,6 +35,7 @@ class ChatMessage(BaseModel):
     created_at: datetime
     role: str
     content: str
+    audio_file_path: str | None = None
 
     class Config:
         from_attributes = True
