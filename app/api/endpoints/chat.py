@@ -133,14 +133,21 @@ async def send_chat_message(
     
     if file and file.filename:
         try:
+            # Validate file size (e.g., max 10MB)
+            file_size = 0
+            content = await file.read()
+            file_size = len(content)
+            if file_size > 10 * 1024 * 1024:  # 10MB
+                raise HTTPException(status_code=413, detail="File too large. Maximum size is 10MB.")
+            
             # Save the uploaded file
             file_path_str = f"{uuid4().hex}_{file.filename.replace(' ', '_')}"
             file_save_path = CHAT_UPLOADS_DIR / file_path_str
             
             with file_save_path.open("wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
+                buffer.write(content)  # Use the read content
             
-            logger.info(f"File uploaded: {file.filename}")
+            logger.info(f"File uploaded: {file.filename} ({file_size} bytes)")
             
             # Determine file type
             file_extension = file.filename.lower().split('.')[-1] if '.' in file.filename else ''
@@ -192,6 +199,8 @@ async def send_chat_message(
             {"role": msg.role, "content": msg.content}
             for msg in history[:-1]
         ]
+        
+        logger.debug(f"Conversation history length: {len(conversation_history)}")
         
         # Generate AI response
         logger.info(f"Generating AI response for session {session_id} — audience={audience}")

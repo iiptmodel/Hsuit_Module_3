@@ -44,6 +44,7 @@ class ConnectionManager:
         for ws in list(conns):
             try:
                 await ws.send_json(data)
+                logger.debug(f"Sent websocket message to session {session_id}")
             except Exception as e:
                 logger.warning(f"Failed to send websocket message to session {session_id}: {e}")
                 to_remove.append(ws)

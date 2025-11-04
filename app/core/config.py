@@ -1,4 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
     # Default to local SQLite for simplicity and to avoid external DB dependencies.
@@ -12,7 +15,7 @@ class Settings(BaseSettings):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if self.DATABASE_URL.startswith("https://"):
-            print(f"Warning: Invalid DATABASE_URL '{self.DATABASE_URL}'. Falling back to SQLite.")
+            logger.warning("Invalid DATABASE_URL '%s'. Falling back to SQLite.", self.DATABASE_URL)
             self.DATABASE_URL = "sqlite:///./medanalyzer.db"
 
 settings = Settings()

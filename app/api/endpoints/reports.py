@@ -116,11 +116,17 @@ async def upload_files_report(
     results: List[models.Report] = []
 
     for file in files:
+        # Validate file size
+        file_content = await file.read()
+        file_size = len(file_content)
+        if file_size > 10 * 1024 * 1024:  # 10MB
+            raise HTTPException(status_code=413, detail=f"File {file.filename} too large. Maximum size is 10MB.")
+        
         file_path_str = f"{uuid4().hex}_{file.filename.replace(' ', '_')}"
         file_save_path = REPORTS_DIR / file_path_str
 
         with file_save_path.open("wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+            buffer.write(file_content)
 
         # Determine file type: prefer content_type, fallback to extension
         content_type = getattr(file, "content_type", "") or ""
@@ -148,6 +154,7 @@ async def upload_files_report(
             events.publish(new_report.id, {"status": "started", "stage": "created"})
 
             def _process_file(path, is_img, language, report_id):
+                logger.debug(f"Processing file {path} for report {report_id}, is_image={is_img}")
                 # Runs in thread
                 try:
                     events.publish(report_id, {"status": "in-progress", "stage": "processing_file"})

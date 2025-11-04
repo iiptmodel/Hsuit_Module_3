@@ -35,6 +35,7 @@ try:
         # SQLAlchemy 1.x/2.x require an executable object; use text() to be compatible
         conn.execute(text("SELECT 1"))
     logger.info("Database connection established successfully")
+    logger.debug(f"Database URL: {settings.DATABASE_URL}")
     
 except Exception as e:
     logger.warning(

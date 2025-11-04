@@ -14,7 +14,6 @@ import logging
 import re
 
 from app.services.ollama_client import chat_with_retries
-from app.services import summarizer_service  # kept for potential future use
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,7 @@
 import re
+import logging
 
+logger = logging.getLogger(__name__)
 
 def sanitize_text(text: str) -> str:
     """Sanitize noisy text input by removing repeated special characters and collapsing whitespace.
@@ -8,7 +10,11 @@ def sanitize_text(text: str) -> str:
     or uncommon symbols while keeping the medical content readable.
     """
     if not text:
+        logger.debug("sanitize_text: empty input")
         return text
+
+    original_len = len(text)
+    logger.debug(f"sanitize_text: processing {original_len} chars")
 
     # Normalize newlines
     text = text.replace('\r\n', '\n').replace('\r', '\n')
@@ -28,4 +34,6 @@ def sanitize_text(text: str) -> str:
     text = re.sub(r"\n{3,}", "\n\n", text)
 
     # Trim
-    return text.strip()
+    result = text.strip()
+    logger.debug(f"sanitize_text: output {len(result)} chars (reduced by {original_len - len(result)})")
+    return result
