@@ -35,7 +35,8 @@ def generate_summary_from_text(text: str, language: str = 'English') -> str:
             {"role": "user", "content": text}
         ]
 
-        resp = ollama.chat(
+        from app.services.ollama_client import chat_with_retries
+        resp = chat_with_retries(
             model='amsaravi/medgemma-4b-it:q8',
             messages=messages,
             options={"temperature": 0.0, "num_predict": 200}
@@ -72,7 +73,8 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
             }
         ]
 
-        resp = ollama.chat(
+        from app.services.ollama_client import chat_with_retries
+        resp = chat_with_retries(
             model='amsaravi/medgemma-4b-it:q8',  # Use local MedGemma vision-enabled model
             messages=messages,
             options={
@@ -120,7 +122,8 @@ def generate_patient_summary_from_text(text: str, language: str = 'English') -> 
             {"role": "user", "content": text}
         ]
 
-        resp = ollama.chat(
+        from app.services.ollama_client import chat_with_retries
+        resp = chat_with_retries(
             model='amsaravi/medgemma-4b-it:q8',
             messages=messages,
             options={"temperature": 0.0, "num_predict": 120}
@@ -167,7 +170,8 @@ def generate_detailed_report_from_text(text: str, language: str = 'English') -> 
             {"role": "user", "content": user_prompt}
         ]
 
-        resp = ollama.chat(
+        from app.services.ollama_client import chat_with_retries
+        resp = chat_with_retries(
             model='amsaravi/medgemma-4b-it:q8',
             messages=messages,
             options={"temperature": 0.0, "num_predict": 600}

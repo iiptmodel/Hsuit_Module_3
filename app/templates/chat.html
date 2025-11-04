@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediScan AI - Intelligent Medical Analysis</title>
+    <title>MediScan</title>
     <link rel="stylesheet" href="/static/css/chat.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
 </head>
@@ -12,7 +12,13 @@
     <div class="dashboard-panel">
         <div class="dashboard-header">
             <div class="logo-section">
-                <div class="logo-icon">🏥</div>
+                    <div class="logo-icon" aria-hidden="true">
+                        <!-- simple professional mark -->
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="16" rx="3" fill="#1f4b66" />
+                            <path d="M8 10h8M12 7v10" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
                 <div class="logo-text">
                     <h1>MediScan AI</h1>
                     <p class="tagline">Intelligent Medical Analysis with Guardrails</p>
@@ -20,28 +26,28 @@
             </div>
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon">📊</div>
+                    <div class="stat-icon"><span class="stat-dot" aria-hidden="true"></span></div>
                     <div class="stat-content">
                         <div class="stat-value" id="total-reports">0</div>
                         <div class="stat-label">Reports</div>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">💬</div>
+                    <div class="stat-icon"><span class="stat-dot" aria-hidden="true"></span></div>
                     <div class="stat-content">
                         <div class="stat-value" id="total-chats">0</div>
                         <div class="stat-label">Chats</div>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">🎯</div>
+                    <div class="stat-icon"><span class="stat-dot" aria-hidden="true"></span></div>
                     <div class="stat-content">
                         <div class="stat-value">MedGemma</div>
                         <div class="stat-label">AI Model</div>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">🔒</div>
+                    <div class="stat-icon"><span class="stat-dot" aria-hidden="true"></span></div>
                     <div class="stat-content">
                         <div class="stat-value">Protected</div>
                         <div class="stat-label">Guardrails Active</div>
@@ -73,30 +79,23 @@
             <!-- Welcome Screen -->
             <div class="welcome-screen" id="welcomeScreen">
                 <div class="welcome-content">
-                    <div class="welcome-icon">🏥</div>
-                    <h2>Welcome to MediScan AI</h2>
-                    <p>Your intelligent medical document analysis assistant</p>
+                    <div class="welcome-icon" aria-hidden="true">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="4" width="18" height="16" rx="3" fill="#1f4b66" />
+                            <path d="M8 10h8M12 7v10" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h2>Welcome to MediScan</h2>
+                    <p class="muted">Upload a medical document to get a concise, safe summary or a clinician-facing report.</p>
                     
                     <div class="feature-cards">
                         <div class="feature-card">
-                            <div class="feature-icon">📄</div>
-                            <h3>Document Analysis</h3>
-                            <p>Upload and analyze medical reports, lab results, and prescriptions</p>
+                            <h3>Document & Image Analysis</h3>
+                            <p class="muted">Upload reports or images for concise patient summaries or clinician reports.</p>
                         </div>
                         <div class="feature-card">
-                            <div class="feature-icon">🖼️</div>
-                            <h3>Image Analysis</h3>
-                            <p>AI-powered analysis of medical images and scans</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">💬</div>
                             <h3>Interactive Chat</h3>
-                            <p>Ask questions about your medical documents</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">🔒</div>
-                            <h3>Safe & Secure</h3>
-                            <p>Protected with medical guardrails - no diagnosis or prescriptions</p>
+                            <p class="muted">Ask focused questions and get safe, explainable answers.</p>
                         </div>
                     </div>
 

@@ -62,6 +62,177 @@
     --cosmic-gradient: linear-gradient(135deg, #4158d0 0%, #c850c0 46%, #ffcc70 100%);
 }
 
+/* ===== Professional, muted override (keeps original fancy styles but applies a cleaner theme) ===== */
+:root {
+    --primary: #1f4b66; /* muted navy */
+    --primary-dark: #16384b;
+    --secondary: #546e7a; /* slate */
+    --accent: #0b6e4f; /* subdued teal */
+    --success: #1a8f6f;
+    --warning: #b06d1f;
+    --error: #b00020;
+
+    --bg-primary: #f6f7fb; /* light neutral */
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f3f4f6;
+    --bg-muted: #f2f4f7;
+
+    --text-primary: #0f1724;
+    --text-secondary: #475569;
+    --text-muted: #6b7280;
+
+    --border-color: #e6eef6;
+    --border-light: #eef3f8;
+
+    --shadow-sm: 0 2px 6px rgba(16,24,40,0.06);
+    --shadow-md: 0 8px 20px rgba(16,24,40,0.08);
+
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+}
+
+/* Tone down page background and remove animated particles */
+body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+body::before {
+    display: none !important;
+}
+
+/* Dashboard panel simplified */
+.dashboard-panel {
+    background: var(--bg-secondary);
+    backdrop-filter: none;
+    border-bottom: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+    padding: 0.5rem 1rem;
+}
+
+.logo-text h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    -webkit-text-fill-color: var(--text-primary);
+}
+
+.stat-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--primary);
+    opacity: 0.9;
+}
+
+.muted {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* Sidebar and session list */
+.chat-container {
+    margin: 1rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    background: var(--bg-secondary);
+}
+
+.chat-sidebar {
+    background: transparent;
+    border-right: 1px solid var(--border-light);
+}
+
+.btn-new-session {
+    background: var(--primary);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    box-shadow: none;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+}
+
+.btn-new-session:hover {
+    transform: none;
+    opacity: 0.95;
+}
+
+.session-item {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+    box-shadow: none;
+    transform: none;
+}
+
+.session-item.active {
+    background: #eaf3ff;
+    color: var(--text-primary);
+    border-color: rgba(31,75,102,0.08);
+}
+
+/* Message area: subtle bubbles */
+.message.user {
+    align-self: flex-end;
+}
+
+.message {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.6rem;
+    margin: 0.4rem 0;
+    border-radius: 8px;
+    background: transparent;
+}
+
+.message .message-content {
+    background: #fff;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+    max-width: 72%;
+    line-height: 1.45;
+}
+
+.message.assistant .message-content {
+    background: #f8fbff;
+    color: var(--text-primary);
+}
+
+.message-avatar {
+    font-size: 1.05rem;
+    opacity: 0.9;
+}
+
+.typing-indicator .typing-dot {
+    background: var(--text-muted);
+}
+
+/* Inputs */
+.chat-input-area {
+    border-top: 1px solid var(--border-light);
+    padding: 0.6rem;
+    background: var(--bg-secondary);
+}
+
+/* Reduce overly large fonts and decorative effects */
+h1, h2, h3, h4 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Keep the rest of original rules but let overrides take precedence */
+
 * {
     margin: 0;
     padding: 0;
