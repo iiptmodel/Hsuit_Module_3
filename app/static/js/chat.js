@@ -190,6 +190,10 @@ async function loadSession(sessionId) {
         if (session.messages && session.messages.length > 0) {
             session.messages.forEach(msg => displayMessage(msg));
         }
+        // Render reports (uploaded files) for the session
+        if (typeof renderReports === 'function') {
+            renderReports(session.reports || []);
+        }
         
         // Update session list
         loadSessions();
@@ -333,6 +337,24 @@ function displayMessage(message) {
 
     messagesContainer.appendChild(div);
     scrollToBottom();
+
+    // If content was replaced due to being binary-like, offer a quick action to view session reports
+    if (looksLikeBinary(message.content) && message.session_id) {
+        const actionBtn = document.createElement('button');
+        actionBtn.className = 'btn-primary';
+        actionBtn.style.marginTop = '0.5rem';
+        actionBtn.textContent = 'View Files';
+        actionBtn.addEventListener('click', () => {
+            // reveal reports panel and scroll to it
+            const reportsEl = document.getElementById('reportsList');
+            if (reportsEl) {
+                reportsEl.style.display = 'block';
+                reportsEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+        const contentEl = div.querySelector('.message-content');
+        if (contentEl) contentEl.appendChild(actionBtn);
+    }
 
     // For assistant messages without audio, poll for audio updates
     if (message.role === 'assistant' && message.id && !message.audio_file_path) {
@@ -657,4 +679,79 @@ function scrollToBottom() {
 function showError(message) {
     // Simple error display - can be enhanced with a modal or toast
     alert('Error: ' + message);
+}
+
+function renderReports(reports) {
+    const reportsEl = document.getElementById('reportsList');
+    if (!reportsEl) return;
+    if (!reports || reports.length === 0) {
+        reportsEl.style.display = 'none';
+        reportsEl.innerHTML = '';
+        return;
+    }
+
+    reportsEl.style.display = 'block';
+    reportsEl.innerHTML = '<h4 style="margin:0 0 0.5rem 0;">Uploaded Files</h4>';
+    const list = document.createElement('div');
+    list.style.display = 'flex';
+    list.style.flexDirection = 'column';
+    list.style.gap = '0.5rem';
+
+    reports.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'file-preview';
+        item.style.display = 'flex';
+        item.style.alignItems = 'center';
+        item.style.justifyContent = 'space-between';
+
+        const left = document.createElement('div');
+        left.style.display = 'flex';
+        left.style.alignItems = 'center';
+        left.style.gap = '0.75rem';
+
+        const icon = document.createElement('div');
+        icon.className = 'file-icon';
+        icon.textContent = r.report_type && r.report_type === 'image' ? '🖼️' : '📄';
+
+        const info = document.createElement('div');
+        info.style.display = 'flex';
+        info.style.flexDirection = 'column';
+        const name = document.createElement('div');
+        const fname = r.original_file_path ? r.original_file_path.split(/\\/).pop().split('/').pop() : 'File';
+        name.textContent = fname;
+        name.style.fontWeight = '600';
+
+        const meta = document.createElement('div');
+        meta.style.fontSize = '0.85rem';
+        meta.style.opacity = '0.8';
+        meta.textContent = `${r.status || ''} • ${new Date(r.created_at).toLocaleString()}`;
+
+        info.appendChild(name);
+        info.appendChild(meta);
+
+        left.appendChild(icon);
+        left.appendChild(info);
+
+        const right = document.createElement('div');
+        right.style.display = 'flex';
+        right.style.gap = '0.5rem';
+
+        if (r.original_file_path) {
+            const link = document.createElement('a');
+            // Ensure leading slash
+            const url = r.original_file_path.startsWith('/') ? r.original_file_path : '/' + r.original_file_path;
+            link.href = encodeURI(url);
+            link.target = '_blank';
+            link.textContent = 'Download';
+            link.className = 'btn-icon';
+            link.style.padding = '0.4rem 0.6rem';
+            right.appendChild(link);
+        }
+
+        item.appendChild(left);
+        item.appendChild(right);
+        list.appendChild(item);
+    });
+
+    reportsEl.appendChild(list);
 }
