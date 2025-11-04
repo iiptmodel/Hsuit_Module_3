@@ -37,3 +37,18 @@ def sanitize_text(text: str) -> str:
     result = text.strip()
     logger.debug(f"sanitize_text: output {len(result)} chars (reduced by {original_len - len(result)})")
     return result
+
+
+def estimate_token_count(text: str) -> int:
+    """Estimate token count for text using a simple approximation.
+
+    This uses a rough approximation of 4 characters per token, which works well
+    for English text and is commonly used for context window management.
+    """
+    if not text:
+        return 0
+
+    # Clean the text first to get a more accurate count
+    cleaned = sanitize_text(text)
+    # Approximate 4 characters per token (rough estimate for English)
+    return len(cleaned) // 4

@@ -1,6 +1,7 @@
 import logging
 import os
 import ollama
+from typing import List, Dict
 from app.services import parser_service
 
 logger = logging.getLogger(__name__)
@@ -16,7 +17,7 @@ def _guardrail_validator(text: str) -> str:
             logger.warning(f"Guardrail triggered for pattern: {p}")
             return (
                 "I can help explain findings and what they might indicate, but I cannot provide a definitive diagnosis or prescribe medications. "
-                "Please consult a healthcare professional for diagnosis and treatment." 
+                "Please consult a healthcare professional for diagnosis and treatment."
             )
     return text
 
@@ -27,7 +28,7 @@ def generate_summary_from_text(text: str, language: str = 'English') -> str:
     try:
         system_prompt = (
             "You are a concise, professional medical assistant. Summarize the following extracted text from a medical report in "
-            f"{language}. Do not diagnose or prescribe. Keep it clear and patient-friendly. Aim for 2-4 short sentences suitable for a patient." 
+            f"{language}. Do not diagnose or prescribe. Keep it clear and patient-friendly. Aim for 2-4 short sentences suitable for a patient."
         )
 
         messages = [
@@ -82,13 +83,13 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
                 "num_predict": 300
             }
         )
-        
+
         analysis = resp.get('message', {}).get('content', '')
         logger.info(f"MedGemma VLM analysis completed: {analysis[:100]}...")
-        
+
         # Apply guardrails to the response
         return _guardrail_validator(analysis)
-        
+
     except Exception as e:
         logger.error(f"MedGemma VLM analysis failed: {e}", exc_info=True)
         # Fallback to text extraction if VLM fails
@@ -185,3 +186,75 @@ def generate_detailed_report_from_text(text: str, language: str = 'English') -> 
         logger.error(f"Detailed report generation failed: {e}", exc_info=True)
         # Fallback to general summary
         return generate_summary_from_text(text, language)
+
+
+def summarize_chat_context(conversation_history: List[Dict[str, str]], language: str = 'English') -> str:
+    """
+    Summarize chat conversation history for context management.
+
+    Takes a list of conversation messages and creates a concise summary
+    that captures the key medical discussion points, questions asked,
+    and important findings mentioned. This summary can be used as context
+    when the full conversation exceeds token limits.
+    """
+    logger.info(f"Summarizing chat context ({len(conversation_history)} messages)")
+
+    if not conversation_history:
+        return "No previous conversation."
+
+    try:
+        # Convert conversation history to a readable format
+        conversation_text = ""
+        for msg in conversation_history:
+            role = msg.get('role', 'unknown')
+            content = msg.get('content', '')
+            conversation_text += f"{role.upper()}: {content}\n\n"
+
+        system_prompt = (
+            "You are a medical conversation summarizer. Given a chat conversation between a user and a medical assistant, "
+            f"create a concise summary in {language} that captures: "
+            "- Key medical topics discussed "
+            "- Important symptoms or findings mentioned "
+            "- Questions asked by the user "
+            "- Key advice or information provided "
+            "Keep the summary brief (2-3 sentences) and focused on medical context. "
+            "Do not include any new medical advice or diagnoses."
+        )
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Please summarize this medical conversation:\n\n{conversation_text}"}
+        ]
+
+        from app.services.ollama_client import chat_with_retries
+        resp = chat_with_retries(
+            model='amsaravi/medgemma-4b-it:q8',
+            messages=messages,
+            options={"temperature": 0.0, "num_predict": 150}  # Keep summary short
+        )
+
+        summary = resp.get('message', {}).get('content', '').strip()
+
+        # Apply guardrails to ensure no inappropriate content
+        validated_summary = _guardrail_validator(summary)
+
+        logger.info(f"Chat context summarized: {validated_summary[:100]}...")
+        return validated_summary
+
+    except Exception as e:
+        logger.error(f"Chat context summarization failed: {e}", exc_info=True)
+        # Fallback: create a simple summary
+        topics = []
+        for msg in conversation_history[-5:]:  # Look at recent messages
+            content = msg.get('content', '').lower()
+            if 'pain' in content or 'symptom' in content:
+                topics.append('symptoms discussed')
+            elif 'test' in content or 'result' in content:
+                topics.append('test results')
+            elif 'medication' in content or 'treatment' in content:
+                topics.append('treatment options')
+
+        if topics:
+            return f"Previous conversation covered: {', '.join(set(topics))}."
+        else:
+            return "Previous medical conversation summary not available."

@@ -30,6 +30,7 @@ AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 async def upload_text_report(
     text_content: str = Form(...),
     language: str = Form(...),
+    chat_session_id: int = Form(None),
     db: Session = Depends(get_db),
 ):
     """
@@ -42,6 +43,7 @@ async def upload_text_report(
         report_type=models.ReportType.text,
         raw_text=text_content,
         status=models.ReportStatus.processing,
+        chat_session_id=chat_session_id
     )
     db.add(new_report)
     db.commit()
@@ -103,6 +105,7 @@ async def upload_text_report(
 async def upload_files_report(
     language: str = Form(...),
     files: List[UploadFile] = File(...),
+    chat_session_id: int = Form(None),
     db: Session = Depends(get_db),
 ):
     """
@@ -141,6 +144,7 @@ async def upload_files_report(
             report_type=models.ReportType.image if is_image else models.ReportType.text,
             original_file_path=str(f"media/reports/{file_path_str}"),
             status=models.ReportStatus.processing,
+            chat_session_id=chat_session_id
         )
         db.add(new_report)
         db.commit()

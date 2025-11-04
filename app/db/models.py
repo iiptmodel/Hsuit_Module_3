@@ -27,6 +27,10 @@ class Report(Base):
     summary_text = Column(Text, nullable=True)
     audio_file_path = Column(String, nullable=True)
 
+    # New: associate report with a chat session (nullable for backward compatibility)
+    chat_session_id = Column(Integer, ForeignKey("chat_sessions.id"), nullable=True)
+    chat_session = relationship("ChatSession", back_populates="reports")
+
 
 class ChatSession(Base):
     __tablename__ = "chat_sessions"
@@ -36,6 +40,8 @@ class ChatSession(Base):
     
     # Relationship to messages
     messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
+    # Relationship to reports
+    reports = relationship("Report", back_populates="chat_session", cascade="all, delete-orphan")
 
 
 class ChatMessage(Base):

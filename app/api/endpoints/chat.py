@@ -89,17 +89,18 @@ def get_chat_sessions(db: Session = Depends(get_db)):
 
 @router.get("/sessions/{session_id}", response_model=schemas.ChatSession)
 def get_chat_session(session_id: int, db: Session = Depends(get_db)):
-    """Gets a specific chat session with all messages."""
+    """Gets a specific chat session with all messages and all associated reports."""
     session = db.query(models.ChatSession).filter(
         models.ChatSession.id == session_id
     ).first()
-    
     if not session:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Chat session not found"
         )
-    
+    # Eagerly load messages and reports for this session
+    session.messages  # already loaded by relationship
+    session.reports   # already loaded by relationship
     return session
 
 
@@ -139,20 +140,26 @@ async def send_chat_message(
             file_size = len(content)
             if file_size > 10 * 1024 * 1024:  # 10MB
                 raise HTTPException(status_code=413, detail="File too large. Maximum size is 10MB.")
-            
             # Save the uploaded file
             file_path_str = f"{uuid4().hex}_{file.filename.replace(' ', '_')}"
             file_save_path = CHAT_UPLOADS_DIR / file_path_str
-            
             with file_save_path.open("wb") as buffer:
                 buffer.write(content)  # Use the read content
-            
             logger.info(f"File uploaded: {file.filename} ({file_size} bytes)")
-            
             # Determine file type
             file_extension = file.filename.lower().split('.')[-1] if '.' in file.filename else ''
             is_image = file_extension in ['png', 'jpg', 'jpeg', 'bmp', 'tiff', 'gif']
-            
+            # Create a Report and associate with this chat session
+            new_report = models.Report(
+                language="English",  # Could be parameterized
+                report_type=models.ReportType.image if is_image else models.ReportType.text,
+                original_file_path=str(file_save_path),
+                status=models.ReportStatus.completed,  # Mark as completed for now
+                chat_session_id=session_id
+            )
+            db.add(new_report)
+            db.commit()
+            db.refresh(new_report)
             if is_image:
                 # For images: Pass directly to MedGemma VLM (no text extraction needed)
                 logger.info("Image will be analyzed directly by MedGemma VLM")
@@ -162,15 +169,16 @@ async def send_chat_message(
                 # For documents: Extract text
                 logger.info("Extracting text from uploaded document")
                 extracted_text = parser_service.extract_data_from_file(str(file_save_path))
+                new_report.raw_text = extracted_text
+                db.commit()
                 file_context = f"\n\n[Document Content]\n{extracted_text[:2000]}"  # Limit to 2000 chars
                 is_image = False
-            
         except Exception as e:
             logger.error(f"Error processing file: {e}", exc_info=True)
             file_context = f"\n\n[Error: Could not process file {file.filename}]"
     
     # Combine user message with file context
-    full_message = content + file_context
+    full_message = str(content) + str(file_context)
     
     # Save user message (with file indicator if applicable)
     display_content = content

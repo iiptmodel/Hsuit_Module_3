@@ -20,6 +20,7 @@ class Report(BaseModel):
     original_file_path: str | None = None
     summary_text: str | None = None
     audio_file_path: str | None = None
+    chat_session_id: int | None = None
 
     class Config:
         from_attributes = True
@@ -50,6 +51,7 @@ class ChatSession(BaseModel):
     created_at: datetime
     title: str
     messages: List[ChatMessage] = []
+    reports: List[Report] = []
 
     class Config:
         from_attributes = True
