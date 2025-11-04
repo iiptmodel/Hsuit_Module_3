@@ -14,8 +14,7 @@ import logging
 import re
 
 from app.services.ollama_client import chat_with_retries
-from app.utils.text_utils import estimate_token_count
-from app.services.summarizer_service import summarize_chat_context
+
 
 logger = logging.getLogger(__name__)
 
@@ -132,54 +131,10 @@ def apply_response_guardrails(response: str) -> str:
     return response
 
 
-def _build_context_with_token_limit(conversation_history: List[Dict[str, str]], max_tokens: int = 2048) -> List[Dict[str, str]]:
-    """
-    Build conversation context within token limits.
-
-    If the full conversation exceeds max_tokens, summarize older messages
-    and include the summary as a system message.
-    """
-    if not conversation_history:
-        return []
-
-    # Calculate tokens for the entire conversation
-    total_tokens = sum(estimate_token_count(msg.get("content", "")) for msg in conversation_history)
-
-    if total_tokens <= max_tokens:
-        # Conversation fits within limits, return as-is
-        return conversation_history
-
-    logger.info(f"Conversation exceeds token limit ({total_tokens} > {max_tokens}), summarizing older messages")
-
-    # Reserve tokens for recent messages (keep at least last 3 messages)
-    recent_messages = conversation_history[-3:]
-    recent_tokens = sum(estimate_token_count(msg.get("content", "")) for msg in recent_messages)
-
-    # Available tokens for older messages and summary
-    available_tokens = max_tokens - recent_tokens - 50  # Reserve 50 for summary
-
-    if available_tokens > 50:  # Only summarize if we have meaningful space
-        # Get older messages to summarize
-        older_messages = conversation_history[:-3]
-
-        # Summarize older messages
-        summary = summarize_chat_context(older_messages)
-
-        # Create summary message
-        summary_message = {
-            "role": "system",
-            "content": f"Summary of previous conversation: {summary}"
-        }
-
-        # Return summary + recent messages
-        return [summary_message] + recent_messages
-    else:
-        # Not enough space for summary, just return recent messages
-        logger.warning("Not enough token space for summary, returning only recent messages")
-        return recent_messages
 
 
-def generate_chat_response(conversation_history: List[Dict[str, str]], user_message: str, image_path: str = None) -> str:
+
+def generate_chat_response(user_message: str, image_path: str = None) -> str:
     """Generate a chat response using Ollama (via chat_with_retries) and apply guardrails.
 
     conversation_history: list of {"role": "user|assistant", "content": str}
@@ -194,11 +149,7 @@ def generate_chat_response(conversation_history: List[Dict[str, str]], user_mess
         "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results."
     )
 
-    # Build context with token limits and summarization
-    context_messages = _build_context_with_token_limit(conversation_history, max_tokens=8192)
-
     messages: List[Dict[str, Any]] = [{"role": "system", "content": system_prompt}]
-    messages.extend(context_messages)
 
     if image_path:
         messages.append({"role": "user", "content": user_message, "images": [image_path]})

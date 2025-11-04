@@ -93,10 +93,6 @@ d:\Prushal/
 ├── 📄 download_models.py            # Model download script
 ├── 📄 .env                          # Environment configuration
 ├── 📄 README.md                     # This file
-├── 📄 QUICKSTART.md                 # Quick setup guide
-├── 📄 DOCUMENTATION.md              # Technical documentation
-├── 📄 API.md                        # API reference
-├── 📄 DEPLOYMENT.md                 # Production deployment
 └── 📄 .gitignore                    # Git ignore rules
 ```
 

@@ -197,19 +197,6 @@ async def send_chat_message(
     logger.info(f"User message saved in session {session_id}")
     
     try:
-        # Get conversation history
-        history = db.query(models.ChatMessage).filter(
-            models.ChatMessage.session_id == session_id
-        ).order_by(models.ChatMessage.created_at.asc()).all()
-        
-        # Convert to format expected by chat service (exclude current message)
-        conversation_history = [
-            {"role": msg.role, "content": msg.content}
-            for msg in history[:-1]
-        ]
-        
-        logger.debug(f"Conversation history length: {len(conversation_history)}")
-        
         # Generate AI response
         logger.info(f"Generating AI response for session {session_id} — audience={audience}")
 
@@ -230,7 +217,6 @@ async def send_chat_message(
                 ai_response_text = "I encountered an error generating the summary. Please try again."
         else:
             ai_response_text = chat_service.generate_chat_response(
-                conversation_history,
                 full_message,  # Use full message with file context
                 image_path=image_path_for_vlm  # Pass image directly to VLM
             )
