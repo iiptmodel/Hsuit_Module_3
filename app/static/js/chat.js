@@ -18,6 +18,7 @@ const uploadedFiles = document.getElementById('uploadedFiles');
 const clearChatBtn = document.getElementById('clearChatBtn');
 const sessionTitle = document.getElementById('sessionTitle');
 const audienceSelect = document.getElementById('audienceSelect');
+const themeToggleBtn = document.getElementById('themeToggleBtn');
 
 // Stats
 const totalReportsEl = document.getElementById('total-reports');
@@ -28,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSessions();
     loadStats();
     setupEventListeners();
+    initTheme();
 });
 
 function setupEventListeners() {
@@ -57,6 +59,36 @@ function setupEventListeners() {
     
     // Clear chat
     clearChatBtn.addEventListener('click', clearCurrentSession);
+
+    // Theme toggle
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => toggleTheme());
+    }
+}
+
+/* Theme handling: toggles data-theme attribute on <html> and persists choice */
+function initTheme() {
+    try {
+        const saved = localStorage.getItem('app-theme');
+        if (saved === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+        }
+    } catch (e) {
+        // ignore storage errors
+    }
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    if (current === 'dark') {
+        document.documentElement.removeAttribute('data-theme');
+        try { localStorage.setItem('app-theme', 'light'); } catch (e) {}
+    } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        try { localStorage.setItem('app-theme', 'dark'); } catch (e) {}
+    }
 }
 
 // Session Management
@@ -281,10 +313,19 @@ function displayMessage(message) {
 
     const audioHtml = message.audio_file_path ? `\n                <div class="message-audio"><audio controls src="/${message.audio_file_path}"></audio></div>` : '';
 
+    // If message content looks like a dumped binary (e.g., Python bytes literal or raw PDF stream),
+    // avoid rendering the raw blob in the UI and show a safe placeholder instead.
+    let contentHtml = '';
+    if (typeof message.content === 'string' && looksLikeBinary(message.content)) {
+        contentHtml = `<div class="muted">[Uploaded file content omitted]</div>`;
+    } else {
+        contentHtml = formatMessageContent(message.content || '');
+    }
+
     div.innerHTML = `
         <div class="message-avatar">${avatar}</div>
         <div class="message-content">
-            ${formatMessageContent(message.content)}
+            ${contentHtml}
             ${audioHtml}
             <div class="message-time">${time}</div>
         </div>
@@ -452,6 +493,21 @@ function handleAudioReady(payload) {
 function formatMessageContent(content) {
     // Convert line breaks to <br>
     return content.replace(/\n/g, '<br>');
+}
+
+function looksLikeBinary(text) {
+    if (!text || typeof text !== 'string') return false;
+    // Heuristics:
+    // - contains many '\x' hex escapes (Python bytes literal or hex dump)
+    // - contains PDF stream markers like '%PDF', 'endstream', '%%EOF', 'startxref'
+    const hexEscapes = (text.match(/\\x[0-9A-Fa-f]{2}/g) || []).length;
+    if (hexEscapes > 8) return true;
+    const lowered = text.toLowerCase();
+    if (lowered.includes('%pdf') || lowered.includes('endstream') || lowered.includes('%%eof') || lowered.includes('startxref')) return true;
+    // If the string has a high ratio of non-printable characters (rare in normal messages)
+    const nonPrintable = (text.match(/[^\x20-\x7E\r\n\t]/g) || []).length;
+    if (nonPrintable / Math.max(1, text.length) > 0.15) return true;
+    return false;
 }
 
 function showTypingIndicator() {

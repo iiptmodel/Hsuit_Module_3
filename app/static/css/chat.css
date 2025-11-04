@@ -43,6 +43,8 @@
     --shadow-lg: 0 12px 24px -4px rgba(99, 102, 241, 0.18), 0 6px 12px -3px rgba(99, 102, 241, 0.1);
     --shadow-xl: 0 24px 48px -8px rgba(99, 102, 241, 0.22), 0 12px 24px -6px rgba(99, 102, 241, 0.12);
     --shadow-glow: 0 0 20px rgba(124, 58, 237, 0.3);
+    /* Fallback RGB for primary color (used by overrides later) */
+    --primary-rgb: 124, 58, 237;
 
     /* Modern Border Radius */
     --radius-sm: 8px;
@@ -62,34 +64,46 @@
     --cosmic-gradient: linear-gradient(135deg, #4158d0 0%, #c850c0 46%, #ffcc70 100%);
 }
 
-/* ===== Professional, muted override (keeps original fancy styles but applies a cleaner theme) ===== */
+/* ===== Emerald theme override: use emerald green + complementary shades ===== */
 :root {
-    --primary: #1f4b66; /* muted navy */
-    --primary-dark: #16384b;
-    --secondary: #546e7a; /* slate */
-    --accent: #0b6e4f; /* subdued teal */
-    --success: #1a8f6f;
-    --warning: #b06d1f;
-    --error: #b00020;
+    /* Core emerald palette */
+    --primary: #059669; /* emerald-600 */
+    --primary-dark: #047857; /* emerald-700 */
+    --primary-light: #34d399; /* emerald-400 */
+    --secondary: #065f46; /* deep emerald */
+    --accent: #10b981; /* bright emerald */
+    --success: #10b981;
+    --warning: #d97706; /* amber accent for warnings */
+    --error: #dc2626;
 
-    --bg-primary: #f6f7fb; /* light neutral */
+    /* Backgrounds with a subtle green tint */
+    --bg-primary: #f0fdf4; /* very light emerald tint */
     --bg-secondary: #ffffff;
-    --bg-tertiary: #f3f4f6;
-    --bg-muted: #f2f4f7;
+    --bg-tertiary: #ecfdf5;
+    --bg-muted: #f7fff9;
 
-    --text-primary: #0f1724;
-    --text-secondary: #475569;
-    --text-muted: #6b7280;
+    /* Text colors tuned for contrast on green backgrounds */
+    --text-primary: #042713;
+    --text-secondary: #14532d;
+    --text-muted: #4b6b5a;
 
-    --border-color: #e6eef6;
-    --border-light: #eef3f8;
+    /* Borders and accents */
+    --border-color: #d1f7e6;
+    --border-light: #e6f9f2;
+    --border-focus: #047857;
+    --border-accent: #059669;
 
-    --shadow-sm: 0 2px 6px rgba(16,24,40,0.06);
-    --shadow-md: 0 8px 20px rgba(16,24,40,0.08);
+    /* Shadows tinted with emerald */
+    --shadow-sm: 0 2px 6px rgba(5,150,105,0.06);
+    --shadow-md: 0 8px 20px rgba(5,150,105,0.08);
 
     --radius-sm: 6px;
     --radius-md: 8px;
     --radius-lg: 10px;
+
+    /* Helpful gradients used across the UI */
+    --primary-gradient: linear-gradient(135deg, #34d399 0%, #059669 100%);
+    --cosmic-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
 }
 
 /* Tone down page background and remove animated particles */
@@ -1449,3 +1463,229 @@ body::before {
         min-height: 40px;
     }
 }
+
+/* ==========================
+   Elegant / Professional Overrides
+   - Tone down heavy gradients/particles
+   - Provide consistent, subtle button styles
+   - Style the audience select so it fits the input row
+   ========================== */
+
+/* Use the neutral page background set in :root; remove loud gradient/particles */
+body {
+    background: var(--bg-primary) !important;
+    background-image: none !important;
+}
+
+body::before {
+    /* disable decorative particles for a cleaner, professional look */
+    display: none !important;
+}
+
+/* Simplified button treatment: solid primary color, modest shadow */
+.btn-primary,
+.btn-new-session,
+.btn-send,
+.btn-attach {
+    background: var(--primary) !important;
+    color: #fff !important;
+    border: none !important;
+    box-shadow: 0 6px 18px rgba(31, 75, 102, 0.10) !important;
+    transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease !important;
+    text-transform: none !important;
+}
+
+.btn-primary:hover,
+.btn-new-session:hover,
+.btn-send:hover,
+.btn-attach:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 10px 30px rgba(31, 75, 102, 0.12) !important;
+}
+
+.btn-primary::before,
+.btn-new-session::before,
+.btn-send::before {
+    /* disable ripple overlay effect for a cleaner feel */
+    display: none !important;
+}
+
+/* Icon buttons: subtle outline and primary color on hover */
+.btn-icon {
+    border: 1px solid rgba(31, 75, 102, 0.08) !important;
+    color: var(--primary) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.btn-icon:hover {
+    background: var(--primary) !important;
+    color: #fff !important;
+    transform: none !important;
+    box-shadow: 0 8px 20px rgba(31, 75, 102, 0.08) !important;
+}
+
+/* Audience select: pill-style, matching message input */
+.audience-select {
+    display: flex;
+    align-items: center;
+    margin-right: 0.5rem;
+}
+
+.audience-select select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding: 0.45rem 0.9rem;
+    min-width: 120px;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    background: #fff;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.92rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(16,24,40,0.04);
+}
+
+.audience-select select:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 4px rgba(31, 75, 102, 0.06);
+}
+
+/* Small caret on the right so the select looks like a compact button */
+.audience-select {
+    position: relative;
+}
+
+.audience-select::after {
+    content: '';
+    position: absolute;
+    right: 10px;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-right: 2px solid rgba(0,0,0,0.35);
+    border-bottom: 2px solid rgba(0,0,0,0.35);
+    transform: rotate(45deg);
+    pointer-events: none;
+}
+
+/* Reduce some excessive shadows and gradients in core components */
+.chat-container,
+.welcome-screen,
+.feature-card,
+.session-item,
+.messages-container {
+    box-shadow: 0 8px 28px rgba(16,24,40,0.04) !important;
+    border: 1px solid var(--border-light) !important;
+}
+
+/* Make message bubbles slightly simpler */
+.message.user .message-content,
+.message.assistant .message-content {
+    box-shadow: 0 4px 12px rgba(16,24,40,0.04) !important;
+    border: 1px solid rgba(16,24,40,0.04) !important;
+}
+
+/* Accessibility: ensure high contrast for text inside controls */
+select, textarea, input, button {
+    color: var(--text-primary) !important;
+}
+
+/* End of overrides */
+
+/* ==========================
+   Emerald visual overrides (broad selectors)
+   These override earlier hard-coded purple usages to ensure emerald theme is applied
+   ========================== */
+
+/* Ensure gradients use the primary emerald gradient */
+.logo-text h1,
+.stat-value,
+.feature-card h3,
+.quick-start h3 {
+    background: var(--primary-gradient) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+/* Tint drop shadows and borders with emerald */
+.logo-icon,
+.stat-card:hover,
+.stat-card,
+.session-item:hover,
+.session-item.active,
+.feature-card:hover,
+.quick-start:hover,
+.btn-new-session,
+.btn-primary,
+.btn-send,
+.btn-attach {
+    box-shadow: 0 8px 28px rgba(var(--primary-rgb), 0.12) !important;
+    border-color: rgba(var(--primary-rgb), 0.08) !important;
+}
+
+.stat-card::before,
+.session-item::before {
+    background: var(--primary-gradient) !important;
+}
+
+.session-status {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--primary-dark) 100%) !important;
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.08) !important;
+}
+
+.message.user .message-avatar {
+    background: var(--primary-gradient) !important;
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.12) !important;
+}
+
+.message.assistant .message-avatar {
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent) 100%) !important;
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.08) !important;
+}
+
+/* Audience select caret color closer to emerald */
+.audience-select::after {
+    border-right-color: rgba(var(--primary-rgb), 0.6);
+    border-bottom-color: rgba(var(--primary-rgb), 0.6);
+}
+
+/* Subtle background patterns tuned to emerald */
+.messages-container::before,
+.welcome-screen::before {
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(var(--primary-rgb), 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(var(--primary-rgb), 0.02) 0%, transparent 50%);
+}
+
+/* Dark theme variant (toggle via document.documentElement.setAttribute('data-theme','dark')) */
+:root[data-theme="dark"] {
+    --primary: #059669;
+    --primary-dark: #064e3b;
+    --primary-light: #16a34a;
+    --accent: #34d399;
+    --bg-primary: #042713; /* deep green background */
+    --bg-secondary: #063026;
+    --bg-tertiary: #0b3b2e;
+    --bg-muted: #052916;
+    --text-primary: #e6fff5;
+    --text-secondary: #cfeee0;
+    --text-muted: #9ccfb8;
+    --border-color: rgba(255,255,255,0.04);
+    --border-light: rgba(255,255,255,0.02);
+    --primary-rgb: 5,150,105;
+    --primary-gradient: linear-gradient(135deg, #16a34a 0%, #059669 100%);
+}
+
+/* Small helper to ensure buttons use dark theme shadows */
+:root[data-theme="dark"] .btn-primary,
+:root[data-theme="dark"] .btn-new-session,
+:root[data-theme="dark"] .btn-send,
+:root[data-theme="dark"] .btn-attach {
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45) !important;
+}
+
+/* End Emerald overrides */
