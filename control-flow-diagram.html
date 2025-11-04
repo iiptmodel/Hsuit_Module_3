@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Report Analysis System - Control Flow Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1600px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            font-weight: 300;
+        }
+
+        .diagram-container {
+            width: 100%;
+            overflow-x: auto;
+            background: #fafbfc;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .mermaid {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .code-section {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .code-section h4 {
+            color: #94a3b8;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .code-section pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Medical Report Analysis System</h1>
+        <p class="subtitle">Control Flow Diagram - System Logic and Decision Points</p>
+        
+        <div class="diagram-container">
+            <div class="mermaid">
+flowchart TD
+    Start([🚀 Start]) --> Auth{User<br/>Authenticated?}
+    
+    Auth -->|No| Login[🔐 Login/Authentication]
+    Login --> Auth
+    
+    Auth -->|Yes| Dashboard[📊 Dashboard<br/>Show Statistics]
+    
+    Dashboard --> Action{User Action}
+    
+    Action -->|Upload File| FileType{File Type<br/>Supported?}
+    FileType -->|No| Error[❌ Error: Unsupported<br/>File Type]
+    Error --> Dashboard
+    
+    FileType -->|Yes| ParseDoc[🔍 Parse Document<br/>Docling Primary]
+    ParseDoc --> ParseSuccess{Parse<br/>Successful?}
+    
+    ParseSuccess -->|No| RetryParse[🔄 Retry with<br/>PDF Sanitization]
+    RetryParse --> ParseSuccess
+    
+    ParseSuccess -->|No| OCRFallback[📷 OCR Fallback<br/>for Scanned Docs]
+    OCRFallback --> ParseSuccess
+    
+    ParseSuccess -->|Yes| AIAnalysis[🤖 AI Analysis<br/>MedGemma Model]
+    
+    Action -->|Chat Message| ValidateQuery{Query Valid<br/>& Safe?}
+    ValidateQuery -->|No| Reject[🚫 Reject Query<br/>Safety Guardrail]
+    Reject --> Dashboard
+    
+    ValidateQuery -->|Yes| AIAnalysis
+    
+    AIAnalysis --> AnalysisResult{Analysis<br/>Successful?}
+    AnalysisResult -->|No| ErrorAnalysis[❌ Error: Analysis<br/>Failed]
+    ErrorAnalysis --> Dashboard
+    
+    AnalysisResult -->|Yes| GenerateSummary[📝 Generate<br/>Medical Summary]
+    
+    GenerateSummary --> StoreResults[💾 Store Results<br/>in Database]
+    
+    StoreResults --> OutputOptions{Output<br/>Options}
+    
+    OutputOptions -->|Text Response| DisplayResponse[💬 Display<br/>Response]
+    DisplayResponse --> Dashboard
+    
+    OutputOptions -->|Voice Output| TTSProcess[🔊 Text-to-Speech<br/>Kokoro Engine]
+    TTSProcess --> GenerateAudio[🎵 Generate<br/>Audio File]
+    GenerateAudio --> DownloadAudio[📥 Download<br/>Audio]
+    DownloadAudio --> Dashboard
+    
+    OutputOptions -->|Report| GenerateReport[📋 Generate<br/>Detailed Report]
+    GenerateReport --> DownloadReport[📄 Download<br/>Report]
+    DownloadReport --> Dashboard
+    
+    Dashboard --> SessionAction{Session<br/>Action}
+    SessionAction -->|New Session| CreateSession[➕ Create New<br/>Session]
+    CreateSession --> Dashboard
+    
+    SessionAction -->|Switch Session| SwitchSession[🔄 Switch<br/>Session]
+    SwitchSession --> Dashboard
+    
+    SessionAction -->|Delete Session| DeleteSession[🗑️ Delete<br/>Session]
+    DeleteSession --> Dashboard
+    
+    SessionAction -->|End| End([🏁 End])
+    
+    %% Styling
+    classDef startend fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef process fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef decision fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef error fill:#ffebee,stroke:#c62828,stroke-width:2px
+    
+    class Start,End startend
+    class Login,Dashboard,ParseDoc,RetryParse,OCRFallback,AIAnalysis,GenerateSummary,StoreResults,DisplayResponse,TTSProcess,GenerateAudio,DownloadAudio,GenerateReport,DownloadReport,CreateSession,SwitchSession,DeleteSession process
+    class Auth,FileType,ParseSuccess,ValidateQuery,AnalysisResult,OutputOptions,SessionAction decision
+    class Error,Reject,ErrorAnalysis error
+            </div>
+        </div>
+        
+        <div class="code-section">
+            <h4>📋 Mermaid Code - Copy & Paste</h4>
+            <pre><code>flowchart TD
+    Start([🚀 Start]) --&gt; Auth{User&lt;br/&gt;Authenticated?}
+    
+    Auth --&gt;|No| Login[🔐 Login/Authentication]
+    Login --&gt; Auth
+    
+    Auth --&gt;|Yes| Dashboard[📊 Dashboard&lt;br/&gt;Show Statistics]
+    
+    Dashboard --&gt; Action{User Action}
+    
+    Action --&gt;|Upload File| FileType{File Type&lt;br/&gt;Supported?}
+    FileType --&gt;|No| Error[❌ Error: Unsupported&lt;br/&gt;File Type]
+    Error --&gt; Dashboard
+    
+    FileType --&gt;|Yes| ParseDoc[🔍 Parse Document&lt;br/&gt;Docling Primary]
+    ParseDoc --&gt; ParseSuccess{Parse&lt;br/&gt;Successful?}
+    
+    ParseSuccess --&gt;|No| RetryParse[🔄 Retry with&lt;br/&gt;PDF Sanitization]
+    RetryParse --&gt; ParseSuccess
+    
+    ParseSuccess --&gt;|No| OCRFallback[📷 OCR Fallback&lt;br/&gt;for Scanned Docs]
+    OCRFallback --&gt; ParseSuccess
+    
+    ParseSuccess --&gt;|Yes| AIAnalysis[🤖 AI Analysis&lt;br/&gt;MedGemma Model]
+    
+    Action --&gt;|Chat Message| ValidateQuery{Query Valid&lt;br/&gt;&amp; Safe?}
+    ValidateQuery --&gt;|No| Reject[🚫 Reject Query&lt;br/&gt;Safety Guardrail]
+    Reject --&gt; Dashboard
+    
+    ValidateQuery --&gt;|Yes| AIAnalysis
+    
+    AIAnalysis --&gt; AnalysisResult{Analysis&lt;br/&gt;Successful?}
+    AnalysisResult --&gt;|No| ErrorAnalysis[❌ Error: Analysis&lt;br/&gt;Failed]
+    ErrorAnalysis --&gt; Dashboard
+    
+    AnalysisResult --&gt;|Yes| GenerateSummary[📝 Generate&lt;br/&gt;Medical Summary]
+    
+    GenerateSummary --&gt; StoreResults[💾 Store Results&lt;br/&gt;in Database]
+    
+    StoreResults --&gt; OutputOptions{Output&lt;br/&gt;Options}
+    
+    OutputOptions --&gt;|Text Response| DisplayResponse[💬 Display&lt;br/&gt;Response]
+    DisplayResponse --&gt; Dashboard
+    
+    OutputOptions --&gt;|Voice Output| TTSProcess[🔊 Text-to-Speech&lt;br/&gt;Kokoro Engine]
+    TTSProcess --&gt; GenerateAudio[🎵 Generate&lt;br/&gt;Audio File]
+    GenerateAudio --&gt; DownloadAudio[📥 Download&lt;br/&gt;Audio]
+    DownloadAudio --&gt; Dashboard
+    
+    OutputOptions --&gt;|Report| GenerateReport[📋 Generate&lt;br/&gt;Detailed Report]
+    GenerateReport --&gt; DownloadReport[📄 Download&lt;br/&gt;Report]
+    DownloadReport --&gt; Dashboard
+    
+    Dashboard --&gt; SessionAction{Session&lt;br/&gt;Action}
+    SessionAction --&gt;|New Session| CreateSession[➕ Create New&lt;br/&gt;Session]
+    CreateSession --&gt; Dashboard
+    
+    SessionAction --&gt;|Switch Session| SwitchSession[🔄 Switch&lt;br/&gt;Session]
+    SwitchSession --&gt; Dashboard
+    
+    SessionAction --&gt;|Delete Session| DeleteSession[🗑️ Delete&lt;br/&gt;Session]
+    DeleteSession --&gt; Dashboard
+    
+    SessionAction --&gt;|End| End([🏁 End])
+    
+    %% Styling
+    classDef startend fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef process fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef decision fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef error fill:#ffebee,stroke:#c62828,stroke-width:2px
+    
+    class Start,End startend
+    class Login,Dashboard,ParseDoc,RetryParse,OCRFallback,AIAnalysis,GenerateSummary,StoreResults,DisplayResponse,TTSProcess,GenerateAudio,DownloadAudio,GenerateReport,DownloadReport,CreateSession,SwitchSession,DeleteSession process
+    class Auth,FileType,ParseSuccess,ValidateQuery,AnalysisResult,OutputOptions,SessionAction decision
+    class Error,Reject,ErrorAnalysis error</code></pre>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html>

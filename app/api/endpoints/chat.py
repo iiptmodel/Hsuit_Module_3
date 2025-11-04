@@ -109,6 +109,7 @@ async def send_chat_message(
     background_tasks: BackgroundTasks,
     content: str = Form(...),
     file: Optional[UploadFile] = File(None),
+    audience: str = Form('patient'),
     db: Session = Depends(get_db)
 ):
     """Sends a message in a chat session with optional file attachment and gets AI response."""
@@ -127,6 +128,8 @@ async def send_chat_message(
     # Process file if uploaded
     file_context = ""
     image_path_for_vlm = None
+    extracted_text = None
+    is_image = False
     
     if file and file.filename:
         try:
@@ -153,6 +156,7 @@ async def send_chat_message(
                 logger.info("Extracting text from uploaded document")
                 extracted_text = parser_service.extract_data_from_file(str(file_save_path))
                 file_context = f"\n\n[Document Content]\n{extracted_text[:2000]}"  # Limit to 2000 chars
+                is_image = False
             
         except Exception as e:
             logger.error(f"Error processing file: {e}", exc_info=True)
@@ -190,42 +194,107 @@ async def send_chat_message(
         ]
         
         # Generate AI response
-        logger.info(f"Generating AI response for session {session_id}")
-        ai_response_text = chat_service.generate_chat_response(
-            conversation_history,
-            full_message,  # Use full message with file context
-            image_path=image_path_for_vlm  # Pass image directly to VLM
-        )
+        logger.info(f"Generating AI response for session {session_id} — audience={audience}")
+
+        # If a document was uploaded and audience explicitly requests doctor view, produce detailed report
+        if extracted_text and audience.lower() == 'doctor':
+            logger.info("Audience=doctor => generating structured detailed report.")
+            try:
+                ai_response_text = summarizer_service.generate_detailed_report_from_text(extracted_text, language='English')
+            except Exception as e:
+                logger.error(f"Detailed report generation failed: {e}", exc_info=True)
+                ai_response_text = "I encountered an error generating the detailed report. Please try again."
+        elif extracted_text and audience.lower() == 'patient':
+            logger.info("Audience=patient => generating concise patient summary.")
+            try:
+                ai_response_text = summarizer_service.generate_patient_summary_from_text(extracted_text, language='English')
+            except Exception as e:
+                logger.error(f"Patient summary generation failed: {e}", exc_info=True)
+                ai_response_text = "I encountered an error generating the summary. Please try again."
+        else:
+            ai_response_text = chat_service.generate_chat_response(
+                conversation_history,
+                full_message,  # Use full message with file context
+                image_path=image_path_for_vlm  # Pass image directly to VLM
+            )
 
         # Clean the response text by removing asterisks and extra whitespace
         ai_response_text = re.sub(r'\*+', '', ai_response_text).strip()
-        
-        # Save AI response
+
+        # Create an assistant message placeholder so clients can show a live message
         ai_message = models.ChatMessage(
             session_id=session_id,
             role="assistant",
-            content=ai_response_text
+            content=""
         )
         db.add(ai_message)
         db.commit()
         db.refresh(ai_message)
 
-        # Schedule background TTS generation so the API stays snappy
+        # Notify any websocket clients that an assistant message is being streamed
         try:
-            audio_filename = f"{uuid4().hex}_response.wav"
-            background_tasks.add_task(
-                _generate_and_attach_tts,
-                ai_message.id,
-                ai_response_text,
-                audio_filename,
-            )
-            logger.info(f"Scheduled background TTS for message {ai_message.id}")
+            from app.api.ws import manager as ws_manager
+            init_payload = {
+                "type": "assistant_init",
+                "message_id": ai_message.id,
+                "content": ""
+            }
+            await ws_manager.send_json_to_session(session_id, init_payload)
+        except Exception:
+            # Non-fatal: websocket may not be connected
+            pass
+
+        # Stream the response to connected websocket clients in reasonable chunks
+        try:
+            # Simple chunking: keep chunks small so UI can progressively render text
+            chunk_size = 200
+            chunks = [ai_response_text[i:i+chunk_size] for i in range(0, len(ai_response_text), chunk_size)] or [ai_response_text]
+
+            for idx, chunk in enumerate(chunks):
+                # Append chunk to DB message and commit
+                ai_message.content = (ai_message.content or "") + chunk
+                db.add(ai_message)
+                db.commit()
+                db.refresh(ai_message)
+
+                # Send delta to websocket clients
+                try:
+                    from app.api.ws import manager as ws_manager
+                    payload = {
+                        "type": "assistant_delta",
+                        "message_id": ai_message.id,
+                        "content": ai_message.content,
+                        "final": idx == len(chunks) - 1
+                    }
+                    await ws_manager.send_json_to_session(session_id, payload)
+                except Exception:
+                    # Ignore websocket errors; clients may poll instead
+                    pass
+
+            # Schedule background TTS generation now that final content is saved
+            try:
+                audio_filename = f"{uuid4().hex}_response.wav"
+                background_tasks.add_task(
+                    _generate_and_attach_tts,
+                    ai_message.id,
+                    ai_message.content,
+                    audio_filename,
+                )
+                logger.info(f"Scheduled background TTS for message {ai_message.id}")
+            except Exception as e:
+                logger.error(f"Failed to schedule background TTS: {e}", exc_info=True)
+
+            logger.info(f"AI response streamed and saved in session {session_id}")
+            return ai_message
+
         except Exception as e:
-            logger.error(f"Failed to schedule background TTS: {e}", exc_info=True)
-
-        logger.info(f"AI response saved in session {session_id}")
-
-        return ai_message
+            # If streaming fails for any reason, fall back to saving the full response
+            logger.exception("Streaming assistant response failed, falling back to full save: %s", e)
+            ai_message.content = ai_response_text
+            db.add(ai_message)
+            db.commit()
+            db.refresh(ai_message)
+            return ai_message
         
     except Exception as e:
         logger.error(f"Error generating chat response: {e}", exc_info=True)

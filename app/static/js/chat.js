@@ -17,6 +17,7 @@ const fileInput = document.getElementById('fileInput');
 const uploadedFiles = document.getElementById('uploadedFiles');
 const clearChatBtn = document.getElementById('clearChatBtn');
 const sessionTitle = document.getElementById('sessionTitle');
+const audienceSelect = document.getElementById('audienceSelect');
 
 // Stats
 const totalReportsEl = document.getElementById('total-reports');
@@ -214,6 +215,9 @@ async function sendMessage() {
         // Create FormData for multipart upload
         const formData = new FormData();
         formData.append('content', content || 'Please analyze this file');
+        // Append audience (patient/doctor)
+        const audience = audienceSelect ? audienceSelect.value : 'patient';
+        formData.append('audience', audience);
         
         if (uploadedFile) {
             formData.append('file', uploadedFile);
@@ -247,7 +251,9 @@ async function sendMessage() {
         removeTypingIndicator();
         
         // Display AI response
-        displayMessage(aiMessage);
+            if (!(sessionSocket && sessionSocket.readyState === WebSocket.OPEN)) {
+                displayMessage(aiMessage);
+            }
         
         // Update stats
         loadStats();
@@ -357,6 +363,10 @@ function setupWebsocket(sessionId) {
             const data = JSON.parse(ev.data);
             if (data.type === 'audio_ready') {
                 handleAudioReady(data);
+            } else if (data.type === 'assistant_init') {
+                handleAssistantInit(data);
+            } else if (data.type === 'assistant_delta') {
+                handleAssistantDelta(data);
             }
         } catch (e) {
             console.warn('Invalid websocket message', e);
@@ -399,6 +409,45 @@ function handleAudioReady(payload) {
         console.error('Failed to handle audio_ready websocket message', e);
     }
 }
+        function handleAssistantInit(payload) {
+            try {
+                const existing = messagesContainer.querySelector(`[data-message-id='${payload.message_id}']`);
+                if (existing) return; // already present
+
+                const msg = {
+                    id: payload.message_id,
+                    role: 'assistant',
+                    content: payload.content || '',
+                    created_at: new Date().toISOString()
+                };
+                displayMessage(msg);
+            } catch (e) {
+                console.error('Failed to handle assistant_init', e);
+            }
+        }
+
+        function handleAssistantDelta(payload) {
+            try {
+                const messageId = payload.message_id;
+                const content = payload.content || '';
+                const msgEl = messagesContainer.querySelector(`[data-message-id='${messageId}']`);
+                if (msgEl) {
+                    const contentEl = msgEl.querySelector('.message-content');
+                    if (contentEl) {
+                        // Replace the inner HTML with formatted content (preserve audio if present)
+                        const hasAudio = !!contentEl.querySelector('audio');
+                        const timeEl = contentEl.querySelector('.message-time');
+                        contentEl.innerHTML = formatMessageContent(content) + (hasAudio ? `\n                <div class="message-audio"><audio controls src=""></audio></div>` : '') + (timeEl ? timeEl.outerHTML : '');
+                        scrollToBottom();
+                    }
+                } else {
+                    // If not present, reload session to pick up the message
+                    loadSession(currentSessionId);
+                }
+            } catch (e) {
+                console.error('Failed to handle assistant_delta', e);
+            }
+        }
 
 function formatMessageContent(content) {
     // Convert line breaks to <br>

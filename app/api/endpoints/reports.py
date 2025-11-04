@@ -68,7 +68,7 @@ async def upload_text_report(
 
             # TTS
             events.publish(report_id, {"status": "in-progress", "stage": "tts_start"})
-            audio_file_name = f"report_{report_id}.mp3"
+            audio_file_name = f"report_{report_id}.wav"
             audio_save_path = AUDIO_DIR / audio_file_name
             tts_service.generate_speech(text=summary, language=language, output_file_path=str(audio_save_path))
             events.publish(report_id, {"status": "in-progress", "stage": "tts_done", "audio": str(audio_save_path)})
@@ -166,7 +166,7 @@ async def upload_files_report(
 
                     # TTS
                     events.publish(report_id, {"status": "in-progress", "stage": "tts_start"})
-                    audio_file_name = f"report_{report_id}.mp3"
+                    audio_file_name = f"report_{report_id}.wav"
                     audio_save_path = AUDIO_DIR / audio_file_name
                     tts_service.generate_speech(text=summary, language=language, output_file_path=str(audio_save_path))
                     events.publish(report_id, {"status": "in-progress", "stage": "tts_done", "audio": str(audio_save_path)})

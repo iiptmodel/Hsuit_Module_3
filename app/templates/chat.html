@@ -144,6 +144,13 @@
                             <path d="M7 9L12 13L17 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                     </button>
+                    <div class="audience-select">
+                        <label for="audienceSelect" class="visually-hidden">Audience</label>
+                        <select id="audienceSelect" title="Send as:" aria-label="Audience">
+                            <option value="patient" selected>Patient</option>
+                            <option value="doctor">Doctor</option>
+                        </select>
+                    </div>
                     <div class="input-wrapper">
                         <textarea 
                             id="messageInput" 

@@ -6,42 +6,26 @@ Models will be saved in the 'models' directory within the project root.
 
 import os
 import sys
-import torch
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
 os.makedirs(MODELS_DIR, exist_ok=True)
 
-# If you are using a local Ollama server/model for MedGemma, set
-# USE_OLLAMA=1 in the environment to skip downloading large HF MedGemma artifacts.
-USE_OLLAMA = os.environ.get("USE_OLLAMA", "0") == "1"
-
-if os.environ.get("FORCE_PROJECT_MODELS") == "1":
-    os.environ.setdefault("HF_HOME", MODELS_DIR)
-    os.environ.setdefault("TRANSFORMERS_CACHE", os.path.join(MODELS_DIR, "transformers"))
-    os.environ.setdefault("HF_HUB_CACHE", os.path.join(MODELS_DIR, "hub"))
-    os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
-    print(f"Models will be saved to: {MODELS_DIR} (FORCE_PROJECT_MODELS=1)")
-else:
-    effective = os.environ.get("HF_HOME", os.path.join(os.path.expanduser("~"), ".cache", "huggingface"))
-    print(f"Models will be saved to: {effective} (system HF cache). To force project-local caching set FORCE_PROJECT_MODELS=1")
-
-print(f"Models will be saved to: {MODELS_DIR}")
+# This project is Ollama-first: MedGemma models are expected to be hosted by an
+# Ollama server and accessed via the `ollama` client from the services.
+# The previous Hugging Face transformer-based MedGemma download has been removed
+# to keep the repo and runtime focused on Ollama. This script now prepares
+# other required components (Docling, Kokoro) and provides a clear message.
+USE_OLLAMA = True
 
 def download_medgemma():
     import logging
     logger = logging.getLogger(__name__)
-    logger.info("Downloading MedGemma model...")
-    try:
-        from transformers import AutoModelForImageTextToText, AutoProcessor
-        model_name = "unsloth/medgemma-4b-it"
-        logger.info(f"Loading model: {model_name}")
-        model = AutoModelForImageTextToText.from_pretrained(model_name, dtype=torch.bfloat16, device_map="auto")
-        processor = AutoProcessor.from_pretrained(model_name, use_fast=True)
-        logger.info("MedGemma model downloaded successfully.")
-    except Exception as e:
-        logger.error(f"Error downloading MedGemma: {e}", exc_info=True)
-        raise
+    logger.info("MedGemma transformer download removed: using Ollama-only flow.")
+    # No-op: MedGemma is expected to be served by an Ollama server.
+    # If you want to run MedGemma locally without Ollama, reintroduce
+    # a transformer-based loader here (not recommended for Ollama-only setup).
+    return
 
 def download_kokoro():
     import logging
@@ -73,17 +57,16 @@ def download_docling():
 
 def check_and_download_models():
     """Check if models are downloaded, if not, download them."""
-    print("Checking and downloading models if needed...")
-    if USE_OLLAMA:
-        print("USE_OLLAMA=1 detected: skipping HF MedGemma download (using local Ollama model)")
-    else:
-        download_medgemma()
+    print("Preparing environment for Ollama-first deployment...")
+    print("MedGemma is expected to be available via a local or remote Ollama server.")
+    # Still ensure other auxiliary models/tools are initialized
     download_kokoro()
     download_docling()
-    print("All models checked/downloaded.")
+    print("Environment preparation completed.")
 
 if __name__ == "__main__":
     print("Starting model downloads...")
+    # MedGemma transformer download removed; ensure Ollama is used.
     download_medgemma()
     download_kokoro()
     download_docling()

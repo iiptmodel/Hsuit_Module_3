@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Report Analysis System - Statechart Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1600px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            font-weight: 300;
+        }
+
+        .diagram-container {
+            width: 100%;
+            overflow-x: auto;
+            background: #fafbfc;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .mermaid {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .code-section {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .code-section h4 {
+            color: #94a3b8;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .code-section pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Medical Report Analysis System</h1>
+        <p class="subtitle">Statechart Diagram - System States and Transitions</p>
+        
+        <div class="diagram-container">
+            <div class="mermaid">
+stateDiagram-v2
+    [*] --> LoggedOut : System Start
+    
+    LoggedOut --> Authenticating : Login Request
+    Authenticating --> LoggedIn : Authentication Success
+    Authenticating --> LoggedOut : Authentication Failure
+    
+    LoggedIn --> SessionIdle : Create/Open Session
+    LoggedIn --> LoggedOut : Logout
+    
+    SessionIdle --> FileUploading : File Upload
+    SessionIdle --> ChatReady : Chat Message
+    SessionIdle --> SessionIdle : Session Management
+    
+    FileUploading --> FileValidating : File Received
+    FileValidating --> DocumentParsing : File Valid
+    FileValidating --> ErrorState : File Invalid
+    
+    DocumentParsing --> ContentAnalyzing : Parse Success
+    DocumentParsing --> DocumentParsing : Parse Retry
+    DocumentParsing --> ErrorState : Parse Failed
+    
+    ContentAnalyzing --> SummaryGenerating : Analysis Success
+    ContentAnalyzing --> ErrorState : Analysis Failed
+    
+    SummaryGenerating --> ResultsStoring : Summary Generated
+    ResultsStoring --> OutputReady : Results Stored
+    
+    OutputReady --> TextResponding : Text Output
+    OutputReady --> VoiceGenerating : Voice Request
+    OutputReady --> ReportGenerating : Report Request
+    
+    TextResponding --> SessionIdle : Response Sent
+    VoiceGenerating --> AudioReady : Voice Generated
+    AudioReady --> SessionIdle : Audio Downloaded
+    
+    ReportGenerating --> ReportReady : Report Generated
+    ReportReady --> SessionIdle : Report Downloaded
+    
+    ChatReady --> QueryValidating : Message Received
+    QueryValidating --> ContentAnalyzing : Query Safe
+    QueryValidating --> ErrorState : Query Unsafe
+    
+    ErrorState --> SessionIdle : Error Handled
+    ErrorState --> LoggedOut : Critical Error
+    
+    SessionIdle --> [*] : Session End
+    
+    %% Composite States
+    state Authenticating as "🔐 Authenticating"
+    state LoggedIn as "✅ Logged In"
+    state SessionIdle as "📊 Session Idle"
+    state FileUploading as "📁 File Uploading"
+    state FileValidating as "✅ File Validating"
+    state DocumentParsing as "🔍 Document Parsing"
+    state ContentAnalyzing as "🧠 Content Analyzing"
+    state SummaryGenerating as "📝 Summary Generating"
+    state ResultsStoring as "💾 Results Storing"
+    state OutputReady as "📤 Output Ready"
+    state TextResponding as "💬 Text Responding"
+    state VoiceGenerating as "🔊 Voice Generating"
+    state AudioReady as "🎵 Audio Ready"
+    state ReportGenerating as "📋 Report Generating"
+    state ReportReady as "📄 Report Ready"
+    state ChatReady as "💬 Chat Ready"
+    state QueryValidating as "🛡️ Query Validating"
+    state ErrorState as "❌ Error State"
+    state LoggedOut as "🚪 Logged Out"
+            </div>
+        </div>
+        
+        <div class="code-section">
+            <h4>📋 Mermaid Code - Copy & Paste</h4>
+            <pre><code>stateDiagram-v2
+    [*] --&gt; LoggedOut : System Start
+    
+    LoggedOut --&gt; Authenticating : Login Request
+    Authenticating --&gt; LoggedIn : Authentication Success
+    Authenticating --&gt; LoggedOut : Authentication Failure
+    
+    LoggedIn --&gt; SessionIdle : Create/Open Session
+    LoggedIn --&gt; LoggedOut : Logout
+    
+    SessionIdle --&gt; FileUploading : File Upload
+    SessionIdle --&gt; ChatReady : Chat Message
+    SessionIdle --&gt; SessionIdle : Session Management
+    
+    FileUploading --&gt; FileValidating : File Received
+    FileValidating --&gt; DocumentParsing : File Valid
+    FileValidating --&gt; ErrorState : File Invalid
+    
+    DocumentParsing --&gt; ContentAnalyzing : Parse Success
+    DocumentParsing --&gt; DocumentParsing : Parse Retry
+    DocumentParsing --&gt; ErrorState : Parse Failed
+    
+    ContentAnalyzing --&gt; SummaryGenerating : Analysis Success
+    ContentAnalyzing --&gt; ErrorState : Analysis Failed
+    
+    SummaryGenerating --&gt; ResultsStoring : Summary Generated
+    ResultsStoring --&gt; OutputReady : Results Stored
+    
+    OutputReady --&gt; TextResponding : Text Output
+    OutputReady --&gt; VoiceGenerating : Voice Request
+    OutputReady --&gt; ReportGenerating : Report Request
+    
+    TextResponding --&gt; SessionIdle : Response Sent
+    VoiceGenerating --&gt; AudioReady : Voice Generated
+    AudioReady --&gt; SessionIdle : Audio Downloaded
+    
+    ReportGenerating --&gt; ReportReady : Report Generated
+    ReportReady --&gt; SessionIdle : Report Downloaded
+    
+    ChatReady --&gt; QueryValidating : Message Received
+    QueryValidating --&gt; ContentAnalyzing : Query Safe
+    QueryValidating --&gt; ErrorState : Query Unsafe
+    
+    ErrorState --&gt; SessionIdle : Error Handled
+    ErrorState --&gt; LoggedOut : Critical Error
+    
+    SessionIdle --&gt; [*] : Session End
+    
+    %% Composite States
+    state Authenticating as "🔐 Authenticating"
+    state LoggedIn as "✅ Logged In"
+    state SessionIdle as "📊 Session Idle"
+    state FileUploading as "📁 File Uploading"
+    state FileValidating as "✅ File Validating"
+    state DocumentParsing as "🔍 Document Parsing"
+    state ContentAnalyzing as "🧠 Content Analyzing"
+    state SummaryGenerating as "📝 Summary Generating"
+    state ResultsStoring as "💾 Results Storing"
+    state OutputReady as "📤 Output Ready"
+    state TextResponding as "💬 Text Responding"
+    state VoiceGenerating as "🔊 Voice Generating"
+    state AudioReady as "🎵 Audio Ready"
+    state ReportGenerating as "📋 Report Generating"
+    state ReportReady as "📄 Report Ready"
+    state ChatReady as "💬 Chat Ready"
+    state QueryValidating as "🛡️ Query Validating"
+    state ErrorState as "❌ Error State"
+    state LoggedOut as "🚪 Logged Out"</code></pre>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            state: {
+                useMaxWidth: true
+            }
+        });
+    </script>
+</body>
+</html>

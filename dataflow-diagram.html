@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Report Analysis System - Data Flow Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1600px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            font-weight: 300;
+        }
+
+        .diagram-container {
+            width: 100%;
+            overflow-x: auto;
+            background: #fafbfc;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .mermaid {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .code-section {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .code-section h4 {
+            color: #94a3b8;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .code-section pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Medical Report Analysis System</h1>
+        <p class="subtitle">Data Flow Diagram - Information Flow Through the System</p>
+        
+        <div class="diagram-container">
+            <div class="mermaid">
+graph TD
+    %% External Entities
+    User[👤 User]:::entity
+    DB[(💾 Database)]:::store
+    Models[🤖 AI Models]:::entity
+    
+    %% Processes
+    Upload[📁 Upload File/Text]:::process
+    Parse[🔍 Parse Document<br/>Docling/OCR]:::process
+    Analyze[🧠 AI Analysis<br/>MedGemma]:::process
+    Summarize[📝 Generate Summary]:::process
+    TTS[🔊 Text-to-Speech<br/>Kokoro]:::process
+    Chat[💬 Chat Interface]:::process
+    Store[💾 Store Results]:::process
+    
+    %% Data Flows
+    User -->|File/Text Input| Upload
+    Upload -->|Raw Data| Parse
+    Parse -->|Parsed Content| Analyze
+    Analyze -->|Analysis Results| Summarize
+    Summarize -->|Summary| Store
+    Store -->|Save| DB
+    
+    Summarize -->|Text| TTS
+    TTS -->|Audio File| User
+    
+    User -->|Chat Message| Chat
+    Chat -->|Query| Analyze
+    Analyze -->|Response| Chat
+    Chat -->|Response| User
+    Chat -->|Session Data| Store
+    
+    Analyze -->|Model Inference| Models
+    Models -->|AI Output| Analyze
+    
+    %% Styling
+    classDef entity fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef process fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef store fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+            </div>
+        </div>
+        
+        <div class="code-section">
+            <h4>📋 Mermaid Code - Copy & Paste</h4>
+            <pre><code>graph TD
+    %% External Entities
+    User[👤 User]:::entity
+    DB[(💾 Database)]:::store
+    Models[🤖 AI Models]:::entity
+    
+    %% Processes
+    Upload[📁 Upload File/Text]:::process
+    Parse[🔍 Parse Document&lt;br/&gt;Docling/OCR]:::process
+    Analyze[🧠 AI Analysis&lt;br/&gt;MedGemma]:::process
+    Summarize[📝 Generate Summary]:::process
+    TTS[🔊 Text-to-Speech&lt;br/&gt;Kokoro]:::process
+    Chat[💬 Chat Interface]:::process
+    Store[💾 Store Results]:::process
+    
+    %% Data Flows
+    User --&gt;|File/Text Input| Upload
+    Upload --&gt;|Raw Data| Parse
+    Parse --&gt;|Parsed Content| Analyze
+    Analyze --&gt;|Analysis Results| Summarize
+    Summarize --&gt;|Summary| Store
+    Store --&gt;|Save| DB
+    
+    Summarize --&gt;|Text| TTS
+    TTS --&gt;|Audio File| User
+    
+    User --&gt;|Chat Message| Chat
+    Chat --&gt;|Query| Analyze
+    Analyze --&gt;|Response| Chat
+    Chat --&gt;|Response| User
+    Chat --&gt;|Session Data| Store
+    
+    Analyze --&gt;|Model Inference| Models
+    Models --&gt;|AI Output| Analyze
+    
+    %% Styling
+    classDef entity fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef process fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef store fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px</code></pre>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html>

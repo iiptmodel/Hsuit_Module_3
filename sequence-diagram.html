@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Report Analysis System - Sequence Diagrams</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            font-weight: 300;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            box-shadow: 0 6px 12px rgba(30, 60, 114, 0.5);
+        }
+
+        .diagram-section {
+            display: none;
+            background: #fafbfc;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .diagram-section.active {
+            display: block;
+        }
+
+        .diagram-title {
+            color: #1e293b;
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .diagram-description {
+            color: #64748b;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .mermaid {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e5edff 100%);
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .info-box h3 {
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            color: #334155;
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .info-box li:before {
+            content: "▸";
+            position: absolute;
+            left: 10px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .code-section {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .code-section h4 {
+            color: #94a3b8;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .code-section pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+            }
+            
+            .tab-button {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Medical Report Analysis System</h1>
+        <p class="subtitle">Sequence Diagrams - System Interactions</p>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="showDiagram('upload-report')">📄 Upload Report</button>
+            <button class="tab-button" onclick="showDiagram('chat-interaction')">💬 Chat Interaction</button>
+            <button class="tab-button" onclick="showDiagram('image-analysis')">🖼️ Image Analysis</button>
+            <button class="tab-button" onclick="showDiagram('tts-generation')">🔊 TTS Generation</button>
+            <button class="tab-button" onclick="showDiagram('error-handling')">⚠️ Error Handling</button>
+        </div>
+
+        <!-- Upload Report Diagram -->
+        <div id="upload-report" class="diagram-section active">
+            <h2 class="diagram-title">📄 Upload Medical Report Flow</h2>
+            <p class="diagram-description">
+                Complete sequence showing how a user uploads a medical report (PDF/text), 
+                the system processes it through multi-tier parsing, AI analysis, and TTS generation.
+            </p>
+
+            <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant User
+    participant WebUI as Web Interface
+    participant API as ReportsAPI
+    participant Parser as ParserService
+    participant Docling as Docling Engine
+    participant OCR as OCR Fallback
+    participant AI as SummarizerService
+    participant MedGemma as MedGemma AI
+    participant TTS as TTSService
+    participant Kokoro as Kokoro TTS
+    participant DB as Database
+
+    User->>WebUI: Upload medical report (PDF/text)
+    WebUI->>API: POST /api/v1/reports/upload-files
+    
+    activate API
+    API->>DB: Create Report record (status: processing)
+    DB-->>API: Report ID created
+    
+    API->>Parser: extract_data_from_file(file_path)
+    activate Parser
+    
+    Note over Parser: Multi-tier parsing strategy
+    Parser->>Docling: convert(file_path)
+    activate Docling
+    
+    alt Docling Success
+        Docling-->>Parser: Structured text extracted
+    else Docling Fails
+        Docling-->>Parser: ConversionError
+        Parser->>Parser: sanitize_pdf(file_path)
+        Parser->>Docling: Retry with sanitized PDF
+        
+        alt Sanitization Success
+            Docling-->>Parser: Text extracted
+        else Still Fails
+            Docling-->>Parser: Error
+            Parser->>OCR: ocr_pdf(file_path)
+            activate OCR
+            OCR->>OCR: convert_to_images()
+            OCR->>OCR: tesseract_extract()
+            OCR-->>Parser: OCR text
+            deactivate OCR
+        end
+    end
+    deactivate Docling
+    
+    Parser-->>API: Extracted text
+    deactivate Parser
+    
+    API->>DB: Update Report (raw_text)
+    
+    API->>AI: generate_summary_from_text(text, language)
+    activate AI
+    AI->>AI: _guardrail_validator(text)
+    AI->>MedGemma: ollama.chat(model, messages)
+    activate MedGemma
+    MedGemma->>MedGemma: Process medical content
+    MedGemma-->>AI: Summary text
+    deactivate MedGemma
+    AI->>AI: Apply safety guardrails
+    AI-->>API: Safe summary
+    deactivate AI
+    
+    API->>DB: Update Report (summary_text)
+    
+    API->>TTS: generate_speech(summary, language, path)
+    activate TTS
+    TTS->>TTS: Validate input text
+    TTS->>Kokoro: pipeline(text, voice, speed)
+    activate Kokoro
+    Kokoro->>Kokoro: Generate audio chunks
+    Kokoro-->>TTS: Audio data
+    deactivate Kokoro
+    TTS->>TTS: Save WAV file
+    TTS-->>API: Audio file path
+    deactivate TTS
+    
+    API->>DB: Update Report (audio_file_path, status: completed)
+    DB-->>API: Report updated
+    
+    API-->>WebUI: Report data with audio
+    deactivate API
+    WebUI-->>User: Display analysis + audio player
+    
+    Note over User,DB: Complete processing: ~15-30 seconds
+            </div>
+
+            <div class="info-box">
+                <h3>🔑 Key Components</h3>
+                <ul>
+                    <li><strong>Multi-tier Parsing:</strong> Docling → PDF Sanitization → OCR fallback</li>
+                    <li><strong>AI Analysis:</strong> MedGemma 4B via Ollama for medical understanding</li>
+                    <li><strong>Safety Guardrails:</strong> Prevents diagnoses and prescriptions</li>
+                    <li><strong>TTS Generation:</strong> Kokoro high-quality voice synthesis</li>
+                    <li><strong>Database Tracking:</strong> Status updates at each stage</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Chat Interaction Diagram -->
+        <div id="chat-interaction" class="diagram-section">
+            <h2 class="diagram-title">💬 Interactive Chat Session Flow</h2>
+            <p class="diagram-description">
+                Shows how users interact with the AI assistant, ask questions about reports,
+                attach files, and receive responses with safety guardrails.
+            </p>
+
+            <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant User
+    participant WebUI as Chat Interface
+    participant WS as WebSocket
+    participant API as ChatAPI
+    participant Chat as ChatService
+    participant Parser as ParserService
+    participant AI as SummarizerService
+    participant TTS as TTSService
+    participant DB as Database
+
+    User->>WebUI: Create new chat session
+    WebUI->>API: POST /api/v1/chat/sessions
+    activate API
+    API->>DB: Create ChatSession
+    DB-->>API: Session ID
+    API-->>WebUI: ChatSession data
+    deactivate API
+    
+    WebUI->>WS: Connect to /ws/{session_id}
+    activate WS
+    WS-->>WebUI: Connection established
+    
+    Note over User,DB: User sends message with optional file
+    
+    User->>WebUI: Type message + attach file (optional)
+    WebUI->>API: POST /messages (content + file)
+    activate API
+    
+    API->>DB: Create ChatMessage (role: user)
+    
+    alt File Attached
+        API->>API: Save uploaded file
+        
+        alt Image File
+            Note over API: Medical image (X-ray, scan)
+            API->>AI: generate_summary_from_image(path, lang)
+            activate AI
+            AI->>AI: Analyze with MedGemma VLM
+            AI-->>API: Image analysis
+            deactivate AI
+        else PDF/Document
+            API->>Parser: extract_data_from_file(path)
+            activate Parser
+            Parser-->>API: Extracted text
+            deactivate Parser
+        end
+    end
+    
+    API->>Chat: process_chat_message(message, file, session)
+    activate Chat
+    
+    Chat->>Chat: validate_user_query(query)
+    
+    alt Query Invalid
+        Chat-->>API: Validation error
+        API-->>WebUI: Error message
+    else Query Valid
+        Chat->>DB: Get conversation history
+        DB-->>Chat: Previous messages
+        
+        Chat->>Chat: _build_context(history)
+        Chat->>AI: Generate AI response
+        activate AI
+        AI-->>Chat: AI response
+        deactivate AI
+        
+        Chat->>Chat: check_response_safety(response)
+        
+        alt Response Unsafe
+            Chat->>Chat: Apply guardrails
+            Chat-->>API: Safe fallback message
+        else Response Safe
+            Chat-->>API: AI response
+        end
+    end
+    deactivate Chat
+    
+    API->>DB: Create ChatMessage (role: assistant)
+    DB-->>API: Message saved
+    
+    API-->>WebUI: ChatMessage with response
+    deactivate API
+    
+    WebUI-->>User: Display AI response
+    
+    Note over API,TTS: Background TTS generation
+    
+    API->>TTS: generate_speech (async background task)
+    activate TTS
+    TTS->>TTS: Generate audio file
+    TTS->>DB: Update message with audio_file_path
+    TTS->>WS: Notify audio ready
+    deactivate TTS
+    
+    WS->>WebUI: Audio ready notification
+    deactivate WS
+    WebUI-->>User: Show audio player
+    
+    Note over User,DB: Real-time updates via WebSocket
+            </div>
+
+            <div class="info-box">
+                <h3>🔑 Key Features</h3>
+                <ul>
+                    <li><strong>WebSocket Communication:</strong> Real-time updates for audio generation</li>
+                    <li><strong>Query Validation:</strong> Checks for appropriate medical questions</li>
+                    <li><strong>Response Safety:</strong> Filters diagnoses, prescriptions, off-topic content</li>
+                    <li><strong>Context Awareness:</strong> Uses conversation history for better responses</li>
+                    <li><strong>File Attachments:</strong> Analyze images and documents in chat</li>
+                    <li><strong>Async TTS:</strong> Audio generated in background, notified when ready</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Image Analysis Diagram -->
+        <div id="image-analysis" class="diagram-section">
+            <h2 class="diagram-title">🖼️ Medical Image Analysis Flow</h2>
+            <p class="diagram-description">
+                Direct medical image analysis using MedGemma Vision-Language Model
+                for X-rays, scans, and other medical imaging.
+            </p>
+
+            <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant User
+    participant API as ReportsAPI
+    participant AI as SummarizerService
+    participant MedGemma as MedGemma VLM
+    participant TTS as TTSService
+    participant DB as Database
+
+    User->>API: Upload medical image (X-ray, CT scan)
+    activate API
+    
+    API->>API: Validate file type (PNG, JPG, TIFF)
+    API->>DB: Create Report (type: image, status: processing)
+    DB-->>API: Report ID
+    
+    Note over API,MedGemma: Direct vision-language analysis
+    
+    API->>AI: generate_summary_from_image(image_path, language)
+    activate AI
+    
+    AI->>AI: Build medical vision prompt
+    Note over AI: "You are a medical assistant specialized<br/>in analyzing medical images..."
+    
+    AI->>MedGemma: ollama.chat(model, messages, images=[path])
+    activate MedGemma
+    
+    Note over MedGemma: Vision-Language Model Processing
+    MedGemma->>MedGemma: Load and process image
+    MedGemma->>MedGemma: Extract visual features
+    MedGemma->>MedGemma: Analyze medical findings
+    MedGemma->>MedGemma: Generate description
+    
+    MedGemma-->>AI: Image analysis text
+    deactivate MedGemma
+    
+    AI->>AI: _guardrail_validator(analysis)
+    
+    alt Contains Prohibited Content
+        AI->>AI: Apply safety filter
+        AI-->>API: Safe educational description
+    else Safe Content
+        AI-->>API: Medical image description
+    end
+    deactivate AI
+    
+    API->>DB: Update Report (summary_text)
+    
+    API->>TTS: generate_speech(summary, language, path)
+    activate TTS
+    TTS->>TTS: Convert analysis to audio
+    TTS-->>API: Audio file path
+    deactivate TTS
+    
+    API->>DB: Update Report (audio_file_path, status: completed)
+    API-->>User: Analysis + audio available
+    deactivate API
+    
+    Note over User,DB: No OCR needed - direct vision analysis
+            </div>
+
+            <div class="info-box">
+                <h3>🔑 Vision-Language Capabilities</h3>
+                <ul>
+                    <li><strong>Direct Image Analysis:</strong> No text extraction required</li>
+                    <li><strong>MedGemma VLM:</strong> Specialized medical vision-language model</li>
+                    <li><strong>Visual Feature Extraction:</strong> Identifies anatomical structures</li>
+                    <li><strong>Medical Findings:</strong> Describes visible observations</li>
+                    <li><strong>Educational Focus:</strong> No diagnoses, only descriptive findings</li>
+                    <li><strong>Multi-format Support:</strong> PNG, JPG, TIFF, BMP imaging formats</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- TTS Generation Diagram -->
+        <div id="tts-generation" class="diagram-section">
+            <h2 class="diagram-title">🔊 Text-to-Speech Audio Generation</h2>
+            <p class="diagram-description">
+                Detailed flow of converting medical report summaries into 
+                natural-sounding audio using Kokoro TTS engine.
+            </p>
+
+            <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant API as API Endpoint
+    participant BG as Background Task
+    participant TTS as TTSService
+    participant Kokoro as Kokoro Pipeline
+    participant FS as File System
+    participant DB as Database
+    participant WS as WebSocket
+
+    API->>BG: Trigger async TTS generation
+    activate BG
+    
+    BG->>TTS: generate_speech(text, language, output_path)
+    activate TTS
+    
+    TTS->>TTS: Validate text input
+    
+    alt Text Empty or Invalid
+        TTS-->>BG: Validation error
+        BG->>DB: Log error
+        BG-->>API: TTS failed
+    else Text Valid
+        Note over TTS: Text sanitization & formatting
+        TTS->>TTS: Clean and prepare text
+        TTS->>TTS: Split into processable chunks
+        
+        TTS->>Kokoro: Initialize pipeline(lang_code='a')
+        activate Kokoro
+        Kokoro-->>TTS: Pipeline ready
+        
+        TTS->>Kokoro: pipeline(text, voice='af_heart', speed=1)
+        
+        Note over Kokoro: Audio generation process
+        loop For each text chunk
+            Kokoro->>Kokoro: Text → phonemes
+            Kokoro->>Kokoro: Phonemes → prosody
+            Kokoro->>Kokoro: Prosody → waveform
+            Kokoro-->>TTS: Audio chunk (samples)
+        end
+        
+        deactivate Kokoro
+        
+        TTS->>TTS: Collect all audio chunks
+        TTS->>TTS: Validate audio data length
+        
+        alt Audio Data Empty
+            TTS-->>BG: Generation failed
+        else Audio Generated
+            TTS->>FS: Create output directory
+            activate FS
+            FS-->>TTS: Directory ready
+            
+            TTS->>FS: soundfile.write(path, audio_data, 24000)
+            FS->>FS: Write WAV file
+            FS-->>TTS: File saved
+            deactivate FS
+            
+            TTS->>FS: Verify file exists and size > 0
+            FS-->>TTS: File verified
+            
+            TTS-->>BG: Audio path
+        end
+    end
+    deactivate TTS
+    
+    BG->>DB: Update record with audio_file_path
+    activate DB
+    DB-->>BG: Record updated
+    deactivate DB
+    
+    BG->>WS: Notify clients (audio_ready event)
+    activate WS
+    WS->>WS: Send JSON to session
+    WS-->>BG: Notification sent
+    deactivate WS
+    
+    deactivate BG
+    
+    Note over API,WS: Audio available at /media/audio/{filename}
+            </div>
+
+            <div class="info-box">
+                <h3>🔑 TTS Technical Details</h3>
+                <ul>
+                    <li><strong>Kokoro TTS:</strong> High-quality neural voice synthesis (82M parameters)</li>
+                    <li><strong>Sample Rate:</strong> 24kHz for natural-sounding audio</li>
+                    <li><strong>Voice:</strong> American Female Heart (af_heart) - warm, clear tone</li>
+                    <li><strong>Chunking:</strong> Text split by newlines for natural pauses</li>
+                    <li><strong>Format:</strong> WAV audio for universal compatibility</li>
+                    <li><strong>Async Processing:</strong> Non-blocking background generation</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Error Handling Diagram -->
+        <div id="error-handling" class="diagram-section">
+            <h2 class="diagram-title">⚠️ Error Handling & Recovery Flow</h2>
+            <p class="diagram-description">
+                Comprehensive error handling showing fallback strategies and 
+                graceful degradation when components fail.
+            </p>
+
+            <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant User
+    participant API as API Layer
+    participant Parser as ParserService
+    participant AI as AI Service
+    participant DB as Database
+    participant Events as Event System
+
+    User->>API: Upload corrupted PDF
+    activate API
+    
+    API->>DB: Create Report (status: processing)
+    API->>Events: Publish "started" event
+    
+    API->>Parser: extract_data_from_file(corrupted.pdf)
+    activate Parser
+    
+    Note over Parser: Tier 1: Docling Attempt
+    Parser->>Parser: Try Docling conversion
+    
+    alt Docling ConversionError
+        Note over Parser,AI: Tier 2: PDF Sanitization
+        Parser->>Parser: sanitize_pdf(file)
+        Parser->>Parser: Rewrite PDF structure
+        Parser->>Parser: Retry Docling with clean PDF
+        
+        alt Sanitization Success
+            Parser-->>API: Extracted text
+        else Sanitization Failed
+            Note over Parser,AI: Tier 3: OCR Fallback
+            Parser->>Parser: ocr_pdf(file)
+            Parser->>Parser: PDF → Images
+            Parser->>Parser: Tesseract OCR
+            
+            alt OCR Success
+                Parser-->>API: OCR text
+            else All Methods Failed
+                Parser-->>API: Error: Unable to extract text
+                API->>Events: Publish "error" event
+                API->>DB: Update (status: failed, error_msg)
+                API-->>User: Extraction failed error
+            end
+        end
+    end
+    deactivate Parser
+    
+    alt Text Extracted Successfully
+        API->>Events: Publish "parsing_complete" event
+        API->>AI: generate_summary(text)
+        activate AI
+        
+        alt AI Service Unavailable
+            AI-->>API: Connection timeout
+            API->>AI: Retry with exponential backoff
+            
+            alt Retry Success
+                AI-->>API: Summary generated
+            else Max Retries Exceeded
+                AI-->>API: AI service error
+                API->>DB: Update (summary: fallback text)
+                API-->>User: "AI unavailable, showing raw text"
+            end
+        else AI Returns Unsafe Content
+            AI->>AI: check_response_safety()
+            AI->>AI: Detect prohibited patterns
+            AI->>AI: Apply guardrails
+            AI-->>API: Safe fallback response
+            Note over API: "I can explain findings but cannot<br/>diagnose or prescribe..."
+        else AI Success
+            AI-->>API: Safe summary
+        end
+        deactivate AI
+        
+        API->>Events: Publish "summary_complete" event
+        
+        alt TTS Generation Fails
+            API->>API: Log TTS error
+            API->>DB: Update (audio_path: null)
+            API-->>User: Text available, audio unavailable
+            Note over User,DB: Graceful degradation:<br/>User can still read text
+        else TTS Success
+            API->>DB: Update (status: completed, all data)
+            API->>Events: Publish "completed" event
+            API-->>User: Full report with audio
+        end
+    end
+    
+    deactivate API
+    
+    Note over User,Events: Error tracking with request IDs<br/>for debugging and monitoring
+            </div>
+
+            <div class="info-box">
+                <h3>🔑 Error Handling Strategy</h3>
+                <ul>
+                    <li><strong>Multi-tier Fallback:</strong> Docling → Sanitization → OCR</li>
+                    <li><strong>Retry Logic:</strong> Exponential backoff for transient failures</li>
+                    <li><strong>Graceful Degradation:</strong> Partial results better than total failure</li>
+                    <li><strong>Safety Guardrails:</strong> Filter unsafe AI responses automatically</li>
+                    <li><strong>Event Tracking:</strong> Real-time status updates to user</li>
+                    <li><strong>Request IDs:</strong> Unique identifiers for error correlation</li>
+                    <li><strong>Database States:</strong> Processing, Completed, Failed status tracking</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Mermaid Code Section -->
+        <div class="code-section">
+            <h4>📋 Example Mermaid Code - Copy & Paste</h4>
+            <pre>sequenceDiagram
+    autonumber
+    participant User
+    participant API as ReportsAPI
+    participant AI as SummarizerService
+    participant DB as Database
+    
+    User->>API: Upload report
+    API->>DB: Create record
+    API->>AI: Analyze content
+    AI-->>API: Summary
+    API->>DB: Update record
+    API-->>User: Return result</pre>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            themeVariables: {
+                primaryColor: '#dbeafe',
+                primaryTextColor: '#1e293b',
+                primaryBorderColor: '#2563eb',
+                lineColor: '#64748b',
+                secondaryColor: '#fce7f3',
+                tertiaryColor: '#e0f2fe',
+                fontSize: '14px',
+                fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif'
+            },
+            sequence: {
+                diagramMarginX: 20,
+                diagramMarginY: 20,
+                actorMargin: 50,
+                width: 150,
+                height: 65,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageMargin: 35,
+                mirrorActors: true,
+                bottomMarginAdj: 1,
+                useMaxWidth: true,
+                rightAngles: false,
+                showSequenceNumbers: true
+            }
+        });
+
+        // Tab switching functionality
+        function showDiagram(diagramId) {
+            // Hide all diagrams
+            document.querySelectorAll('.diagram-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected diagram
+            document.getElementById(diagramId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
