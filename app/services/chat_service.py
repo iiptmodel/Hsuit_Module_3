@@ -64,6 +64,9 @@ def validate_user_query(query: str) -> Tuple[bool, str]:
     """
     query_lower = (query or "").lower().strip()
 
+    if len(query_lower) < 4:
+        return False, "Please provide a more detailed question."
+
     # Allow common greetings
     greeting_patterns = [
         r"^\b(hello|hi|hey|good (morning|afternoon|evening)|how are you|howdy|greetings)\b.*$",
@@ -71,9 +74,6 @@ def validate_user_query(query: str) -> Tuple[bool, str]:
     ]
     if any(re.search(p, query_lower) for p in greeting_patterns):
         return True, ""
-
-    if len(query_lower) < 3:
-        return False, "Please provide a more detailed question."
 
     offensive_patterns = [r"\bfuck\b", r"\bshit\b", r"\bdamn\b", r"\bass\b", r"\bhell\b"]
     if any(re.search(p, query_lower) for p in offensive_patterns):
@@ -165,11 +165,7 @@ def generate_chat_response(user_message: str, image_path: str = None) -> str:
         )
 
         # Expect the client to return a structure with ['message']['content'] like ollama.chat
-        raw_response = None
-        if isinstance(resp, dict) and "message" in resp and isinstance(resp["message"], dict):
-            raw_response = resp["message"].get("content")
-        elif hasattr(resp, "content"):
-            raw_response = getattr(resp, "content")
+        raw_response = resp["message"].content
 
         if not raw_response:
             logger.warning("Empty response from Ollama: %s", resp)
