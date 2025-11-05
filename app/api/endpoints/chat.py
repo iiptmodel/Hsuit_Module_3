@@ -334,6 +334,28 @@ def delete_chat_session(session_id: int, db: Session = Depends(get_db)):
     return {"message": "Chat session deleted successfully"}
 
 
+@router.patch("/sessions/{session_id}", response_model=schemas.ChatSession)
+def update_chat_session(session_id: int, session_data: schemas.ChatSessionCreate, db: Session = Depends(get_db)):
+    """Updates metadata for a chat session (currently only title)."""
+    session = db.query(models.ChatSession).filter(models.ChatSession.id == session_id).first()
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Chat session not found"
+        )
+
+    # Update allowed fields
+    if getattr(session_data, 'title', None) is not None:
+        session.title = session_data.title
+
+    db.add(session)
+    db.commit()
+    db.refresh(session)
+
+    logger.info(f"Updated chat session {session_id} title to '{session.title}'")
+    return session
+
+
 @router.get("/sessions/{session_id}/messages", response_model=List[schemas.ChatMessage])
 def get_session_messages(session_id: int, db: Session = Depends(get_db)):
     """Gets all messages for a specific session."""

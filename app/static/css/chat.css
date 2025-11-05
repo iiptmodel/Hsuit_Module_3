@@ -55,6 +55,10 @@
 
     /* Vibrant Gradients */
     --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* Card/background surfaces (theme-aware) */
+    --card-bg: rgba(255,255,255,0.95);
+    --card-bg-soft: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%);
+    --session-active-bg: #eaf3ff;
     --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     --warm-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
@@ -104,12 +108,19 @@
     /* Helpful gradients used across the UI */
     --primary-gradient: linear-gradient(135deg, #34d399 0%, #059669 100%);
     --cosmic-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
+    --card-bg: rgba(240,253,244,1);
+    --card-bg-soft: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%);
 }
 
 /* Tone down page background and remove animated particles */
 body {
     background: var(--bg-primary);
     color: var(--text-primary);
+}
+
+/* Prevent any accidental horizontal scrolling caused by wide elements/transforms */
+html, body {
+    overflow-x: hidden;
 }
 
 body::before {
@@ -187,7 +198,7 @@ body::before {
 }
 
 .session-item.active {
-    background: #eaf3ff;
+    background: var(--session-active-bg, #eaf3ff);
     color: var(--text-primary);
     border-color: rgba(31,75,102,0.08);
 }
@@ -207,7 +218,7 @@ body::before {
 }
 
 .message .message-content {
-    background: #fff;
+    background: var(--card-bg);
     padding: 0.6rem 0.8rem;
     border: 1px solid var(--border-light);
     border-radius: 8px;
@@ -218,7 +229,7 @@ body::before {
 }
 
 .message.assistant .message-content {
-    background: #f8fbff;
+    background: var(--card-bg-soft);
     color: var(--text-primary);
 }
 
@@ -255,7 +266,8 @@ h1, h2, h3, h4 {
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* Use theme-aware background color so dark mode and emerald theme are consistent */
+    background: var(--bg-primary);
     background-attachment: fixed;
     color: var(--text-primary);
     height: 100vh;
@@ -323,7 +335,7 @@ body::before {
 
 .logo-icon {
     font-size: 1.75rem;
-    filter: drop-shadow(0 4px 12px rgba(124, 58, 237, 0.4));
+    filter: drop-shadow(0 4px 12px rgba(var(--primary-rgb), 0.4));
     animation: floatIcon 3s ease-in-out infinite;
 }
 
@@ -359,7 +371,7 @@ body::before {
 }
 
 .stat-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+    background: var(--card-bg-soft);
     backdrop-filter: blur(10px);
     padding: 0.75rem 1rem;
     border-radius: var(--radius-md);
@@ -390,8 +402,8 @@ body::before {
 
 .stat-card:hover {
     transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 12px 24px rgba(124, 58, 237, 0.25);
-    border-color: rgba(124, 58, 237, 0.3);
+    box-shadow: 0 12px 24px rgba(var(--primary-rgb), 0.25);
+    border-color: rgba(var(--primary-rgb), 0.18);
 }
 
 .stat-card:nth-child(1) { animation: slideInDown 0.5s ease-out 0.1s both; }
@@ -469,7 +481,7 @@ body::before {
 .sidebar-header {
     padding: 1rem;
     border-bottom: 1px solid rgba(124, 58, 237, 0.1);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 255, 0.9) 100%);
+    background: var(--card-bg-soft);
     flex-shrink: 0;
 }
 
@@ -542,7 +554,7 @@ body::before {
 .session-item {
     padding: 1.125rem;
     margin-bottom: 0.75rem;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+    background: var(--card-bg-soft);
     backdrop-filter: blur(10px);
     border-radius: var(--radius-md);
     border: 2px solid rgba(124, 58, 237, 0.1);
@@ -584,7 +596,7 @@ body::before {
 
 .session-item.active::before {
     transform: scaleY(1);
-    background: white;
+    background: var(--session-active-before, var(--session-active-bg));
 }
 
 .session-title {
@@ -611,9 +623,29 @@ body::before {
 .chat-main {
     display: flex;
     flex-direction: column;
-    background: white;
+    background: var(--bg-secondary);
     position: relative;
     overflow-y: auto;
+}
+
+/* Ensure container never exceeds viewport width and doesn't create horizontal scroll */
+.chat-container {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Header layout stability: keep actions aligned and buttons from jumping */
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0.5rem 1rem;
+}
+.chat-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
 }
 
 /* Welcome Screen */
@@ -623,7 +655,7 @@ body::before {
     align-items: center;
     justify-content: center;
     padding: 2rem;
-    background: linear-gradient(135deg, rgba(248, 250, 255, 0.8) 0%, rgba(243, 244, 255, 0.8) 100%);
+    background: var(--card-bg-soft);
     backdrop-filter: blur(10px);
     overflow-y: auto;
     position: relative;
@@ -694,7 +726,7 @@ body::before {
 }
 
 .feature-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+    background: var(--card-bg-soft);
     backdrop-filter: blur(10px);
     padding: 1.75rem 1.5rem;
     border-radius: var(--radius-lg);
@@ -1202,8 +1234,8 @@ body::before {
 
 #messageInput:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
-    background: white;
+    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.12);
+    background: var(--card-bg) !important;
 }
 
 #messageInput::placeholder {
@@ -1309,13 +1341,13 @@ body::before {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--primary-gradient);
     border-radius: 10px;
     border: 2px solid rgba(248, 250, 255, 0.5);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
     box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
 }
 
@@ -1540,7 +1572,7 @@ body::before {
     min-width: 120px;
     border-radius: 9999px;
     border: 1px solid var(--border-color);
-    background: #fff;
+    background: var(--card-bg);
     color: var(--text-primary);
     font-weight: 600;
     font-size: 0.92rem;
@@ -1615,7 +1647,6 @@ select, textarea, input, button {
 .logo-icon,
 .stat-card:hover,
 .stat-card,
-.session-item:hover,
 .session-item.active,
 .feature-card:hover,
 .quick-start:hover,
@@ -1625,6 +1656,11 @@ select, textarea, input, button {
 .btn-attach {
     box-shadow: 0 8px 28px rgba(var(--primary-rgb), 0.12) !important;
     border-color: rgba(var(--primary-rgb), 0.08) !important;
+}
+
+/* Ensure stat-card uses the card background variable */
+.stat-card {
+    background: var(--card-bg-soft);
 }
 
 .stat-card::before,
@@ -1644,6 +1680,21 @@ select, textarea, input, button {
 
 .message.assistant .message-avatar {
     background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent) 100%) !important;
+
+/* Toggle icon swap: show sun by default, moon when .is-dark present */
+.btn-icon { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.btn-icon .icon-sun,
+.btn-icon .icon-moon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity 180ms ease, transform 180ms ease;
+    opacity: 1;
+}
+.btn-icon .icon-moon { opacity: 0; transform: translate(-50%, -45%); }
+.btn-icon.is-dark .icon-moon { opacity: 1; transform: translate(-50%, -50%); }
+.btn-icon.is-dark .icon-sun { opacity: 0; transform: translate(-50%, -55%); }
     box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.08) !important;
 }
 
@@ -1678,7 +1729,96 @@ select, textarea, input, button {
     --border-light: rgba(255,255,255,0.02);
     --primary-rgb: 5,150,105;
     --primary-gradient: linear-gradient(135deg, #16a34a 0%, #059669 100%);
+    /* Dark card surfaces */
+    --card-bg: rgba(6,48,38,0.9);
+    --card-bg-soft: linear-gradient(135deg, rgba(6,48,38,0.85) 0%, rgba(4,34,28,0.85) 100%);
+    --session-active-bg: rgba(5,150,105,0.08);
 }
+
+/* Dark-mode component overrides: replace hard-coded white surfaces with theme cards */
+:root[data-theme="dark"] .chat-main,
+:root[data-theme="dark"] .chat-container,
+:root[data-theme="dark"] .dashboard-panel,
+:root[data-theme="dark"] .message .message-content,
+:root[data-theme="dark"] .message.assistant .message-content,
+:root[data-theme="dark"] #messageInput,
+:root[data-theme="dark"] .audience-select select,
+:root[data-theme="dark"] .btn-attach,
+:root[data-theme="dark"] .feature-card,
+:root[data-theme="dark"] .stat-card,
+:root[data-theme="dark"] .welcome-screen,
+:root[data-theme="dark"] .files-panel {
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
+    border-color: rgba(255,255,255,0.03) !important;
+}
+
+:root[data-theme="dark"] .btn-icon { color: var(--text-primary) !important; border-color: rgba(255,255,255,0.04) !important; }
+:root[data-theme="dark"] #messageInput { background: var(--card-bg) !important; color: var(--text-primary) !important; }
+:root[data-theme="dark"] .audience-select select { background: var(--card-bg) !important; color: var(--text-primary) !important; border-color: rgba(255,255,255,0.04) !important; }
+/* Broad dark-mode override for remaining white surfaces */
+:root[data-theme="dark"] .chat-container,
+:root[data-theme="dark"] .chat-main,
+:root[data-theme="dark"] .chat-sidebar,
+:root[data-theme="dark"] .dashboard-panel,
+:root[data-theme="dark"] .message .message-content,
+:root[data-theme="dark"] .message.assistant .message-content,
+:root[data-theme="dark"] .btn-attach,
+:root[data-theme="dark"] #messageInput,
+:root[data-theme="dark"] .audience-select select,
+:root[data-theme="dark"] .uploaded-files,
+:root[data-theme="dark"] .file-preview,
+:root[data-theme="dark"] .feature-card,
+:root[data-theme="dark"] .stat-card,
+:root[data-theme="dark"] .welcome-screen,
+:root[data-theme="dark"] .session-item {
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
+    border-color: rgba(255,255,255,0.03) !important;
+}
+
+/* Ensure primary buttons also style nicely in dark mode (e.g., Getting Started) */
+:root[data-theme="dark"] .btn-primary,
+:root[data-theme="dark"] .btn-new-session,
+:root[data-theme="dark"] .btn-send,
+:root[data-theme="dark"] .btn-attach {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Additional explicit dark-mode fixes for remaining components */
+:root[data-theme="dark"] .quick-start,
+:root[data-theme="dark"] .quick-start h3,
+:root[data-theme="dark"] .quick-start p,
+:root[data-theme="dark"] .feature-cards,
+:root[data-theme="dark"] .feature-card,
+:root[data-theme="dark"] .feature-card:hover,
+:root[data-theme="dark"] .welcome-content h2,
+:root[data-theme="dark"] .welcome-content > p,
+:root[data-theme="dark"] .stat-card,
+:root[data-theme="dark"] .session-item,
+:root[data-theme="dark"] .session-item.active {
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
+}
+
+:root[data-theme="dark"] .quick-start h3 { background: none !important; -webkit-text-fill-color: var(--text-primary) !important; color: var(--text-primary) !important; }
+:root[data-theme="dark"] .quick-start p { color: var(--text-muted) !important; }
+
+:root[data-theme="dark"] .btn-primary { box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important; }
+:root[data-theme="dark"] .btn-primary:hover { box-shadow: 0 12px 36px rgba(0,0,0,0.5) !important; }
+
+/* Tweak welcome screen decorative gradients to be subtle in dark mode */
+:root[data-theme="dark"] .welcome-screen::before {
+    background:
+        radial-gradient(circle at 30% 30%, rgba(var(--primary-rgb), 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 70% 70%, rgba(var(--primary-rgb), 0.03) 0%, transparent 50%);
+}
+
+/* Ensure Getting Started button (quick-start .btn-primary) is readable */
+:root[data-theme="dark"] .quick-start .btn-primary { color: var(--text-primary) !important; background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%) !important; }
+
+
 
 /* Small helper to ensure buttons use dark theme shadows */
 :root[data-theme="dark"] .btn-primary,
@@ -1688,4 +1828,86 @@ select, textarea, input, button {
     box-shadow: 0 6px 18px rgba(0,0,0,0.45) !important;
 }
 
+/* Theme toggle and files panel adjustments for dark mode */
+.btn-icon.is-dark svg { color: var(--text-primary); }
+.btn-icon.is-dark { color: var(--text-primary); }
+.files-panel { background: var(--bg-secondary); color: var(--text-primary); }
+.files-panel .file-preview { background: rgba(0,0,0,0.04); border-color: var(--border-color); }
+
 /* End Emerald overrides */
+
+/* FINAL FORCE-FIX: ensure critical welcome/quick-start/files areas follow dark mode (high specificity)
+   This block is intentionally last and uses !important to override any earlier literal backgrounds. */
+:root[data-theme="dark"] .welcome-screen,
+:root[data-theme="dark"] .welcome-content,
+:root[data-theme="dark"] .feature-cards,
+:root[data-theme="dark"] .feature-card,
+:root[data-theme="dark"] .feature-card:hover,
+:root[data-theme="dark"] .quick-start,
+:root[data-theme="dark"] .quick-start h3,
+:root[data-theme="dark"] .quick-start p,
+:root[data-theme="dark"] .files-panel,
+:root[data-theme="dark"] .files-panel .file-preview,
+:root[data-theme="dark"] .files-panel .file-item,
+:root[data-theme="dark"] .uploaded-files,
+:root[data-theme="dark"] .file-upload-area,
+:root[data-theme="dark"] .btn-primary {
+    background: var(--card-bg) !important;
+    background-image: none !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: none !important;
+}
+
+/* ensure decorative gradients are muted in dark mode */
+:root[data-theme="dark"] .welcome-screen::before,
+:root[data-theme="dark"] .messages-container::before {
+    background: radial-gradient(circle at 30% 30%, rgba(var(--primary-rgb), 0.03) 0%, transparent 50%) !important;
+}
+
+/* Files panel (drawer) */
+.files-panel {
+    position: fixed;
+    top: 64px; /* below dashboard header */
+    right: 0;
+    width: 360px;
+    height: calc(100vh - 84px);
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-light);
+    box-shadow: -8px 0 32px rgba(0,0,0,0.08);
+    z-index: 1200;
+    transform: translateX(110%); /* hidden by default */
+    opacity: 0;
+    transition: transform 220ms ease, opacity 200ms ease;
+    display: flex;
+    flex-direction: column;
+}
+.files-panel[aria-hidden="true"] {
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+}
+.files-panel[aria-hidden="false"] {
+    visibility: visible;
+    pointer-events: auto;
+    opacity: 1;
+}
+.files-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-light);
+}
+.files-panel-content {
+    padding: 1rem;
+    overflow-y: auto;
+    flex: 1;
+}
+.files-panel .file-preview {
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%);
+    border: 1px solid var(--border-light);
+}

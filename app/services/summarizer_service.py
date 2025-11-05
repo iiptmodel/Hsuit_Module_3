@@ -15,10 +15,17 @@ def _guardrail_validator(text: str) -> str:
     for p in prohibited:
         if p in text.lower():
             logger.warning(f"Guardrail triggered for pattern: {p}")
-            return (
-                "I can help explain findings and what they might indicate, but I cannot provide a definitive diagnosis or prescribe medications. "
-                "Please consult a healthcare professional for diagnosis and treatment."
+            # Instead of replacing the entire output with a canned disclaimer (which can be
+            # overly conservative), append a short disclaimer while preserving the model's
+            # analysis. This loosens the guardrail but keeps an explicit safety notice.
+            disclaimer = (
+                "\n\n[Disclaimer] I can help explain findings and what they might indicate, but I cannot provide a definitive diagnosis or prescribe medications. "
+                "Please consult a qualified healthcare professional for diagnosis and treatment."
             )
+            # If the model output already contains the disclaimer text, avoid duplicating it.
+            if 'consult a' in text.lower() or 'i cannot provide a definitive diagnosis' in text.lower():
+                return text
+            return text + disclaimer
     return text
 
 

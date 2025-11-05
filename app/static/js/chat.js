@@ -3,22 +3,27 @@ let currentSessionId = null;
 let uploadedFile = null;
 let sessionSocket = null;
 
-// DOM Elements
-const welcomeScreen = document.getElementById('welcomeScreen');
-const chatScreen = document.getElementById('chatScreen');
-const newSessionBtn = document.getElementById('newSessionBtn');
-const quickStartBtn = document.getElementById('quickStartBtn');
-const sessionList = document.getElementById('sessionList');
-const messagesContainer = document.getElementById('messagesContainer');
-const messageInput = document.getElementById('messageInput');
-const sendBtn = document.getElementById('sendBtn');
-const attachBtn = document.getElementById('attachBtn');
-const fileInput = document.getElementById('fileInput');
-const uploadedFiles = document.getElementById('uploadedFiles');
-const clearChatBtn = document.getElementById('clearChatBtn');
-const sessionTitle = document.getElementById('sessionTitle');
-const audienceSelect = document.getElementById('audienceSelect');
-const themeToggleBtn = document.getElementById('themeToggleBtn');
+// DOM Elements (will be initialized on DOMContentLoaded)
+let welcomeScreen;
+let chatScreen;
+let newSessionBtn;
+let quickStartBtn;
+let sessionList;
+let messagesContainer;
+let messageInput;
+let sendBtn;
+let attachBtn;
+let fileInput;
+let uploadedFiles;
+let clearChatBtn;
+let sessionTitle;
+let audienceSelect;
+let themeToggleBtn;
+let filesToggleBtn;
+let filesPanel;
+let filesPanelClose;
+let filesPanelContent;
+let renameChatBtn;
 
 // Stats
 const totalReportsEl = document.getElementById('total-reports');
@@ -26,11 +31,37 @@ const totalChatsEl = document.getElementById('total-chats');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize DOM element references now that the DOM is ready
+    initDomElements();
+
     loadSessions();
     loadStats();
     setupEventListeners();
     initTheme();
 });
+
+function initDomElements() {
+    welcomeScreen = document.getElementById('welcomeScreen');
+    chatScreen = document.getElementById('chatScreen');
+    newSessionBtn = document.getElementById('newSessionBtn');
+    quickStartBtn = document.getElementById('quickStartBtn');
+    sessionList = document.getElementById('sessionList');
+    messagesContainer = document.getElementById('messagesContainer');
+    messageInput = document.getElementById('messageInput');
+    sendBtn = document.getElementById('sendBtn');
+    attachBtn = document.getElementById('attachBtn');
+    fileInput = document.getElementById('fileInput');
+    uploadedFiles = document.getElementById('uploadedFiles');
+    clearChatBtn = document.getElementById('clearChatBtn');
+    sessionTitle = document.getElementById('sessionTitle');
+    audienceSelect = document.getElementById('audienceSelect');
+    themeToggleBtn = document.getElementById('themeToggleBtn');
+    filesToggleBtn = document.getElementById('filesToggleBtn');
+    filesPanel = document.getElementById('filesPanel');
+    filesPanelClose = document.getElementById('filesPanelClose');
+    filesPanelContent = document.getElementById('filesPanelContent');
+    renameChatBtn = document.getElementById('renameChatBtn');
+}
 
 function setupEventListeners() {
     // New session buttons
@@ -64,6 +95,19 @@ function setupEventListeners() {
     if (themeToggleBtn) {
         themeToggleBtn.addEventListener('click', () => toggleTheme());
     }
+
+    // Rename chat button
+    if (renameChatBtn) {
+        renameChatBtn.addEventListener('click', () => renameChat());
+    }
+
+    // Files panel toggle
+    if (filesToggleBtn && filesPanel) {
+        filesToggleBtn.addEventListener('click', () => toggleFilesPanel());
+    }
+    if (filesPanelClose && filesPanel) {
+        filesPanelClose.addEventListener('click', () => closeFilesPanel());
+    }
 }
 
 /* Theme handling: toggles data-theme attribute on <html> and persists choice */
@@ -72,8 +116,16 @@ function initTheme() {
         const saved = localStorage.getItem('app-theme');
         if (saved === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
+            if (themeToggleBtn) {
+                themeToggleBtn.setAttribute('aria-pressed', 'true');
+                themeToggleBtn.classList.add('is-dark');
+            }
         } else {
             document.documentElement.removeAttribute('data-theme');
+            if (themeToggleBtn) {
+                themeToggleBtn.setAttribute('aria-pressed', 'false');
+                themeToggleBtn.classList.remove('is-dark');
+            }
         }
     } catch (e) {
         // ignore storage errors
@@ -85,9 +137,47 @@ function toggleTheme() {
     if (current === 'dark') {
         document.documentElement.removeAttribute('data-theme');
         try { localStorage.setItem('app-theme', 'light'); } catch (e) {}
+        if (themeToggleBtn) {
+            themeToggleBtn.setAttribute('aria-pressed', 'false');
+            themeToggleBtn.classList.remove('is-dark');
+        }
     } else {
         document.documentElement.setAttribute('data-theme', 'dark');
         try { localStorage.setItem('app-theme', 'dark'); } catch (e) {}
+        if (themeToggleBtn) {
+            themeToggleBtn.setAttribute('aria-pressed', 'true');
+            themeToggleBtn.classList.add('is-dark');
+        }
+    }
+}
+
+async function renameChat() {
+    if (!currentSessionId) {
+        showError('No active session to rename');
+        return;
+    }
+    const oldTitle = sessionTitle ? sessionTitle.textContent : '';
+    const newTitle = prompt('Enter a new title for this chat', oldTitle || '');
+    if (!newTitle || newTitle.trim().length === 0) return;
+    try {
+        // optimistic UI
+        sessionTitle.textContent = newTitle;
+        const resp = await fetch(`/api/v1/chat/sessions/${currentSessionId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: newTitle })
+        });
+        if (!resp.ok) {
+            const txt = await resp.text();
+            console.warn('Rename API failed', resp.status, txt);
+            showError('Failed to rename chat on server');
+        } else {
+            // reload session list to reflect title change
+            loadSessions();
+        }
+    } catch (e) {
+        console.error('Rename failed', e);
+        showError('Rename failed');
     }
 }
 
@@ -179,7 +269,9 @@ async function loadSession(sessionId) {
         const session = await response.json();
         
         currentSessionId = sessionId;
-        sessionTitle.textContent = session.title;
+            // update currentSessionId and UI
+            currentSessionId = sessionId;
+            if (session.title) sessionTitle.textContent = session.title;
         
         // Show chat screen
         welcomeScreen.style.display = 'none';
@@ -338,19 +430,14 @@ function displayMessage(message) {
     messagesContainer.appendChild(div);
     scrollToBottom();
 
-    // If content was replaced due to being binary-like, offer a quick action to view session reports
+    // If content was replaced due to being binary-like, offer a quick action to open files panel
     if (looksLikeBinary(message.content) && message.session_id) {
         const actionBtn = document.createElement('button');
         actionBtn.className = 'btn-primary';
         actionBtn.style.marginTop = '0.5rem';
         actionBtn.textContent = 'View Files';
         actionBtn.addEventListener('click', () => {
-            // reveal reports panel and scroll to it
-            const reportsEl = document.getElementById('reportsList');
-            if (reportsEl) {
-                reportsEl.style.display = 'block';
-                reportsEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            openFilesPanel();
         });
         const contentEl = div.querySelector('.message-content');
         if (contentEl) contentEl.appendChild(actionBtn);
@@ -682,16 +769,15 @@ function showError(message) {
 }
 
 function renderReports(reports) {
-    const reportsEl = document.getElementById('reportsList');
-    if (!reportsEl) return;
+    // Render into files panel (drawer) instead of inline area
+    const panelContent = document.getElementById('filesPanelContent');
+    if (!panelContent) return;
+    panelContent.innerHTML = '';
     if (!reports || reports.length === 0) {
-        reportsEl.style.display = 'none';
-        reportsEl.innerHTML = '';
+        panelContent.innerHTML = '<div class="muted">No uploaded files for this session.</div>';
         return;
     }
 
-    reportsEl.style.display = 'block';
-    reportsEl.innerHTML = '<h4 style="margin:0 0 0.5rem 0;">Uploaded Files</h4>';
     const list = document.createElement('div');
     list.style.display = 'flex';
     list.style.flexDirection = 'column';
@@ -738,7 +824,6 @@ function renderReports(reports) {
 
         if (r.original_file_path) {
             const link = document.createElement('a');
-            // Ensure leading slash
             const url = r.original_file_path.startsWith('/') ? r.original_file_path : '/' + r.original_file_path;
             link.href = encodeURI(url);
             link.target = '_blank';
@@ -753,5 +838,150 @@ function renderReports(reports) {
         list.appendChild(item);
     });
 
-    reportsEl.appendChild(list);
+    panelContent.appendChild(list);
+}
+
+function toggleFilesPanel() {
+    if (!filesPanel) return;
+    const isOpen = filesPanel.getAttribute('aria-hidden') === 'false';
+    if (isOpen) closeFilesPanel();
+    else openFilesPanel();
+}
+
+function openFilesPanel() {
+    if (!filesPanel) return;
+    filesPanel.setAttribute('aria-hidden', 'false');
+    filesPanel.style.transform = 'translateX(0)';
+
+    // Create backdrop to capture clicks outside the panel
+    let backdrop = document.getElementById('filesPanelBackdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.id = 'filesPanelBackdrop';
+        Object.assign(backdrop.style, {
+            position: 'fixed',
+            inset: '64px 0 0 0',
+            background: 'rgba(0,0,0,0.24)',
+            zIndex: 1100,
+            transition: 'opacity 180ms ease',
+            opacity: '0'
+        });
+        document.body.appendChild(backdrop);
+        // Tiny timeout to allow transition
+        requestAnimationFrame(() => { backdrop.style.opacity = '1'; });
+        backdrop.addEventListener('click', closeFilesPanel);
+    }
+
+    // Add Esc key handler
+    document.addEventListener('keydown', filesPanelEscHandler);
+    // Trap focus inside the panel
+    previousActiveElement = document.activeElement;
+    trapFocusToPanel();
+
+    // If a session is active, fetch reports for it and render. Otherwise fetch all reports.
+    (async () => {
+        try {
+            if (currentSessionId) {
+                const resp = await fetch(`/api/v1/chat/sessions/${currentSessionId}`);
+                if (resp.ok) {
+                    const session = await resp.json();
+                    if (typeof renderReports === 'function') renderReports(session.reports || []);
+                    return;
+                }
+            }
+            // fallback: load all reports
+            const rresp = await fetch('/api/v1/reports/');
+            const reports = await rresp.json();
+            if (typeof renderReports === 'function') renderReports(reports || []);
+        } catch (e) {
+            console.warn('Failed to fetch reports for files panel', e);
+        }
+    })();
+    // Announce to screen readers
+    announceA11y('Files panel opened');
+}
+
+function closeFilesPanel() {
+    if (!filesPanel) return;
+    filesPanel.setAttribute('aria-hidden', 'true');
+    filesPanel.style.transform = 'translateX(110%)';
+
+    const backdrop = document.getElementById('filesPanelBackdrop');
+    if (backdrop) {
+        backdrop.style.opacity = '0';
+        // remove after transition
+        setTimeout(() => { backdrop.remove(); }, 200);
+    }
+
+    // cleanup Escape handler
+    document.removeEventListener('keydown', filesPanelEscHandler);
+    // cleanup focus trap
+    releaseFocusTrap();
+    try {
+        if (previousActiveElement && typeof previousActiveElement.focus === 'function') previousActiveElement.focus();
+    } catch (e) {}
+    // Announce to screen readers
+    announceA11y('Files panel closed');
+}
+
+function filesPanelEscHandler(e) {
+    if (e.key === 'Escape') {
+        closeFilesPanel();
+    }
+}
+
+// Focus trap helpers
+let previousActiveElement = null;
+let filesPanelKeydownHandler = null;
+
+function trapFocusToPanel() {
+    if (!filesPanel) return;
+    const focusable = getFocusableElements(filesPanel);
+    if (focusable.length) focusable[0].focus();
+
+    filesPanelKeydownHandler = function (e) {
+        if (e.key !== 'Tab') return;
+        const focusableEls = getFocusableElements(filesPanel);
+        if (!focusableEls.length) return;
+        const first = focusableEls[0];
+        const last = focusableEls[focusableEls.length - 1];
+        if (e.shiftKey) {
+            if (document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            }
+        } else {
+            if (document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        }
+    };
+
+    document.addEventListener('keydown', filesPanelKeydownHandler);
+}
+
+function releaseFocusTrap() {
+    if (filesPanelKeydownHandler) {
+        document.removeEventListener('keydown', filesPanelKeydownHandler);
+        filesPanelKeydownHandler = null;
+    }
+}
+
+function getFocusableElements(container) {
+    if (!container) return [];
+    const selectors = 'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex]:not([tabindex="-1"]), [contenteditable]';
+    return Array.prototype.slice.call(container.querySelectorAll(selectors)).filter(el => el.offsetWidth > 0 || el.offsetHeight > 0 || el === document.activeElement);
+}
+
+function announceA11y(message) {
+    try {
+        const live = document.getElementById('a11yLive');
+        if (live) {
+            live.textContent = '';
+            setTimeout(() => { live.textContent = message; }, 50);
+        }
+    } catch (e) {
+        // ignore
+    }
 }
