@@ -21,6 +21,10 @@ This application provides a comprehensive medical document analysis platform fea
 - **🔊 Voice Output**: High-quality text-to-speech in multiple languages using Kokoro TTS
 - **💬 Interactive Chat**: Ask questions about your medical documents with AI assistance
 - **🔒 Medical Safety**: Strict guardrails prevent diagnoses, prescriptions, and inappropriate content
+ - **🎛️ Modern UI & Theme**: Responsive chat UI with an emerald theme and light/dark toggle
+ - **📁 Files Drawer**: Uploaded files and session reports are accessible from a right-side Files drawer (Files button in the chat header)
+ - **✏️ Rename Sessions**: Rename chat sessions in-place (client triggers PATCH /api/v1/chat/sessions/{id}) and changes persist
+ - **🛠 Repair tooling**: Small utility script to detect and repair messages containing binary dumps created by older runs (tools/repair_messages_from_reports.py)
 
 ## 🏗️ Architecture
 
@@ -375,6 +379,7 @@ The system includes safety measures to prevent:
 - ❌ Jokes and inappropriate content
 - ✅ Analysis of existing reports only
 - ✅ Educational information
+ - ⚠️ Guardrails: The system preserves model analysis while appending a short disclaimer when necessary (see `app/services/summarizer_service.py` — `_guardrail_validator`) to avoid erasing model output
 
 ### 5. Advanced PDF Processing
 

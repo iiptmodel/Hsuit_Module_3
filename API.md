@@ -17,6 +17,73 @@ are not active by default. Reports endpoints are public; see Reports below.
 
 ---
 
+---
+
+### Chat & Session API (chat)
+
+This project includes a chat-oriented interface that groups messages into sessions and supports file attachments. The chat endpoints power the web UI and support streaming assistant responses via WebSocket.
+
+#### Get Sessions
+
+**GET** `/api/v1/chat/sessions`
+
+Returns a list of chat sessions (most recent first) including messages and associated reports.
+
+#### Create Session
+
+**POST** `/api/v1/chat/sessions`
+
+Create a new chat session. Body: `{ "title": "Your session title" }`.
+
+#### Update Session (rename)
+
+**PATCH** `/api/v1/chat/sessions/{session_id}`
+
+Update chat session metadata (currently supports updating `title`). Example request body: `{ "title": "New Title" }`.
+
+Example (curl):
+```bash
+curl -X PATCH http://localhost:8000/api/v1/chat/sessions/42 \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Follow-up review"}'
+```
+
+#### Delete Session
+
+**DELETE** `/api/v1/chat/sessions/{session_id}`
+
+Deletes a session and all its messages and associated reports.
+
+#### Send Message (with optional file)
+
+**POST** `/api/v1/chat/sessions/{session_id}/messages`
+
+Submit a user message and optionally attach a file (image or PDF). The endpoint accepts multipart form data with fields:
+
+- `content`: string (required) — user message text
+- `file`: file (optional) — uploaded file (PDF, PNG, JPG, JPEG, BMP, TIFF)
+- `audience`: string (optional, default `patient`) — `patient` or `doctor`. Controls which summarizer path is used.
+
+Notes:
+- File size limit: 10MB. The server reads uploaded bytes into a separate variable and writes the file to `media/chat_uploads/` so the textual `content` is not overwritten by raw bytes.
+- When a file is uploaded the backend creates a `Report` row and associates it to the chat session. For images the VLM is used directly; for documents text is extracted and summarized.
+- The endpoint returns the newly created user message and will create an assistant message that is streamed to clients (websocket) while the AI response is generated.
+
+Example (curl):
+```bash
+curl -X POST http://localhost:8000/api/v1/chat/sessions/42/messages \
+  -F "content=Please review this report" \
+  -F "audience=patient" \
+  -F "file=@/path/to/report.pdf"
+```
+
+---
+
+### Guardrails & Disclaimer Behavior
+
+The summarizer code applies guardrail checks to avoid producing diagnoses or prescriptions. Recent change: instead of replacing the model's output with a canned disclaimer, the service now appends a short disclaimer to flagged outputs while preserving the model content. The guardrail logic is implemented in `app/services/summarizer_service.py` (`_guardrail_validator`).
+
+
 ### Reports
 
 Report endpoints are public in this development build.

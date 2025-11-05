@@ -2,7 +2,16 @@
 
 Welcome to the **Medical Report Analysis & Voice Summary System** documentation!
 
-## 📚 Documentation Files
+## � Recent changes (Nov 2025)
+
+- Added a right-side Files drawer and Files button in the chat header for viewing uploaded files and session reports.
+- Introduced a persistent theme toggle (emerald theme + light/dark) in the dashboard; preference is stored in localStorage.
+- Session rename persistence: frontend now PATCHes `/api/v1/chat/sessions/{id}` and the backend persists the `title`.
+- Upload handling fix: server reads uploaded bytes into a separate variable and writes files to `media/chat_uploads/` (prevents raw binary from overwriting message text).
+- Guardrail behavior adjusted: flagged outputs now preserve the model's analysis and append a short disclaimer (see `app/services/summarizer_service.py` `_guardrail_validator`).
+- Added `tools/repair_messages_from_reports.py` to detect/repair existing messages that contain binary dumps from older runs.
+
+## �📚 Documentation Files
 
 ### Getting Started
 1. **[README.md](README.md)** - Complete project overview, architecture, features

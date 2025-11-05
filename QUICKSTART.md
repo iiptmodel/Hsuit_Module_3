@@ -119,6 +119,11 @@ uvicorn app.main:app --reload
 
 Visit: `http://localhost:8000/dashboard` — authentication is disabled in this development build so you can use the app immediately.
 
+> UI notes (new)
+>- Theme toggle: use the theme button in the top-right of the dashboard to switch between light and dark (choice is persisted in localStorage).
+>- Files drawer: click the Files button in the chat header to open a right-side drawer listing uploaded files and session reports.
+>- Rename sessions: click the pencil icon next to the session title to rename a chat (this sends a PATCH to `/api/v1/chat/sessions/{id}` and persists the change).
+
 ### 2. Upload Medical Report
 
 Go to: `http://localhost:8000/dashboard`
@@ -148,6 +153,7 @@ After processing (5-15 seconds):
 - ✅ AI-generated summary (patient-friendly explanation)
 - ✅ Voice output (MP3 file)
 - ✅ Downloadable audio
+- ✅ Files drawer and session reports (open from the Files button in the chat header)
 
 ---
 
