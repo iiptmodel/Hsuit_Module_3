@@ -344,6 +344,16 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 - **Alternative API Docs**: <http://localhost:8000/redoc>
 - **Health Check**: <http://localhost:8000/health>
 
+API-only mode
+
+If you intend to host only the REST API (no UI/static files), set the environment variable `API_ONLY=1` before starting the app. In API-only mode the root returns a small JSON health object and the pages/static routes are not served.
+
+```powershell
+# API-only: useful for headless deployments behind API Gateway or load balancers
+$env:API_ONLY = "1"
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
 ## 🎨 Features
 
 ### 1. Unified Chat Interface
@@ -502,7 +512,29 @@ tesseract --version
 - [DEPLOYMENT.md](DEPLOYMENT.md) - Production deployment guide
 - [API.md](API.md) - Complete API reference
 
-## 🤝 Contributing
+## � SDK & Docker
+
+This repository now includes a minimal Python SDK and Docker artifacts to help you integrate and deploy the REST API quickly.
+
+- SDK: `sdk/medanalyzer_client.py` — a tiny Python client (uses `requests`) with helpers for sessions, messages, and reports. See `sdk/README.md` for examples.
+- Docker: `Dockerfile` and `docker-compose.yml` — convenient containers for API-first deployments. The Docker image runs in API-only mode by default (`API_ONLY=1`).
+
+Local quickstart (Docker)
+
+```powershell
+# Build image
+docker build -t med-analyzer .
+
+# Run (ensure DATABASE_URL and SECRET_KEY are provided in environment)
+docker compose up -d
+
+# Tail logs
+docker compose logs -f med-analyzer
+```
+
+To run with the UI enabled, set `API_ONLY=0` when starting the container or remove the env var.
+
+## �🤝 Contributing
 
 Contributions are welcome! Please:
 

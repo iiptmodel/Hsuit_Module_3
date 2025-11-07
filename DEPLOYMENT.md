@@ -182,6 +182,100 @@ This guide covers deploying the Medical Report Analysis System to production env
 
 ---
 
+### Option 5: AWS API-first deployment (recommended for production REST API)
+
+This project can be run as an API-only service (set `API_ONLY=1`) and hosted on AWS. Recommended approach for a production REST API is to build a Docker image and deploy to **ECS Fargate** behind an Application Load Balancer (ALB) or use **EKS** for Kubernetes orchestration. For serverless low-latency scenarios without GPU needs, you can use **AWS Lambda + API Gateway** (but note: large models and GPU workloads won't work on Lambda).
+
+High level steps (ECS Fargate + ALB)
+
+1. Build Docker image and push to ECR
+
+```bash
+# Authenticate with ECR
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account>.dkr.ecr.us-east-1.amazonaws.com
+
+# Build and tag
+docker build -t med-analyzer:latest .
+docker tag med-analyzer:latest <account>.dkr.ecr.us-east-1.amazonaws.com/med-analyzer:latest
+
+# Push
+docker push <account>.dkr.ecr.us-east-1.amazonaws.com/med-analyzer:latest
+```
+
+2. Create ECS Task Definition and Service
+
+- Use Fargate launch type
+- Set container port to 8000
+- Configure environment variables (DATABASE_URL, SECRET_KEY, API_ONLY=1, CORS_ORIGINS, etc.) via ECS Task Definition or Secrets Manager
+- Ensure task has an IAM role with permissions to pull from ECR and read secrets from Secrets Manager
+
+3. Configure Application Load Balancer (ALB)
+
+- Create ALB with public listeners (80/443)
+- Add target group for ECS service (health check: /health)
+- Attach SSL certificate from ACM for HTTPS
+
+4. Autoscaling & Monitoring
+
+- Configure ECS Service Auto Scaling (scale based on CPU or custom CloudWatch metrics)
+- Forward logs to CloudWatch Logs from the container
+- Configure CloudWatch alarms for high error rates or unhealthy tasks
+
+5. Optional: GPU Support
+
+- Fargate currently does not support GPUs. For GPU workloads, use EC2-based ECS tasks (EC2 launch type) with GPU-enabled instances (g4dn/g5 families) or EKS with GPU node groups.
+
+API Gateway + Lambda (non-GPU, small models)
+
+- Useful for serverless deployments if your workload is CPU-only and fits Lambda limits.
+- Package lightweight model logic into Lambda layers and expose endpoints via API Gateway.
+
+Secrets & Configuration
+
+- Store secrets (DATABASE_URL, SECRET_KEY) in AWS Secrets Manager and reference them in the ECS Task Definition.
+- Use Parameter Store or Secrets Manager for configuration values.
+
+Security & Networking
+
+- Place database (RDS) in private subnets and allow access only from ECS tasks/security groups.
+- Use ALB + WAF for basic DDoS protections and request filtering.
+- Terminate TLS at ALB (use ACM certificate).
+
+CI/CD
+
+- Use GitHub Actions to build and push Docker images to ECR and update ECS Service via `aws ecs update-service` or use AWS CodeDeploy/CodePipeline.
+
+Example GitHub Actions job (build & deploy to ECR):
+
+```yaml
+name: deploy
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Build image
+        run: |
+          docker build -t med-analyzer:latest .
+          docker tag med-analyzer:latest ${{ secrets.ECR_REGISTRY }}/med-analyzer:latest
+      - name: Push to ECR
+        run: |
+          docker push ${{ secrets.ECR_REGISTRY }}/med-analyzer:latest
+```
+
+Notes
+
+- When deploying as API-only (`API_ONLY=1`), the web UI/templates are not served. This is useful when exposing only REST endpoints to other services.
+- Ensure you choose EC2/EKS for GPU workloads. Fargate doesn't support GPUs as of this writing.
+
+---
+
 ### Option 4: Docker Containerization
 
 **Best for**: Consistent deployments, Kubernetes orchestration

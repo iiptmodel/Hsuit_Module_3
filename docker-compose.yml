@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  med-analyzer:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - API_ONLY=1
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+    volumes:
+      - ./media:/app/media
+      - ./models:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

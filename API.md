@@ -9,6 +9,9 @@ Production: https://your-domain.com
 
 ## API Endpoints
 
+Note: this application can run in API-only mode by setting the environment variable `API_ONLY=1`. In that mode the web UI and static assets are not served and the root (`GET /`) returns a small JSON object. All `/api/v1/*` endpoints remain available.
+
+
 ### Authentication (development)
 
 Authentication endpoints are disabled in this development build. The original

@@ -124,15 +124,29 @@ async def generic_exception_handler(request: Request, exc: Exception):
     )
 
 # Mount static & media
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-app.mount("/media", StaticFiles(directory="media"), name="media")
+API_ONLY = os.environ.get("API_ONLY", "0")
 
-# Routers
+# If running in API-only mode (API_ONLY=1), don't serve the web UI/static pages.
+if API_ONLY != "1":
+    # Mount static & media for web UI
+    app.mount("/static", StaticFiles(directory="app/static"), name="static")
+    app.mount("/media", StaticFiles(directory="media"), name="media")
+
+# Routers (always include API router)
 app.include_router(api_router, prefix="/api/v1")
-app.include_router(page_router, tags=["Pages"])
+
+# Include page router only when not running API-only mode
+if API_ONLY != "1":
+    app.include_router(page_router, tags=["Pages"])
 
 
-@app.get("/", include_in_schema=False)
-def read_root():
-    """Redirects root to the chat interface."""
-    return RedirectResponse("/chat")
+if API_ONLY != "1":
+    @app.get("/", include_in_schema=False)
+    def read_root():
+        """Redirects root to the chat interface."""
+        return RedirectResponse("/chat")
+else:
+    # In API-only deployments we keep root returning a small JSON health/info object
+    @app.get("/", include_in_schema=False)
+    def read_root_api_only():
+        return {"service": "med-analyzer", "mode": "api-only"}

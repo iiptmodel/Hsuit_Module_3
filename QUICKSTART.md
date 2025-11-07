@@ -111,6 +111,17 @@ uvicorn app.main:app --reload
 
 **Server starts at**: `http://localhost:8000`
 
+API-only (headless) mode
+
+If you only want to expose the REST API (no web UI), set the `API_ONLY` environment variable before starting the server:
+
+```powershell
+$env:API_ONLY = "1"
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+In this mode the app will not serve static files or templates and the root `GET /` returns a small JSON health object.
+
 ---
 
 ## 🎯 First Time Usage
