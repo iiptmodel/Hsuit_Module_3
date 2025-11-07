@@ -24,6 +24,7 @@ class Report(Base):
 
     raw_text = Column(Text, nullable=True)
     original_file_path = Column(String, nullable=True)
+    original_filename = Column(String, nullable=True)
     summary_text = Column(Text, nullable=True)
     audio_file_path = Column(String, nullable=True)
 

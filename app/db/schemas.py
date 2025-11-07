@@ -18,6 +18,7 @@ class Report(BaseModel):
     report_type: ReportType
     raw_text: str | None = None
     original_file_path: str | None = None
+    original_filename: str | None = None
     summary_text: str | None = None
     audio_file_path: str | None = None
     chat_session_id: int | None = None

@@ -12,8 +12,9 @@ text does not include diagnoses or prescription recommendations.
 from typing import Any, Dict, List, Tuple
 import logging
 import re
+import ollama
 
-from app.services.ollama_client import chat_with_retries
+from app.services.ollama_client import chat_with_retries, is_ollama_reachable
 
 
 logger = logging.getLogger(__name__)
@@ -57,28 +58,41 @@ PROHIBITED_PATTERNS: Dict[str, List[str]] = {
 }
 
 
+def is_simple_greeting(query: str) -> bool:
+    """Return True if the user input is a short greeting (no medical intent).
+
+    We purposely treat very short greeting variants as a fast-path to avoid
+    unnecessary model calls and latency spikes on cold starts.
+    """
+    if not query:
+        return False
+    q = query.strip().lower()
+    # Accept variants like hi, hii, hiiii, hey, heyy, heyyyy, hello, howdy, greetings
+    return bool(re.fullmatch(r"(hi+|he+y+|hello|hey|howdy|greetings|good (morning|afternoon|evening))!?", q))
+
+
+def generate_greeting_response() -> str:
+    """Static friendly greeting used for simple greeting fast-path."""
+    return (
+        "Hello! I'm your MedAnalyzer Assistant. You can ask me to explain imaging, lab, or other medical reports, "
+        "summarize uploaded documents for a patient or a doctor, or clarify medical terms. "
+        "Feel free to upload a PDF or image, then ask a question like: 'Explain the key findings for a patient.'"
+    )
+
+
 def validate_user_query(query: str) -> Tuple[bool, str]:
     """Validate if user query is appropriate for medical assistant.
 
-    Returns (is_valid, error_message).
+    Returns (is_valid, error_message). Simple greetings are considered valid and handled upstream.
     """
     query_lower = (query or "").lower().strip()
 
-    if len(query_lower) < 4:
-        return False, "Please provide a more detailed question."
-
-    # Allow common greetings
-    greeting_patterns = [
-        r"^\b(hello|hi|hey|good (morning|afternoon|evening)|how are you|howdy|greetings)\b.*$",
-        r".*\b(hello|hi|hey|good (morning|afternoon|evening)|how are you|howdy|greetings)\b.*$",
-    ]
-    if any(re.search(p, query_lower) for p in greeting_patterns):
-        return True, ""
-
+    # Block offensive language
     offensive_patterns = [r"\bfuck\b", r"\bshit\b", r"\bdamn\b", r"\bass\b", r"\bhell\b"]
     if any(re.search(p, query_lower) for p in offensive_patterns):
         return False, "Please keep the conversation professional and respectful."
 
+    # Block off-topic conversation attempts
     if any(re.search(p, query_lower) for p in PROHIBITED_PATTERNS["timepass"]):
         return False, (
             "I'm here to help with medical information and report analysis. "
@@ -130,8 +144,82 @@ def apply_response_guardrails(response: str) -> str:
 
     return response
 
+async def generate_chat_response_streaming(user_message: str, image_path: str = None):
+    """Generate a chat response using Ollama streaming API, yielding tokens in real-time.
 
+    Applies guardrails after full response is received.
+    """
+    logger.info("Generating streaming chat response for message: %.100s...", user_message)
 
+    # Allow simple greetings to yield a single static message (still via streaming interface)
+    if is_simple_greeting(user_message):
+        yield generate_greeting_response()
+        return
+
+    is_valid, err = validate_user_query(user_message)
+    if not is_valid:
+        yield err
+        return
+
+    system_prompt = (
+        "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results."
+    )
+
+    messages: List[Dict[str, Any]] = [{"role": "system", "content": system_prompt}]
+
+    if image_path:
+        messages.append({"role": "user", "content": user_message, "images": [image_path]})
+    else:
+        messages.append({"role": "user", "content": user_message})
+
+    try:
+        # Preflight check: ensure model backend is reachable to avoid streaming exceptions
+        if not is_ollama_reachable(timeout=0.8):
+            logger.warning("Ollama not reachable for streaming; returning friendly notice")
+            yield "The AI engine is temporarily unavailable for streaming responses. Please try again shortly."
+            return
+
+        logger.info("Calling Ollama streaming chat...")
+        # Use ollama.chat with stream=True
+        stream = ollama.chat(
+            model="amsaravi/medgemma-4b-it:q8",
+            messages=messages,
+            options={"temperature": 0.7, "top_p": 0.9, "num_predict": 300},
+            stream=True
+        )
+
+        full_response = ""
+        chunk_buffer = ""
+        chunk_size = 10  # Yield every 10 tokens or at sentence end
+        for chunk in stream:
+            token = chunk['message']['content']
+            full_response += token
+            chunk_buffer += token
+
+            # Yield chunk if buffer reaches size or ends with sentence punctuation
+            if len(chunk_buffer.split()) >= chunk_size or chunk_buffer.strip().endswith(('.', '!', '?')):
+                yield chunk_buffer
+                chunk_buffer = ""
+
+        # Yield any remaining buffer
+        if chunk_buffer:
+            yield chunk_buffer
+
+        # After streaming, apply guardrails to full response
+        validated = apply_response_guardrails(full_response)
+        if validated != full_response:
+            # If guardrails modified the response, yield the difference or handle accordingly
+            yield validated[len(full_response):]
+
+        logger.info("Streaming chat response completed and validated")
+
+    except Exception as e:
+        logger.exception("Streaming chat response generation failed: %s", e)
+        lowered = str(e).lower()
+        if "failed to connect" in lowered or "connectionerror" in lowered:
+            yield "I couldn't reach the AI engine for streaming. Please try again shortly."
+        else:
+            yield "I ran into an issue generating the streamed response. Please try again or rephrase your question."
 
 
 def generate_chat_response(user_message: str, image_path: str = None) -> str:
@@ -140,6 +228,9 @@ def generate_chat_response(user_message: str, image_path: str = None) -> str:
     conversation_history: list of {"role": "user|assistant", "content": str}
     """
     logger.info("Generating chat response for message: %.100s...", user_message)
+
+    if is_simple_greeting(user_message):
+        return generate_greeting_response()
 
     is_valid, err = validate_user_query(user_message)
     if not is_valid:
@@ -156,7 +247,15 @@ def generate_chat_response(user_message: str, image_path: str = None) -> str:
     else:
         messages.append({"role": "user", "content": user_message})
 
+    # Preflight: if the model backend is unreachable, provide a clear user message instead of a generic error
     try:
+        if not is_ollama_reachable(timeout=0.8):
+            logger.warning("Ollama server not reachable; returning friendly message")
+            return (
+                "The AI engine is temporarily unavailable. Please try again soon. "
+                "If this keeps happening, ensure the model server is running."
+            )
+
         logger.info("Calling Ollama via chat_with_retries...")
         resp = chat_with_retries(
             model="amsaravi/medgemma-4b-it:q8",
@@ -175,6 +274,9 @@ def generate_chat_response(user_message: str, image_path: str = None) -> str:
         logger.info("Chat response validated and ready")
         return validated
 
-    except Exception:
+    except Exception as e:
         logger.exception("Chat response generation failed")
-        return "I apologize, but I encountered an error processing your message. Please try rephrasing your question."
+        lowered = str(e).lower()
+        if "failed to connect" in lowered or "connectionerror" in lowered:
+            return "I couldn't reach the AI engine. Please retry in a moment."
+        return "I ran into an issue processing that. Please try again or rephrase your question."

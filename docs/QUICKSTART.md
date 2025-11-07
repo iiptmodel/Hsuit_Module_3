@@ -102,6 +102,13 @@ You should see:
 ✅ SYSTEM READY!
 ```
 
+Optional: run the lightweight pytest suite we include for quick integration checks:
+
+```powershell
+pip install -r requirements.txt pytest
+pytest -q
+```
+
 ### 7. Run Application
 
 ```powershell

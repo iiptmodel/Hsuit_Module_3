@@ -29,7 +29,7 @@ class RequestIDFilter(logging.Filter):
         return True
 
 # Optionally preload models on startup when PRELOAD_MODELS=1
-import download_models as _download_models
+import scripts.download_models as _download_models
 
 from app.db import models, database
 from app.api import api_router

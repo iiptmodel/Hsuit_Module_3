@@ -316,3 +316,5 @@ For questions, issues, or contributions:
 **Version**: 1.0.0  
 **Last Updated**: November 2025  
 **Status**: Development Build - Not for Production Use
+
+For contribution guidelines and development workflow see `CONTRIBUTING.md` in the repository root. Release notes are maintained in `CHANGELOG.md`.

@@ -3,9 +3,10 @@ from fastapi import BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import logging
-import shutil
 from pathlib import Path
 from uuid import uuid4
+import time
+import asyncio
 import re
 
 from app.db import schemas, models
@@ -155,6 +156,7 @@ async def send_chat_message(
                 language="English",  # Could be parameterized
                 report_type=models.ReportType.image if is_image else models.ReportType.text,
                 original_file_path=file_save_path.as_posix(),
+                original_filename=file.filename,
                 status=models.ReportStatus.completed,  # Mark as completed for now
                 chat_session_id=session_id
             )
@@ -216,93 +218,146 @@ async def send_chat_message(
             except Exception as e:
                 logger.error(f"Patient summary generation failed: {e}", exc_info=True)
                 ai_response_text = "I encountered an error generating the summary. Please try again."
-        else:
-            ai_response_text = chat_service.generate_chat_response(
-                full_message,  # Use full message with file context
-                image_path=image_path_for_vlm  # Pass image directly to VLM
+        # If summarizer produced a direct text (doctor/patient flows), stream that text instead
+        summarizer_text = None
+        if 'ai_response_text' in locals():
+            summarizer_text = re.sub(r'\*+', '', ai_response_text).strip()
+
+        # Use streaming for real-time token-by-token response in all cases
+            # Use streaming for real-time token-by-token response
+            # Create an assistant message placeholder so clients can show a live message
+            ai_message = models.ChatMessage(
+                session_id=session_id,
+                role="assistant",
+                content=""
             )
+            db.add(ai_message)
+            db.commit()
+            db.refresh(ai_message)
 
-        # Clean the response text by removing asterisks and extra whitespace
-        ai_response_text = re.sub(r'\*+', '', ai_response_text).strip()
+            # Notify any websocket clients that an assistant message is being streamed
+            try:
+                from app.api.ws import manager as ws_manager
+                init_payload = {
+                    "type": "assistant_init",
+                    "message_id": ai_message.id,
+                    "content": "",
+                    "seq": 0
+                }
+                await ws_manager.send_json_to_session(session_id, init_payload)
+            except Exception:
+                # Non-fatal: websocket may not be connected
+                pass
 
-        # Create an assistant message placeholder so clients can show a live message
-        ai_message = models.ChatMessage(
-            session_id=session_id,
-            role="assistant",
-            content=""
-        )
-        db.add(ai_message)
-        db.commit()
-        db.refresh(ai_message)
+            # Stream the response using Ollama's streaming API or a local summarizer streamer
+            try:
+                full_response = ""
+                seq = 0
+                token_count_since_commit = 0
+                last_commit = time.monotonic()
+                # Choose streaming source: summarizer_text yields local chunks, otherwise call model stream
+                async def _stream_from_text(text: str):
+                    # Yield sentence/chunk based pieces so clients see progressive output
+                    # Split on sentence boundaries but keep reasonably sized chunks
+                    sentences = re.split(r'(?<=[\.!?])\s+', text)
+                    for sent in sentences:
+                        if not sent:
+                            continue
+                        # Further chunk long sentences for smoother streaming
+                        max_chunk = 200
+                        for i in range(0, len(sent), max_chunk):
+                            piece = sent[i:i+max_chunk]
+                            # Small await to yield control and behave like an async stream
+                            await asyncio.sleep(0)
+                            yield piece
 
-        # Notify any websocket clients that an assistant message is being streamed
-        try:
-            from app.api.ws import manager as ws_manager
-            init_payload = {
-                "type": "assistant_init",
-                "message_id": ai_message.id,
-                "content": ""
-            }
-            await ws_manager.send_json_to_session(session_id, init_payload)
-        except Exception:
-            # Non-fatal: websocket may not be connected
-            pass
+                if summarizer_text:
+                    stream_iter = _stream_from_text(summarizer_text)
+                    logger.debug("Using local summarizer stream for session %s (approx %d chars)", session_id, len(summarizer_text))
+                else:
+                    stream_iter = chat_service.generate_chat_response_streaming(
+                        full_message,  # Use full message with file context
+                        image_path=image_path_for_vlm  # Pass image directly to VLM
+                    )
 
-        # Stream the response to connected websocket clients in reasonable chunks
-        try:
-            # Simple chunking: keep chunks small so UI can progressively render text
-            chunk_size = 20
-            chunks = [ai_response_text[i:i+chunk_size] for i in range(0, len(ai_response_text), chunk_size)] or [ai_response_text]
+                async for token in stream_iter:
+                    full_response += token
+                    token_count_since_commit += 1
 
-            for idx, chunk in enumerate(chunks):
-                # Append chunk to DB message and commit
-                ai_message.content = (ai_message.content or "") + chunk
+                    # Send delta to websocket clients (real-time updates)
+                    try:
+                        from app.api.ws import manager as ws_manager
+                        seq += 1
+                        payload = {
+                            "type": "assistant_delta",
+                            "message_id": ai_message.id,
+                            "content": full_response,
+                            "final": False,  # Will set to True after loop
+                            "seq": seq
+                        }
+                        await ws_manager.send_json_to_session(session_id, payload)
+                    except Exception:
+                        # Ignore websocket errors; clients may poll instead
+                        pass
+
+                    # Occasionally persist progress so refreshed clients can poll and catch up
+                    now = time.monotonic()
+                    if token_count_since_commit >= 20 or (now - last_commit) > 1.0:
+                        ai_message.content = full_response
+                        db.add(ai_message)
+                        db.commit()
+                        db.refresh(ai_message)
+                        token_count_since_commit = 0
+                        last_commit = now
+
+                # Clean the response text by removing asterisks and extra whitespace
+                full_response = re.sub(r'\*+', '', full_response).strip()
+                # Update DB message content only once at the end
+                ai_message.content = full_response
                 db.add(ai_message)
                 db.commit()
                 db.refresh(ai_message)
 
-                # Send delta to websocket clients
+                # Send final delta
                 try:
                     from app.api.ws import manager as ws_manager
                     payload = {
                         "type": "assistant_delta",
                         "message_id": ai_message.id,
-                        "content": ai_message.content,
-                        "final": idx == len(chunks) - 1
+                        "content": full_response,
+                        "final": True,
+                        "seq": seq + 1
                     }
                     await ws_manager.send_json_to_session(session_id, payload)
                 except Exception:
                     # Ignore websocket errors; clients may poll instead
                     pass
 
-                # Add small delay between chunks to simulate typing speed
-                if idx < len(chunks) - 1:
-                    await asyncio.sleep(0.05)
+                # Schedule background TTS generation now that final content is saved
+                try:
+                    audio_filename = f"{uuid4().hex}_response.wav"
+                    background_tasks.add_task(
+                        _generate_and_attach_tts,
+                        ai_message.id,
+                        ai_message.content,
+                        audio_filename,
+                    )
+                    logger.info(f"Scheduled background TTS for message {ai_message.id}")
+                except Exception as e:
+                    logger.error(f"Failed to schedule background TTS: {e}", exc_info=True)
+                logger.info(f"AI response streamed and saved in session {session_id}")
+                return ai_message
 
-            # Schedule background TTS generation now that final content is saved
-            try:
-                audio_filename = f"{uuid4().hex}_response.wav"
-                background_tasks.add_task(
-                    _generate_and_attach_tts,
-                    ai_message.id,
-                    ai_message.content,
-                    audio_filename,
-                )
-                logger.info(f"Scheduled background TTS for message {ai_message.id}")
             except Exception as e:
-                logger.error(f"Failed to schedule background TTS: {e}", exc_info=True)
-
-            logger.info(f"AI response streamed and saved in session {session_id}")
-            return ai_message
-
-        except Exception as e:
-            # If streaming fails for any reason, fall back to saving the full response
-            logger.exception("Streaming assistant response failed, falling back to full save: %s", e)
-            ai_message.content = ai_response_text
-            db.add(ai_message)
-            db.commit()
-            db.refresh(ai_message)
-            return ai_message
+                # Streaming failed — log with detail and return a helpful assistant error message
+                logger.exception("Streaming assistant response failed for session %s: %s", session_id, e)
+                ai_message.content = (
+                    "I ran into an issue streaming the AI response. Please try again shortly."
+                )
+                db.add(ai_message)
+                db.commit()
+                db.refresh(ai_message)
+                return ai_message
         
     except Exception as e:
         logger.error(f"Error generating chat response: {e}", exc_info=True)

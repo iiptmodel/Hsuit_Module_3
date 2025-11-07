@@ -399,6 +399,29 @@ Three-tier fallback system:
 2. **Secondary**: PDF sanitization and retry
 3. **Tertiary**: OCR fallback for scanned documents
 
+## ▶️ Tests
+
+We include a minimal integration test that exercises the chat flow without external model or network calls. Tests use FastAPI's TestClient and monkeypatching to avoid heavy dependencies.
+
+To run tests locally:
+
+```powershell
+# Activate environment
+.\myenv\Scripts\Activate.ps1
+
+# Install test dependencies if needed
+pip install -r requirements.txt pytest
+
+# Run tests
+pytest -q
+```
+
+The test suite included is intentionally small and designed to catch request/response regressions and DB wiring issues.
+
+## 📜 Changelog
+
+See `CHANGELOG.md` for release notes and an overview of notable changes.
+
 ## 🔧 API Endpoints
 
 ### Reports API

@@ -923,7 +923,7 @@ function renderReports(reports) {
         info.style.display = 'flex';
         info.style.flexDirection = 'column';
         const name = document.createElement('div');
-        const fname = r.original_file_path ? r.original_file_path.split(/\\/).pop().split('/').pop() : 'File';
+        const fname = r.original_filename || (r.original_file_path ? r.original_file_path.split(/\\/).pop().split('/').pop() : 'File');
         name.textContent = fname;
         name.style.fontWeight = '600';
         name.style.whiteSpace = 'nowrap';

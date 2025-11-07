@@ -27,6 +27,8 @@ Welcome to the **Medical Report Analysis & Voice Summary System** documentation!
 7. **[API.md](API.md)** - Complete API documentation with examples
 8. **[DEPLOYMENT.md](DEPLOYMENT.md)** - Production deployment guide
 
+For contribution guidelines and release notes see `CONTRIBUTING.md` and `CHANGELOG.md` in the repository root.
+
 ---
 
 ## 🚀 Quick Navigation

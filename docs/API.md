@@ -26,6 +26,10 @@ are not active by default. Reports endpoints are public; see Reports below.
 
 This project includes a chat-oriented interface that groups messages into sessions and supports file attachments. The chat endpoints power the web UI and support streaming assistant responses via WebSocket.
 
+Important: the chat endpoint uses streaming-only assistant responses. The server persistently creates an assistant message placeholder and streams deltas via WebSocket (`assistant_delta`) while generating the reply. When a summarizer path (`audience=doctor|patient`) produces pre-computed text, that text is streamed to clients in small chunks so the UI receives progressive updates.
+
+Testing note: the included integration test patches the streaming generator so tests run quickly without requiring Ollama or external model servers.
+
 #### Get Sessions
 
 **GET** `/api/v1/chat/sessions`
