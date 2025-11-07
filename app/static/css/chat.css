@@ -1904,6 +1904,7 @@ select, textarea, input, button {
     padding: 1rem;
     overflow-y: auto;
     flex: 1;
+    overflow-x: hidden;
 }
 .files-panel .file-preview {
     padding: 0.5rem;

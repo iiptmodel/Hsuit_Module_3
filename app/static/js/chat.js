@@ -2,6 +2,12 @@
 let currentSessionId = null;
 let uploadedFile = null;
 let sessionSocket = null;
+let sessionSocketPing = null; // keepalive interval id
+
+// Track streaming state per assistant message
+const streamState = {
+    // [messageId]: { lastText: '', final: false }
+};
 
 // DOM Elements (will be initialized on DOMContentLoaded)
 let welcomeScreen;
@@ -107,6 +113,14 @@ function setupEventListeners() {
     }
     if (filesPanelClose && filesPanel) {
         filesPanelClose.addEventListener('click', () => closeFilesPanel());
+    }
+}
+
+// Ensure websocket is connected for the active session before sending a message
+function ensureWebsocketForCurrentSession() {
+    if (!currentSessionId) return;
+    if (!(sessionSocket && sessionSocket.readyState === WebSocket.OPEN)) {
+        setupWebsocket(currentSessionId);
     }
 }
 
@@ -294,6 +308,19 @@ async function loadSession(sessionId) {
         scrollToBottom();
     // Open websocket for realtime updates for this session
     setupWebsocket(currentSessionId);
+
+    // Heuristic: if the latest assistant message may still be streaming, start a short polling fallback
+    try {
+        const lastMsg = (session.messages || []).slice(-1)[0];
+        if (lastMsg && lastMsg.role === 'assistant') {
+            // Initialize stream state if not present
+            streamState[lastMsg.id] = streamState[lastMsg.id] || { lastText: lastMsg.content || '', final: false };
+            // Poll for a brief window to catch up if we refreshed mid-stream
+            startMessagePollFallback(lastMsg.id, 10000, 1000);
+        }
+    } catch (e) {
+        // ignore
+    }
         
     } catch (error) {
         console.error('Error loading session:', error);
@@ -328,6 +355,8 @@ async function sendMessage() {
     if (!currentSessionId) {
         await createNewSession();
     }
+    // Make sure websocket is up before sending to maximize chance to receive early deltas
+    ensureWebsocketForCurrentSession();
     
     const content = messageInput.value.trim();
     
@@ -373,15 +402,20 @@ async function sendMessage() {
             body: formData
         });
         
-        const aiMessage = await response.json();
+    const aiMessage = await response.json();
         
         // Remove typing indicator
         removeTypingIndicator();
         
-        // Display AI response
-            if (!(sessionSocket && sessionSocket.readyState === WebSocket.OPEN)) {
-                displayMessage(aiMessage);
-            }
+        // Display AI response if websocket didn't render it (DOM absence check), regardless of socket state
+        const maybeExisting = messagesContainer.querySelector(`[data-message-id='${aiMessage.id}']`);
+        if (!maybeExisting) {
+            displayMessage(aiMessage);
+        }
+
+        // Mark stream state as final if server already finished
+        streamState[aiMessage.id] = streamState[aiMessage.id] || { lastText: '', final: true };
+        streamState[aiMessage.id].final = true;
         
         // Update stats
         loadStats();
@@ -452,7 +486,7 @@ function displayMessage(message) {
 function pollForAudio(messageId, messageElement) {
     let attempts = 0;
     const maxAttempts = 30; // Poll for up to 30 seconds
-    const pollInterval = 1000; // Every 1 second
+    const pollInterval = 2000; // Every 2 seconds to reduce server load
 
     const poll = async () => {
         if (attempts >= maxAttempts) return;
@@ -462,22 +496,39 @@ function pollForAudio(messageId, messageElement) {
             const messages = await response.json();
             const updatedMessage = messages.find(msg => msg.id === messageId);
 
-            if (updatedMessage && updatedMessage.audio_file_path) {
-                // Update the message element with audio
-                const content = messageElement.querySelector('.message-content');
-                if (content && !content.querySelector('audio')) {
-                    const audioDiv = document.createElement('div');
-                    audioDiv.className = 'message-audio';
-                    audioDiv.innerHTML = `<audio controls src="/${updatedMessage.audio_file_path}"></audio>`;
-                    const timeEl = content.querySelector('.message-time');
-                    if (timeEl) content.insertBefore(audioDiv, timeEl);
-                    else content.appendChild(audioDiv);
-                    scrollToBottom();
+            if (updatedMessage) {
+                // Update content if it's longer (in case WebSocket deltas were missed)
+                const currentContent = messageElement.querySelector('.message-content');
+                if (currentContent) {
+                    const currentText = currentContent.textContent || '';
+                    const serverText = updatedMessage.content || '';
+                    if (serverText.length > currentText.length) {
+                        // Preserve existing audio div if present
+                        const existingAudio = currentContent.querySelector('.message-audio');
+                        const audioHtml = existingAudio ? existingAudio.outerHTML : '';
+                        const timeEl = currentContent.querySelector('.message-time');
+                        currentContent.innerHTML = formatMessageContent(serverText) + audioHtml + (timeEl ? timeEl.outerHTML : '');
+                        scrollToBottom();
+                    }
                 }
-                return; // Stop polling
+
+                if (updatedMessage.audio_file_path) {
+                    // Update the message element with audio
+                    const content = messageElement.querySelector('.message-content');
+                    if (content && !content.querySelector('audio')) {
+                        const audioDiv = document.createElement('div');
+                        audioDiv.className = 'message-audio';
+                        audioDiv.innerHTML = `<audio controls src="/${updatedMessage.audio_file_path}"></audio>`;
+                        const timeEl = content.querySelector('.message-time');
+                        if (timeEl) content.insertBefore(audioDiv, timeEl);
+                        else content.appendChild(audioDiv);
+                        scrollToBottom();
+                    }
+                    return; // Stop polling
+                }
             }
         } catch (error) {
-            console.warn('Error polling for audio:', error);
+            console.warn('Error polling for updates:', error);
         }
 
         attempts++;
@@ -506,6 +557,11 @@ function setupWebsocket(sessionId) {
 
     sessionSocket.onopen = () => {
         console.info('WebSocket connected for session', sessionId);
+        // keepalive ping every 25s so server receive loop stays healthy through proxies
+        if (sessionSocketPing) clearInterval(sessionSocketPing);
+        sessionSocketPing = setInterval(() => {
+            try { sessionSocket && sessionSocket.readyState === WebSocket.OPEN && sessionSocket.send('ping'); } catch (_) {}
+        }, 25000);
     };
 
     sessionSocket.onmessage = (ev) => {
@@ -523,12 +579,23 @@ function setupWebsocket(sessionId) {
         }
     };
 
-    sessionSocket.onclose = () => {
-        console.info('WebSocket closed for session', sessionId);
+    sessionSocket.onclose = (event) => {
+        console.info('WebSocket closed for session', sessionId, 'code:', event.code, 'reason:', event.reason);
+        if (sessionSocketPing) { clearInterval(sessionSocketPing); sessionSocketPing = null; }
+        // Attempt reconnection if not a clean close and session is still active
+        if (!event.wasClean && currentSessionId === sessionId) {
+            console.info('Attempting to reconnect WebSocket in 2 seconds...');
+            setTimeout(() => {
+                if (currentSessionId === sessionId) {
+                    setupWebsocket(sessionId);
+                }
+            }, 2000);
+        }
     };
 
     sessionSocket.onerror = (err) => {
         console.warn('WebSocket error', err);
+        // Note: onclose will handle reconnection
     };
 }
 
@@ -571,6 +638,7 @@ function handleAudioReady(payload) {
                     created_at: new Date().toISOString()
                 };
                 displayMessage(msg);
+                streamState[payload.message_id] = { lastText: payload.content || '', final: false };
             } catch (e) {
                 console.error('Failed to handle assistant_init', e);
             }
@@ -584,10 +652,33 @@ function handleAudioReady(payload) {
                 if (msgEl) {
                     const contentEl = msgEl.querySelector('.message-content');
                     if (contentEl) {
-                        // Replace the inner HTML with formatted content (preserve audio if present)
-                        const hasAudio = !!contentEl.querySelector('audio');
+                        // Incremental update: append only the new tail to avoid flicker
+                        const st = streamState[messageId] = streamState[messageId] || { lastText: '', final: false };
+                        const prev = st.lastText || '';
+                        let newTail = '';
+                        if (content.startsWith(prev)) {
+                            newTail = content.slice(prev.length);
+                        } else {
+                            // Fallback: server sent full text but prefix mismatch, replace fully
+                            newTail = null;
+                        }
+
                         const timeEl = contentEl.querySelector('.message-time');
-                        contentEl.innerHTML = formatMessageContent(content) + (hasAudio ? `\n                <div class="message-audio"><audio controls src=""></audio></div>` : '') + (timeEl ? timeEl.outerHTML : '');
+                        const existingAudio = contentEl.querySelector('.message-audio');
+                        if (newTail !== null) {
+                            // Find the text container (everything before audio/time)
+                            const shadow = document.createElement('div');
+                            shadow.innerHTML = formatMessageContent(newTail);
+                            // Insert before audio/time
+                            if (timeEl) contentEl.insertBefore(shadow, timeEl);
+                            else contentEl.appendChild(shadow);
+                        } else {
+                            // Replace content fully if divergence detected
+                            const audioHtml = existingAudio ? existingAudio.outerHTML : '';
+                            contentEl.innerHTML = formatMessageContent(content) + audioHtml + (timeEl ? timeEl.outerHTML : '');
+                        }
+                        st.lastText = content;
+                        if (payload.final) st.final = true;
                         scrollToBottom();
                     }
                 } else {
@@ -602,6 +693,35 @@ function handleAudioReady(payload) {
 function formatMessageContent(content) {
     // Convert line breaks to <br>
     return content.replace(/\n/g, '<br>');
+}
+
+// Poll fallback: fetch messages periodically to update a specific assistant message
+function startMessagePollFallback(messageId, durationMs = 10000, intervalMs = 1000) {
+    const startedAt = Date.now();
+    const tick = async () => {
+        if (Date.now() - startedAt > durationMs) return;
+        try {
+            const response = await fetch(`/api/v1/chat/sessions/${currentSessionId}/messages`);
+            const messages = await response.json();
+            const updated = messages.find(m => m.id === messageId);
+            if (updated) {
+                const st = streamState[messageId] = streamState[messageId] || { lastText: '', final: false };
+                if (!st.final && updated.content && updated.content.length > (st.lastText || '').length) {
+                    // Synthesize a delta event to reuse handler logic
+                    handleAssistantDelta({ message_id: messageId, content: updated.content, final: false });
+                }
+                if (updated.audio_file_path) {
+                    // Consider stream complete when audio is ready or on next delta.final
+                    st.final = true;
+                    return;
+                }
+            }
+        } catch (e) {
+            // swallow
+        }
+        setTimeout(tick, intervalMs);
+    };
+    setTimeout(tick, intervalMs);
 }
 
 function looksLikeBinary(text) {
@@ -806,6 +926,9 @@ function renderReports(reports) {
         const fname = r.original_file_path ? r.original_file_path.split(/\\/).pop().split('/').pop() : 'File';
         name.textContent = fname;
         name.style.fontWeight = '600';
+        name.style.whiteSpace = 'nowrap';
+        name.style.overflow = 'hidden';
+        name.style.textOverflow = 'ellipsis';
 
         const meta = document.createElement('div');
         meta.style.fontSize = '0.85rem';

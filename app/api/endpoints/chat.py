@@ -154,7 +154,7 @@ async def send_chat_message(
             new_report = models.Report(
                 language="English",  # Could be parameterized
                 report_type=models.ReportType.image if is_image else models.ReportType.text,
-                original_file_path=str(file_save_path),
+                original_file_path=file_save_path.as_posix(),
                 status=models.ReportStatus.completed,  # Mark as completed for now
                 chat_session_id=session_id
             )
@@ -164,7 +164,7 @@ async def send_chat_message(
             if is_image:
                 # For images: Pass directly to MedGemma VLM (no text extraction needed)
                 logger.info("Image will be analyzed directly by MedGemma VLM")
-                image_path_for_vlm = str(file_save_path)
+                image_path_for_vlm = file_save_path.as_posix()
                 file_context = f"\n\n[Medical Image Attached: {file.filename}]"
             else:
                 # For documents: Extract text
@@ -251,7 +251,7 @@ async def send_chat_message(
         # Stream the response to connected websocket clients in reasonable chunks
         try:
             # Simple chunking: keep chunks small so UI can progressively render text
-            chunk_size = 200
+            chunk_size = 20
             chunks = [ai_response_text[i:i+chunk_size] for i in range(0, len(ai_response_text), chunk_size)] or [ai_response_text]
 
             for idx, chunk in enumerate(chunks):
@@ -274,6 +274,10 @@ async def send_chat_message(
                 except Exception:
                     # Ignore websocket errors; clients may poll instead
                     pass
+
+                # Add small delay between chunks to simulate typing speed
+                if idx < len(chunks) - 1:
+                    await asyncio.sleep(0.05)
 
             # Schedule background TTS generation now that final content is saved
             try:
