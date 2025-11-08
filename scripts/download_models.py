@@ -1,73 +1,142 @@
 #!/usr/bin/env python3
 """
-Script to download all required models for the services.
-Models will be saved in the 'models' directory within the project root.
+AI Model Download and Initialization Script
+
+This script prepares the application environment by downloading and initializing
+required AI models for:
+- Kokoro TTS (Text-to-Speech)
+- Docling (Document parsing and OCR)
+
+Note: MedGemma LLM is expected to be hosted via Ollama server.
+      This script does NOT download transformer-based models.
+
+Usage:
+    python scripts/download_models.py  # Download all models
+    
+Environment:
+    Called automatically during app startup if PRELOAD_MODELS=1
 """
 
 import os
-import sys
+import logging
+
+# ============================================================================
+# CONFIGURATION
+# ============================================================================
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
 os.makedirs(MODELS_DIR, exist_ok=True)
 
-# This project is Ollama-first: MedGemma models are expected to be hosted by an
-# Ollama server and accessed via the `ollama` client from the services.
-# The previous Hugging Face transformer-based MedGemma download has been removed
-# to keep the repo and runtime focused on Ollama. This script now prepares
-# other required components (Docling, Kokoro) and provides a clear message.
+# This project uses Ollama for LLM inference
+# MedGemma models are expected to be available via Ollama server
 USE_OLLAMA = True
 
+logger = logging.getLogger(__name__)
+
+
+# ============================================================================
+# MODEL DOWNLOAD FUNCTIONS
+# ============================================================================
+
 def download_medgemma():
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.info("MedGemma transformer download removed: using Ollama-only flow.")
-    # No-op: MedGemma is expected to be served by an Ollama server.
-    # If you want to run MedGemma locally without Ollama, reintroduce
-    # a transformer-based loader here (not recommended for Ollama-only setup).
-    return
+    """
+    MedGemma download placeholder.
+    
+    NOTE: This project uses Ollama-first deployment.
+    MedGemma models should be pulled via Ollama:
+        ollama pull medgemma
+    
+    No transformer-based download is performed here.
+    """
+    logger.info("MedGemma: Using Ollama server (no local model download)")
+    logger.info("Ensure MedGemma is available via: ollama pull <model-name>")
+
 
 def download_kokoro():
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.info("Downloading Kokoro models...")
+    """
+    Download and initialize Kokoro TTS models.
+    
+    Kokoro is used for multilingual text-to-speech conversion.
+    Models are automatically downloaded on first initialization.
+    """
+    logger.info("📥 Initializing Kokoro TTS pipeline...")
     try:
         from kokoro import KPipeline
-        # This will download models on initialization
-        logger.info("Initializing Kokoro pipeline...")
-        pipeline = KPipeline(lang_code='a')
-        logger.info("Kokoro models downloaded successfully.")
+        
+        # Initialize pipeline - this will download models if not present
+        pipeline = KPipeline(lang_code='a')  # 'a' = auto-detect language
+        
+        logger.info("✅ Kokoro TTS models ready")
     except Exception as e:
-        logger.error(f"Error downloading Kokoro: {e}", exc_info=True)
+        logger.error(f"❌ Failed to download Kokoro models: {e}", exc_info=True)
         raise
+
 
 def download_docling():
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.info("Checking Docling models...")
+    """
+    Initialize Docling document converter.
+    
+    Docling is used for:
+    - PDF parsing and text extraction
+    - OCR (Optical Character Recognition)
+    - Document structure analysis
+    
+    Models are downloaded automatically on first use.
+    """
+    logger.info("📥 Initializing Docling document converter...")
     try:
         from docling.document_converter import DocumentConverter
-        # Docling might download models automatically, but let's initialize
-        logger.info("Initializing Docling converter...")
+        
+        # Initialize converter - models download automatically
         converter = DocumentConverter()
-        logger.info("Docling models ready.")
+        
+        logger.info("✅ Docling models ready")
     except Exception as e:
-        logger.error(f"Error with Docling: {e}", exc_info=True)
+        logger.error(f"❌ Failed to initialize Docling: {e}", exc_info=True)
         raise
 
+
+# ============================================================================
+# MAIN FUNCTION
+# ============================================================================
+
 def check_and_download_models():
-    """Check if models are downloaded, if not, download them."""
-    print("Preparing environment for Ollama-first deployment...")
-    print("MedGemma is expected to be available via a local or remote Ollama server.")
-    # Still ensure other auxiliary models/tools are initialized
+    """
+    Main entry point for model preparation.
+    
+    This function is called during application startup (if PRELOAD_MODELS=1)
+    or when running this script directly.
+    """
+    print("=" * 70)
+    print("🔧 Preparing Med Analyzer Environment")
+    print("=" * 70)
+    print("📋 Model Configuration:")
+    print("   • LLM: Ollama-hosted (MedGemma)")
+    print("   • TTS: Kokoro (auto-download)")
+    print("   • Document Parser: Docling (auto-download)")
+    print("=" * 70)
+    
+    # Initialize auxiliary models (Kokoro, Docling)
     download_kokoro()
     download_docling()
-    print("Environment preparation completed.")
+    
+    print("=" * 70)
+    print("✅ Environment preparation complete")
+    print("=" * 70)
+
+
+# ============================================================================
+# COMMAND-LINE EXECUTION
+# ============================================================================
 
 if __name__ == "__main__":
-    print("Starting model downloads...")
-    # MedGemma transformer download removed; ensure Ollama is used.
+    print("🚀 Starting model downloads...\n")
+    
+    # Note: download_medgemma is a no-op (Ollama-only)
     download_medgemma()
     download_kokoro()
     download_docling()
-    print("All model downloads completed.")
+    
+    print("\n✅ All model downloads completed.")
+

@@ -16,8 +16,14 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('reports', sa.Column('mime_type', sa.String(), nullable=True))
-    op.add_column('reports', sa.Column('thumbnail_path', sa.String(), nullable=True))
+    # Check if columns exist before adding to avoid duplicate column error
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    columns = [col['name'] for col in inspector.get_columns('reports')]
+    if 'mime_type' not in columns:
+        op.add_column('reports', sa.Column('mime_type', sa.String(), nullable=True))
+    if 'thumbnail_path' not in columns:
+        op.add_column('reports', sa.Column('thumbnail_path', sa.String(), nullable=True))
 
 
 def downgrade():

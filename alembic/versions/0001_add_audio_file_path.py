@@ -15,8 +15,13 @@ depends_on = None
 
 
 def upgrade():
-    # Add a nullable string column for audio file path
-    op.add_column('chat_messages', sa.Column('audio_file_path', sa.String(), nullable=True))
+    # Check if column exists before adding to avoid duplicate column error
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    columns = [col['name'] for col in inspector.get_columns('chat_messages')]
+    if 'audio_file_path' not in columns:
+        # Add a nullable string column for audio file path
+        op.add_column('chat_messages', sa.Column('audio_file_path', sa.String(), nullable=True))
 
 
 def downgrade():

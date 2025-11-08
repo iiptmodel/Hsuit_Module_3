@@ -39,14 +39,23 @@ except ImportError:
         "Install it for best layout detection via ONNXRuntime."
     )
 
-# Initialize Docling converter globally
-logger.info("Initializing Docling converter...")
-try:
-    converter = DocumentConverter()
-    logger.info("Docling converter initialized.")
-except Exception as e:
-    logger.error(f"Docling initialization FAILED: {e}", exc_info=True)
-    raise
+_converter = None  # lazy singleton
+
+def get_converter() -> DocumentConverter:
+    """Lazily initialize and return the Docling converter.
+
+    Avoids blocking import/startup; initializes on first use.
+    """
+    global _converter
+    if _converter is None:
+        logger.info("Initializing Docling converter (lazy)...")
+        try:
+            _converter = DocumentConverter()
+            logger.info("Docling converter initialized.")
+        except Exception as e:
+            logger.error(f"Docling initialization FAILED: {e}", exc_info=True)
+            raise
+    return _converter
 
 
 def sanitize_pdf(path: str) -> str:
@@ -165,6 +174,7 @@ def extract_data_from_file(file_path: str) -> str:
     # --- TIER 1: Structured Docling Parsing ---
     try:
         logger.info("Converting document with Docling...")
+        converter = get_converter()
         result = converter.convert(file_path)
         content = result.document.export_to_markdown()
 
@@ -180,6 +190,7 @@ def extract_data_from_file(file_path: str) -> str:
         clean_path = sanitize_pdf(file_path)
 
         try:
+            converter = get_converter()
             result = converter.convert(clean_path)
             content = result.document.export_to_markdown()
 

@@ -194,7 +194,10 @@ async def send_chat_message(
                 # For documents: Extract text
                 logger.info("Extracting text from uploaded document")
                 try:
-                    extracted_text = parser_service.extract_data_from_file(str(file_save_path))
+                    # Offload heavy parsing to a thread to avoid blocking the event loop
+                    extracted_text = await asyncio.to_thread(
+                        parser_service.extract_data_from_file, str(file_save_path)
+                    )
                     new_report.raw_text = extracted_text
                     new_report.status = models.ReportStatus.completed
                     db.commit()
