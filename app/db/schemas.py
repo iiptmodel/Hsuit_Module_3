@@ -19,9 +19,11 @@ class Report(BaseModel):
     raw_text: str | None = None
     original_file_path: str | None = None
     original_filename: str | None = None
+    mime_type: str | None = None
     summary_text: str | None = None
     audio_file_path: str | None = None
     chat_session_id: int | None = None
+    thumbnail_path: str | None = None
 
     class Config:
         from_attributes = True

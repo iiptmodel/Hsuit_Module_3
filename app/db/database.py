@@ -28,7 +28,11 @@ try:
         # For SSL connections
         engine_kwargs["connect_args"]["sslmode"] = "prefer"
     
-    engine = create_engine(settings.DATABASE_URL, **engine_kwargs)
+    engine = create_engine(
+        settings.DATABASE_URL,
+        echo=getattr(settings, "LOG_SQL", False),
+        **engine_kwargs
+    )
     
     # Test the connection
     with engine.connect() as conn:
@@ -45,7 +49,8 @@ except Exception as e:
     )
     engine = create_engine(
         "sqlite:///./dev_fallback.db",
-        connect_args={"check_same_thread": False}
+        connect_args={"check_same_thread": False},
+        echo=getattr(settings, "LOG_SQL", False)
     )
 
 # Handle disconnections

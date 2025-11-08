@@ -115,6 +115,8 @@ async def send_chat_message(
     db: Session = Depends(get_db)
 ):
     """Sends a message in a chat session with optional file attachment and gets AI response."""
+    req_start = time.monotonic()
+    logger.debug("chat.send start session=%s audience=%s has_file=%s content_len=%d", session_id, audience, bool(file and file.filename), len(content or ""))
     
     # Verify session exists
     session = db.query(models.ChatSession).filter(
@@ -157,7 +159,8 @@ async def send_chat_message(
                 report_type=models.ReportType.image if is_image else models.ReportType.text,
                 original_file_path=file_save_path.as_posix(),
                 original_filename=file.filename,
-                status=models.ReportStatus.completed,  # Mark as completed for now
+                status=models.ReportStatus.processing,
+                mime_type=getattr(file, 'content_type', None),
                 chat_session_id=session_id
             )
             db.add(new_report)
@@ -168,17 +171,50 @@ async def send_chat_message(
                 logger.info("Image will be analyzed directly by MedGemma VLM")
                 image_path_for_vlm = file_save_path.as_posix()
                 file_context = f"\n\n[Medical Image Attached: {file.filename}]"
+                # Generate thumbnail for faster previews
+                try:
+                    from PIL import Image
+                    thumb_dir = MEDIA_DIR / 'thumbnails'
+                    thumb_dir.mkdir(parents=True, exist_ok=True)
+                    thumb_path = thumb_dir / f"{file_path_str}"
+                    with Image.open(file_save_path) as im:
+                        im.thumbnail((256, 256))
+                        im.save(thumb_path)
+                    new_report.thumbnail_path = str(Path('media') / 'thumbnails' / file_path_str)
+                    new_report.status = models.ReportStatus.completed
+                    db.add(new_report)
+                    db.commit()
+                    db.refresh(new_report)
+                except Exception as te:
+                    logger.warning(f"Thumbnail generation failed for {file.filename}: {te}")
+                    new_report.status = models.ReportStatus.completed
+                    db.add(new_report)
+                    db.commit()
             else:
                 # For documents: Extract text
                 logger.info("Extracting text from uploaded document")
-                extracted_text = parser_service.extract_data_from_file(str(file_save_path))
-                new_report.raw_text = extracted_text
-                db.commit()
+                try:
+                    extracted_text = parser_service.extract_data_from_file(str(file_save_path))
+                    new_report.raw_text = extracted_text
+                    new_report.status = models.ReportStatus.completed
+                    db.commit()
+                except Exception as pe:
+                    logger.error(f"Extraction failed for {file.filename}: {pe}", exc_info=True)
+                    new_report.status = models.ReportStatus.failed
+                    db.commit()
                 file_context = f"\n\n[Document Content]\n{extracted_text[:2000]}"  # Limit to 2000 chars
                 is_image = False
         except Exception as e:
             logger.error(f"Error processing file: {e}", exc_info=True)
             file_context = f"\n\n[Error: Could not process file {file.filename}]"
+            try:
+                # Attempt to mark report failed if it exists
+                if 'new_report' in locals():
+                    new_report.status = models.ReportStatus.failed
+                    db.add(new_report)
+                    db.commit()
+            except Exception:
+                pass
     
     # Combine user message with file context
     full_message = str(content) + str(file_context)
@@ -197,10 +233,11 @@ async def send_chat_message(
     db.commit()
     db.refresh(user_message)
     
-    logger.info(f"User message saved in session {session_id}")
+    logger.info(f"User message saved in session {session_id} (id={user_message.id})")
     
     try:
         # Generate AI response
+        gen_start = time.monotonic()
         logger.info(f"Generating AI response for session {session_id} — audience={audience}")
 
         # If a document was uploaded and audience explicitly requests doctor view, produce detailed report
@@ -270,6 +307,7 @@ async def send_chat_message(
                         await asyncio.sleep(0)
                         yield piece
 
+            first_token_time = None
             if summarizer_text:
                 stream_iter = _stream_from_text(summarizer_text)
                 logger.debug("Using local summarizer stream for session %s (approx %d chars)", session_id, len(summarizer_text))
@@ -280,6 +318,10 @@ async def send_chat_message(
                 )
 
             async for token in stream_iter:
+                if first_token_time is None:
+                    first_token_time = time.monotonic()
+                    ttfb = first_token_time - gen_start
+                    logger.info("First token session=%s message=%s TTFB=%.3fs", session_id, ai_message.id, ttfb)
                 full_response += token
                 token_count_since_commit += 1
 
@@ -344,12 +386,21 @@ async def send_chat_message(
                 logger.info(f"Scheduled background TTS for message {ai_message.id}")
             except Exception as e:
                 logger.error(f"Failed to schedule background TTS: {e}", exc_info=True)
-            logger.info(f"AI response streamed and saved in session {session_id}")
+            total_time = time.monotonic() - gen_start
+            stream_time = 0.0
+            if 'first_token_time' in locals() and first_token_time:
+                stream_time = time.monotonic() - first_token_time
+            logger.info(
+                "AI response complete session=%s message=%s total=%.3fs stream=%.3fs chars=%d",
+                session_id, ai_message.id, total_time, stream_time, len(full_response)
+            )
+            overall = time.monotonic() - req_start
+            logger.debug("chat.send finished session=%s overall=%.3fs", session_id, overall)
             return ai_message
 
         except Exception as e:
             # Streaming failed — log with detail and return a helpful assistant error message
-            logger.exception("Streaming assistant response failed for session %s: %s", session_id, e)
+            logger.exception("Streaming assistant response failed session=%s: %s", session_id, e)
             ai_message.content = (
                 "I ran into an issue streaming the AI response. Please try again shortly."
             )
@@ -359,7 +410,7 @@ async def send_chat_message(
             return ai_message
         
     except Exception as e:
-        logger.error(f"Error generating chat response: {e}", exc_info=True)
+        logger.error(f"Error generating chat response session={session_id}: {e}", exc_info=True)
         # Save error message
         error_message = models.ChatMessage(
             session_id=session_id,

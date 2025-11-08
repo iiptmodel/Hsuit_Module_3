@@ -30,6 +30,9 @@ let filesPanel;
 let filesPanelClose;
 let filesPanelContent;
 let renameChatBtn;
+let fileChip;
+let fileChipName;
+let fileChipRemove;
 
 // Stats
 const totalReportsEl = document.getElementById('total-reports');
@@ -67,6 +70,9 @@ function initDomElements() {
     filesPanelClose = document.getElementById('filesPanelClose');
     filesPanelContent = document.getElementById('filesPanelContent');
     renameChatBtn = document.getElementById('renameChatBtn');
+    fileChip = document.getElementById('fileChip');
+    fileChipName = document.getElementById('fileChipName');
+    fileChipRemove = document.getElementById('fileChipRemove');
 }
 
 function setupEventListeners() {
@@ -93,6 +99,7 @@ function setupEventListeners() {
     // File attachment
     attachBtn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', handleFileSelect);
+    if (fileChipRemove) fileChipRemove.addEventListener('click', () => clearUploadedFile());
     
     // Clear chat
     clearChatBtn.addEventListener('click', clearCurrentSession);
@@ -452,6 +459,16 @@ function displayMessage(message) {
         contentHtml = formatMessageContent(message.content || '');
     }
 
+    // If this is a user message starting with a paperclip line, render a compact attachment card
+    if (message.role === 'user' && typeof message.content === 'string' && message.content.startsWith('📎')) {
+        const firstLine = message.content.split('\n')[0];
+        const rawName = firstLine.replace('📎','').trim();
+        const cleanName = sanitizeFilename(rawName);
+        const card = `<div class=\"attachment-card\">📎 <span class=\"attachment-name\" title=\"${cleanName}\">${truncateFilename(cleanName)}</span></div>`;
+        const rest = message.content.split('\n').slice(2).join('\n');
+        contentHtml = card + (rest ? '<div class=\"attachment-user-text\">' + formatMessageContent(rest) + '</div>' : '');
+    }
+
     div.innerHTML = `
         <div class="message-avatar">${avatar}</div>
         <div class="message-content">
@@ -518,7 +535,8 @@ function pollForAudio(messageId, messageElement) {
                     if (content && !content.querySelector('audio')) {
                         const audioDiv = document.createElement('div');
                         audioDiv.className = 'message-audio';
-                        audioDiv.innerHTML = `<audio controls src="/${updatedMessage.audio_file_path}"></audio>`;
+                        const cacheBust = Date.now();
+                        audioDiv.innerHTML = `<audio controls src="/${updatedMessage.audio_file_path}?v=${cacheBust}"></audio>`;
                         const timeEl = content.querySelector('.message-time');
                         if (timeEl) content.insertBefore(audioDiv, timeEl);
                         else content.appendChild(audioDiv);
@@ -579,18 +597,15 @@ function setupWebsocket(sessionId) {
         }
     };
 
+    let wsRetryAttempts = 0;
     sessionSocket.onclose = (event) => {
         console.info('WebSocket closed for session', sessionId, 'code:', event.code, 'reason:', event.reason);
         if (sessionSocketPing) { clearInterval(sessionSocketPing); sessionSocketPing = null; }
-        // Attempt reconnection if not a clean close and session is still active
-        if (!event.wasClean && currentSessionId === sessionId) {
-            console.info('Attempting to reconnect WebSocket in 2 seconds...');
-            setTimeout(() => {
-                if (currentSessionId === sessionId) {
-                    setupWebsocket(sessionId);
-                }
-            }, 2000);
-        }
+        if (currentSessionId !== sessionId || event.wasClean) return;
+        wsRetryAttempts = Math.min(wsRetryAttempts + 1, 6);
+        const backoff = Math.min(30000, 1000 * Math.pow(2, wsRetryAttempts));
+        console.info(`Reconnecting WebSocket in ${Math.round(backoff/1000)}s (attempt ${wsRetryAttempts})...`);
+        setTimeout(() => { if (currentSessionId === sessionId) setupWebsocket(sessionId); }, backoff);
     };
 
     sessionSocket.onerror = (err) => {
@@ -610,7 +625,8 @@ function handleAudioReady(payload) {
             if (content && !content.querySelector('audio')) {
                 const audioDiv = document.createElement('div');
                 audioDiv.className = 'message-audio';
-                audioDiv.innerHTML = `<audio controls src="/${audioPath}"></audio>`;
+                const cacheBust = Date.now();
+                audioDiv.innerHTML = `<audio controls src="/${audioPath}?v=${cacheBust}"></audio>`;
                 // insert before message-time if exists
                 const timeEl = content.querySelector('.message-time');
                 if (timeEl) content.insertBefore(audioDiv, timeEl);
@@ -678,7 +694,17 @@ function handleAudioReady(payload) {
                             contentEl.innerHTML = formatMessageContent(content) + audioHtml + (timeEl ? timeEl.outerHTML : '');
                         }
                         st.lastText = content;
-                        if (payload.final) st.final = true;
+                        if (payload.final) {
+                            st.final = true;
+                            // add completion indicator once
+                            const existingIndicator = contentEl.querySelector('.completion-indicator');
+                            if (!existingIndicator) {
+                                const doneEl = document.createElement('div');
+                                doneEl.className = 'completion-indicator';
+                                doneEl.textContent = '✓ complete';
+                                contentEl.appendChild(doneEl);
+                            }
+                        }
                         scrollToBottom();
                     }
                 } else {
@@ -738,6 +764,21 @@ function looksLikeBinary(text) {
         if (nonPrintable / Math.max(1, text.length) > 0.3) return true;
     }
     return false;
+}
+
+// Filename helpers
+function sanitizeFilename(name) {
+    if (!name) return '';
+    const m = name.match(/^[0-9a-fA-F]{32}_(.+)$/);
+    if (m) name = m[1];
+    return name.replace(/[\r\n]/g, '').trim();
+}
+
+function truncateFilename(name, maxLen = 60) {
+    if (!name) return '';
+    if (name.length <= maxLen) return name;
+    const keep = Math.floor((maxLen - 3) / 2);
+    return name.slice(0, keep) + '...' + name.slice(-keep);
 }
 
 function showTypingIndicator() {
@@ -835,6 +876,12 @@ function displayUploadedFile(file) {
             </button>
         </div>
     `;
+
+    // Show file chip in input area
+    if (fileChip && fileChipName) {
+        fileChipName.textContent = sanitizeFilename(file.name);
+        fileChip.style.display = 'flex';
+    }
 }
 
 function clearUploadedFile() {
@@ -842,6 +889,7 @@ function clearUploadedFile() {
     uploadedFiles.style.display = 'none';
     uploadedFiles.innerHTML = '';
     fileInput.value = '';
+    if (fileChip) fileChip.style.display = 'none';
     updateSendButtonState();
 }
 
@@ -916,22 +964,19 @@ function renderReports(reports) {
         left.style.alignItems = 'center';
         left.style.gap = '0.75rem';
 
-        const icon = document.createElement('div');
-        icon.className = 'file-icon';
-        icon.textContent = r.report_type && r.report_type === 'image' ? '🖼️' : '📄';
+    const icon = document.createElement('div');
+    icon.className = 'file-icon';
+    icon.textContent = r.report_type && r.report_type === 'image' ? '🖼️' : '📄';
 
         const info = document.createElement('div');
         info.style.display = 'flex';
         info.style.flexDirection = 'column';
         const name = document.createElement('div');
         let fname = r.original_filename || (r.original_file_path ? r.original_file_path.split(/\\/).pop().split('/').pop() : 'File');
-        // If we only have a stored path that includes a UUID prefix (e.g., 3b1c..._report.pdf), strip the prefix for display
         try {
-            if (!r.original_filename && typeof fname === 'string') {
-                const m = fname.match(/^[0-9a-fA-F]{32}_(.+)$/);
-                if (m && m[1]) fname = m[1];
-            }
-        } catch (e) { /* noop */ }
+            const m = fname && fname.match(/^[0-9a-fA-F]{32}_(.+)$/);
+            if (m) fname = m[1];
+        } catch (e) {}
         name.textContent = fname;
         name.style.fontWeight = '600';
         name.style.whiteSpace = 'nowrap';
@@ -952,6 +997,19 @@ function renderReports(reports) {
         const right = document.createElement('div');
         right.style.display = 'flex';
         right.style.gap = '0.5rem';
+
+        // Thumbnail preview for images
+        if (r.report_type === 'image' && r.thumbnail_path) {
+            const img = document.createElement('img');
+            img.src = (r.thumbnail_path.startsWith('/') ? r.thumbnail_path : '/' + r.thumbnail_path);
+            img.alt = fname;
+            img.style.maxWidth = '48px';
+            img.style.maxHeight = '48px';
+            img.style.borderRadius = '6px';
+            img.style.border = '1px solid var(--border-light)';
+            img.style.marginRight = '8px';
+            left.prepend(img);
+        }
 
         if (r.original_file_path) {
             const link = document.createElement('a');

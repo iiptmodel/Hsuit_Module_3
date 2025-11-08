@@ -242,6 +242,41 @@ body::before {
     background: var(--text-muted);
 }
 
+/* Attachment chip next to input controls */
+.file-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 9999px;
+    padding: 4px 8px;
+    margin: 0 8px;
+}
+.file-chip .file-chip-icon { font-size: 0.95rem; }
+.file-chip .file-chip-name { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-chip .btn-remove-file { background: transparent; border: none; cursor: pointer; color: var(--text-secondary); }
+
+/* Attachment card in messages */
+.attachment-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 6px 8px;
+    margin-bottom: 6px;
+}
+.attachment-name { font-weight: 600; }
+.attachment-user-text { margin-top: 4px; }
+
+.completion-indicator {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
 /* Inputs */
 .chat-input-area {
     border-top: 1px solid var(--border-light);

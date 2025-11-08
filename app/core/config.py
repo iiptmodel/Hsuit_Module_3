@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    # Logging & debugging
+    LOG_LEVEL: str = "INFO"  # DEBUG, INFO, WARNING, ERROR
+    LOG_SQL: bool = False     # If True, SQLAlchemy will echo SQL statements
+    DEBUG: bool = False       # If True, enable extra verbose logs in services
 
     model_config = SettingsConfigDict(env_file=".env")
 

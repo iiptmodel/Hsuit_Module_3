@@ -32,6 +32,7 @@ class RequestIDFilter(logging.Filter):
 import scripts.download_models as _download_models
 
 from app.db import models, database
+from app.core.config import settings
 from app.api import api_router
 from app.pages import page_router
 
@@ -42,22 +43,50 @@ from fastapi.responses import PlainTextResponse
 # Configure logging only once with request id support
 if not logging.getLogger().hasHandlers():
     handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s %(levelname)-5s [%(request_id)s] [%(name)s] %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s %(levelname)-5s [%(request_id)s] [%(name)s] %(message)s"
+    )
     handler.setFormatter(formatter)
     handler.addFilter(RequestIDFilter())
     root = logging.getLogger()
-    root.setLevel(logging.INFO)
+    # Dynamic log level from settings
+    try:
+        from app.core.config import settings as _settings_for_level
+        root.setLevel(getattr(logging, _settings_for_level.LOG_LEVEL.upper(), logging.INFO))
+    except Exception:
+        root.setLevel(logging.INFO)
     root.addHandler(handler)
+
+# Quiet overly verbose third-party libs unless debugging
+for noisy in ["urllib3", "watchfiles", "PIL", "rapidocr", "torch"]:
+    logging.getLogger(noisy).setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
 # Create database tables (for dev only)
 models.Base.metadata.create_all(bind=database.engine)
 
+# Run Alembic migrations on startup to keep DB schema up-to-date
+def _run_migrations_if_possible():
+    try:
+        # Import locally to avoid hard dependency when packaging minimal API-only
+        from alembic import command
+        from alembic.config import Config
+        cfg = Config("alembic.ini")
+        # Ensure URL matches runtime settings
+        cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+        command.upgrade(cfg, "head")
+        logger.info("Database migrations applied (upgrade head)")
+    except Exception as e:
+        # Don't block startup; log and continue. Typically happens if migrations already applied
+        logger.warning("Skipping migrations (continuing without fatal): %s", e)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("FastAPI starting...")
+    logger.info("FastAPI starting... (lifespan begin)")
+    # Attempt DB migrations before accepting traffic
+    _run_migrations_if_possible()
     # If PRELOAD_MODELS is set to '1' (or environment variable not set and we choose to preload),
     # run model downloads and import heavy service modules so models initialize before accepting requests.
     preload = os.environ.get("PRELOAD_MODELS", "1")
@@ -82,13 +111,27 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("AI services will be loaded lazily on first request.")
     yield
-    logger.info("FastAPI shutting down...")
+    logger.info("FastAPI shutting down... (lifespan end)")
 
 
 app = FastAPI(
     title="FastAPI Med Analyzer",
     lifespan=lifespan,
 )
+
+@app.on_event("startup")
+async def _log_startup_banner():
+    logger.info("Application startup complete. Ready to accept requests.")
+    # Align popular framework loggers to our configured level
+    level = getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO)
+    for name in ("uvicorn", "uvicorn.error", "uvicorn.access", "alembic", "sqlalchemy.engine"):
+        lg = logging.getLogger(name)
+        lg.setLevel(level)
+    logger.debug("Adjusted third-party logger levels to %s", settings.LOG_LEVEL)
+
+@app.on_event("shutdown")
+async def _log_shutdown_banner():
+    logger.info("Application shutdown initiated.")
 
 
 @app.middleware("http")

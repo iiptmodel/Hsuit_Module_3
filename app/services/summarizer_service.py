@@ -112,17 +112,26 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
 
 
 def generate_patient_summary_from_text(text: str, language: str = 'English') -> str:
+    """Generate a patient-facing summary (now moderately detailed: ~3-5 sentences).
+
+    Goals:
+      - Plain language explanation of the key findings.
+      - Brief "What this might mean" (non-diagnostic, generic context).
+      - 1 simple lifestyle / monitoring suggestion.
+      - Reminder to consult a healthcare professional.
+    Constraints:
+      - No definitive diagnoses or medication instructions.
+      - Avoid jargon unless briefly explained in parentheses.
     """
-    Generate a very short, patient-facing summary (1-2 sentences) with simple actionable advice.
-    This is suitable for patients who want a quick understanding and next-step suggestion.
-    """
-    logger.info(f"Generating patient-summary via Ollama (text length={len(text)})")
+    logger.info(f"Generating patient summary (expanded) via Ollama (text length={len(text)})")
     try:
         system_prompt = (
-            "You are a medical assistant writing for patients. Given the extracted text from a medical report, "
-            f"produce a VERY SHORT (1-2 sentences) plain-language summary in {language}. "
-            "Include one short actionable recommendation (e.g., lifestyle change) and a line to consult a doctor for treatment. "
-            "Never diagnose or recommend specific medications."
+            "You are a medical assistant writing for a patient. Using the provided medical report text, create a clear, "
+            "reassuring summary in " f"{language}. Write 3-5 short sentences. Follow this structure: "
+            "1) Core findings (simple wording). 2) What these findings GENERALLY might indicate (avoid diagnosis). "
+            "3) A simple healthy next-step or monitoring suggestion. 4) A reminder to consult a healthcare professional. "
+            "Avoid definitive terms (e.g., 'confirm', 'diagnose'). If medical terms appear, briefly explain them in parentheses. "
+            "Do NOT recommend medications or dosages."
         )
 
         messages = [
@@ -134,42 +143,46 @@ def generate_patient_summary_from_text(text: str, language: str = 'English') -> 
         resp = chat_with_retries(
             model='amsaravi/medgemma-4b-it:q8',
             messages=messages,
-            options={"temperature": 0.0, "num_predict": 120}
+            options={"temperature": 0.1, "num_predict": 250}  # allow a bit more length/detail
         )
 
         summary = resp.get('message', {}).get('content', '')
         return _guardrail_validator(summary.strip())
     except Exception as e:
-        logger.error(f"Patient summary generation failed: {e}", exc_info=True)
+        logger.error(f"Expanded patient summary generation failed: {e}", exc_info=True)
         return generate_summary_from_text(text, language)
 
 
 def generate_detailed_report_from_text(text: str, language: str = 'English') -> str:
-    """
-    Generate a structured, detailed medical report from extracted text aimed at clinicians.
+    """Generate an expanded structured clinician-facing report with deeper comprehension.
 
-    The output should include:
-      - Report Summary (brief)
-      - Key Results (bullet list with numeric values and reference ranges where present)
-      - What This Means (interpretation)
-      - Confidence/Notes (if available, note any uncertainties)
-      - Next Steps (recommended follow-up/testing)
-      - General Education
+    Sections (in this order):
+      1. Report Summary – concise overview.
+      2. Key Results – bullet list; include raw values & reference ranges if present in source.
+      3. Interpretive Context / Pathophysiology – explain patterns & possible physiological significance WITHOUT making a diagnosis.
+      4. Clinical Significance & Risk Stratification – categorize findings (e.g., normal / borderline / notable) when safely inferable.
+      5. Limitations / Data Quality – note missing data, ambiguity, OCR issues.
+      6. Recommended Follow-Up – non-diagnostic next steps (monitoring, generic further evaluation) avoiding prescriptions.
+      7. Education Points – brief clarifications of technical terms.
 
-    This prompt asks the model for extra technical detail and to include raw values when present.
+    Requirements:
+      - Avoid definitive diagnostic statements or medication advice.
+      - Prefer concise bullet points over long prose.
+      - If no numeric values found, still produce Key Results with qualitative findings.
+      - If reference ranges appear, format: VALUE (Ref: X–Y).
     """
-    logger.info(f"Generating detailed report via Ollama (text length={len(text)})")
+    logger.info(f"Generating expanded clinician report via Ollama (text length={len(text)})")
     try:
         system_prompt = (
-            "You are a professional medical report assistant writing for clinicians. When given the extracted text "
-            "from a medical report, produce a structured report including: Report Summary, Key Results (include raw values and reference ranges when present), "
-            "What This Means, Confidence/Notes (mention any uncertainties or low-quality data), Next Steps, and General Education. "
-            "Use clinical language but avoid definitive diagnoses. Provide clear bullet points for Key Results."
-            f" Provide the response in {language}."
+            "You are a clinical report assistant. Produce a structured, comprehensive yet concise clinician-facing report. "
+            "Follow the required section order and headers: Report Summary; Key Results; Interpretive Context / Pathophysiology; "
+            "Clinical Significance & Risk Stratification; Limitations / Data Quality; Recommended Follow-Up; Education Points. "
+            "Use restrained clinical language (no diagnosis or treatment prescriptions). If uncertainty exists, explicitly flag it. "
+            f"Respond in {language}."
         )
 
         user_prompt = (
-            "Below is the extracted text from a medical document. Create the structured clinician-facing report as requested.\n\n"
+            "Extracted document text below. Derive structured report as specified.\n\n"
             "---BEGIN EXTRACTED TEXT---\n" + text + "\n---END EXTRACTED TEXT---"
         )
 
@@ -182,16 +195,13 @@ def generate_detailed_report_from_text(text: str, language: str = 'English') -> 
         resp = chat_with_retries(
             model='amsaravi/medgemma-4b-it:q8',
             messages=messages,
-            options={"temperature": 0.0, "num_predict": 600}
+            options={"temperature": 0.0, "num_predict": 800}  # allow more space for richer sections
         )
 
         report = resp.get('message', {}).get('content', '')
-        # For clinician view, still apply guardrails but allow more technical detail
         return _guardrail_validator(report)
-
     except Exception as e:
-        logger.error(f"Detailed report generation failed: {e}", exc_info=True)
-        # Fallback to general summary
+        logger.error(f"Expanded clinician report generation failed: {e}", exc_info=True)
         return generate_summary_from_text(text, language)
 
 
