@@ -224,140 +224,139 @@ async def send_chat_message(
             summarizer_text = re.sub(r'\*+', '', ai_response_text).strip()
 
         # Use streaming for real-time token-by-token response in all cases
-            # Use streaming for real-time token-by-token response
-            # Create an assistant message placeholder so clients can show a live message
-            ai_message = models.ChatMessage(
-                session_id=session_id,
-                role="assistant",
-                content=""
-            )
-            db.add(ai_message)
-            db.commit()
-            db.refresh(ai_message)
+        # Create an assistant message placeholder so clients can show a live message
+        ai_message = models.ChatMessage(
+            session_id=session_id,
+            role="assistant",
+            content=""
+        )
+        db.add(ai_message)
+        db.commit()
+        db.refresh(ai_message)
 
-            # Notify any websocket clients that an assistant message is being streamed
-            try:
-                from app.api.ws import manager as ws_manager
-                init_payload = {
-                    "type": "assistant_init",
-                    "message_id": ai_message.id,
-                    "content": "",
-                    "seq": 0
-                }
-                await ws_manager.send_json_to_session(session_id, init_payload)
-            except Exception:
-                # Non-fatal: websocket may not be connected
-                pass
+        # Notify any websocket clients that an assistant message is being streamed
+        try:
+            from app.api.ws import manager as ws_manager
+            init_payload = {
+                "type": "assistant_init",
+                "message_id": ai_message.id,
+                "content": "",
+                "seq": 0
+            }
+            await ws_manager.send_json_to_session(session_id, init_payload)
+        except Exception:
+            # Non-fatal: websocket may not be connected
+            pass
 
-            # Stream the response using Ollama's streaming API or a local summarizer streamer
-            try:
-                full_response = ""
-                seq = 0
-                token_count_since_commit = 0
-                last_commit = time.monotonic()
-                # Choose streaming source: summarizer_text yields local chunks, otherwise call model stream
-                async def _stream_from_text(text: str):
-                    # Yield sentence/chunk based pieces so clients see progressive output
-                    # Split on sentence boundaries but keep reasonably sized chunks
-                    sentences = re.split(r'(?<=[\.!?])\s+', text)
-                    for sent in sentences:
-                        if not sent:
-                            continue
-                        # Further chunk long sentences for smoother streaming
-                        max_chunk = 200
-                        for i in range(0, len(sent), max_chunk):
-                            piece = sent[i:i+max_chunk]
-                            # Small await to yield control and behave like an async stream
-                            await asyncio.sleep(0)
-                            yield piece
+        # Stream the response using Ollama's streaming API or a local summarizer streamer
+        try:
+            full_response = ""
+            seq = 0
+            token_count_since_commit = 0
+            last_commit = time.monotonic()
+            # Choose streaming source: summarizer_text yields local chunks, otherwise call model stream
+            async def _stream_from_text(text: str):
+                # Yield sentence/chunk based pieces so clients see progressive output
+                # Split on sentence boundaries but keep reasonably sized chunks
+                sentences = re.split(r'(?<=[\.!?])\s+', text)
+                for sent in sentences:
+                    if not sent:
+                        continue
+                    # Further chunk long sentences for smoother streaming
+                    max_chunk = 200
+                    for i in range(0, len(sent), max_chunk):
+                        piece = sent[i:i+max_chunk]
+                        # Small await to yield control and behave like an async stream
+                        await asyncio.sleep(0)
+                        yield piece
 
-                if summarizer_text:
-                    stream_iter = _stream_from_text(summarizer_text)
-                    logger.debug("Using local summarizer stream for session %s (approx %d chars)", session_id, len(summarizer_text))
-                else:
-                    stream_iter = chat_service.generate_chat_response_streaming(
-                        full_message,  # Use full message with file context
-                        image_path=image_path_for_vlm  # Pass image directly to VLM
-                    )
+            if summarizer_text:
+                stream_iter = _stream_from_text(summarizer_text)
+                logger.debug("Using local summarizer stream for session %s (approx %d chars)", session_id, len(summarizer_text))
+            else:
+                stream_iter = chat_service.generate_chat_response_streaming(
+                    full_message,  # Use full message with file context
+                    image_path=image_path_for_vlm  # Pass image directly to VLM
+                )
 
-                async for token in stream_iter:
-                    full_response += token
-                    token_count_since_commit += 1
+            async for token in stream_iter:
+                full_response += token
+                token_count_since_commit += 1
 
-                    # Send delta to websocket clients (real-time updates)
-                    try:
-                        from app.api.ws import manager as ws_manager
-                        seq += 1
-                        payload = {
-                            "type": "assistant_delta",
-                            "message_id": ai_message.id,
-                            "content": full_response,
-                            "final": False,  # Will set to True after loop
-                            "seq": seq
-                        }
-                        await ws_manager.send_json_to_session(session_id, payload)
-                    except Exception:
-                        # Ignore websocket errors; clients may poll instead
-                        pass
-
-                    # Occasionally persist progress so refreshed clients can poll and catch up
-                    now = time.monotonic()
-                    if token_count_since_commit >= 20 or (now - last_commit) > 1.0:
-                        ai_message.content = full_response
-                        db.add(ai_message)
-                        db.commit()
-                        db.refresh(ai_message)
-                        token_count_since_commit = 0
-                        last_commit = now
-
-                # Clean the response text by removing asterisks and extra whitespace
-                full_response = re.sub(r'\*+', '', full_response).strip()
-                # Update DB message content only once at the end
-                ai_message.content = full_response
-                db.add(ai_message)
-                db.commit()
-                db.refresh(ai_message)
-
-                # Send final delta
+                # Send delta to websocket clients (real-time updates)
                 try:
                     from app.api.ws import manager as ws_manager
+                    seq += 1
                     payload = {
                         "type": "assistant_delta",
                         "message_id": ai_message.id,
                         "content": full_response,
-                        "final": True,
-                        "seq": seq + 1
+                        "final": False,  # Will set to True after loop
+                        "seq": seq
                     }
                     await ws_manager.send_json_to_session(session_id, payload)
                 except Exception:
                     # Ignore websocket errors; clients may poll instead
                     pass
 
-                # Schedule background TTS generation now that final content is saved
-                try:
-                    audio_filename = f"{uuid4().hex}_response.wav"
-                    background_tasks.add_task(
-                        _generate_and_attach_tts,
-                        ai_message.id,
-                        ai_message.content,
-                        audio_filename,
-                    )
-                    logger.info(f"Scheduled background TTS for message {ai_message.id}")
-                except Exception as e:
-                    logger.error(f"Failed to schedule background TTS: {e}", exc_info=True)
-                logger.info(f"AI response streamed and saved in session {session_id}")
-                return ai_message
+                # Occasionally persist progress so refreshed clients can poll and catch up
+                now = time.monotonic()
+                if token_count_since_commit >= 20 or (now - last_commit) > 1.0:
+                    ai_message.content = full_response
+                    db.add(ai_message)
+                    db.commit()
+                    db.refresh(ai_message)
+                    token_count_since_commit = 0
+                    last_commit = now
 
-            except Exception as e:
-                # Streaming failed — log with detail and return a helpful assistant error message
-                logger.exception("Streaming assistant response failed for session %s: %s", session_id, e)
-                ai_message.content = (
-                    "I ran into an issue streaming the AI response. Please try again shortly."
+            # Clean the response text by removing asterisks and extra whitespace
+            full_response = re.sub(r'\*+', '', full_response).strip()
+            # Update DB message content only once at the end
+            ai_message.content = full_response
+            db.add(ai_message)
+            db.commit()
+            db.refresh(ai_message)
+
+            # Send final delta
+            try:
+                from app.api.ws import manager as ws_manager
+                payload = {
+                    "type": "assistant_delta",
+                    "message_id": ai_message.id,
+                    "content": full_response,
+                    "final": True,
+                    "seq": seq + 1
+                }
+                await ws_manager.send_json_to_session(session_id, payload)
+            except Exception:
+                # Ignore websocket errors; clients may poll instead
+                pass
+
+            # Schedule background TTS generation now that final content is saved
+            try:
+                audio_filename = f"{uuid4().hex}_response.wav"
+                background_tasks.add_task(
+                    _generate_and_attach_tts,
+                    ai_message.id,
+                    ai_message.content,
+                    audio_filename,
                 )
-                db.add(ai_message)
-                db.commit()
-                db.refresh(ai_message)
-                return ai_message
+                logger.info(f"Scheduled background TTS for message {ai_message.id}")
+            except Exception as e:
+                logger.error(f"Failed to schedule background TTS: {e}", exc_info=True)
+            logger.info(f"AI response streamed and saved in session {session_id}")
+            return ai_message
+
+        except Exception as e:
+            # Streaming failed — log with detail and return a helpful assistant error message
+            logger.exception("Streaming assistant response failed for session %s: %s", session_id, e)
+            ai_message.content = (
+                "I ran into an issue streaming the AI response. Please try again shortly."
+            )
+            db.add(ai_message)
+            db.commit()
+            db.refresh(ai_message)
+            return ai_message
         
     except Exception as e:
         logger.error(f"Error generating chat response: {e}", exc_info=True)

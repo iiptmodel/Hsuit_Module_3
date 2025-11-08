@@ -726,16 +726,17 @@ function startMessagePollFallback(messageId, durationMs = 10000, intervalMs = 10
 
 function looksLikeBinary(text) {
     if (!text || typeof text !== 'string') return false;
-    // Heuristics:
-    // - contains many '\x' hex escapes (Python bytes literal or hex dump)
-    // - contains PDF stream markers like '%PDF', 'endstream', '%%EOF', 'startxref'
+    // Heuristics to avoid rendering raw binary dumps or PDF bytes
     const hexEscapes = (text.match(/\\x[0-9A-Fa-f]{2}/g) || []).length;
     if (hexEscapes > 8) return true;
     const lowered = text.toLowerCase();
     if (lowered.includes('%pdf') || lowered.includes('endstream') || lowered.includes('%%eof') || lowered.includes('startxref')) return true;
-    // If the string has a high ratio of non-printable characters (rare in normal messages)
-    const nonPrintable = (text.match(/[^\x20-\x7E\r\n\t]/g) || []).length;
-    if (nonPrintable / Math.max(1, text.length) > 0.15) return true;
+    // Only treat as binary if both: (a) substantial length and (b) high ratio of control/non-printable chars.
+    // This avoids flagging short messages that include emoji or a few non-ASCII characters (like a paperclip).
+    if (text.length > 200) {
+        const nonPrintable = (text.match(/[^\x20-\x7E\r\n\t]/g) || []).length;
+        if (nonPrintable / Math.max(1, text.length) > 0.3) return true;
+    }
     return false;
 }
 
@@ -923,7 +924,14 @@ function renderReports(reports) {
         info.style.display = 'flex';
         info.style.flexDirection = 'column';
         const name = document.createElement('div');
-        const fname = r.original_filename || (r.original_file_path ? r.original_file_path.split(/\\/).pop().split('/').pop() : 'File');
+        let fname = r.original_filename || (r.original_file_path ? r.original_file_path.split(/\\/).pop().split('/').pop() : 'File');
+        // If we only have a stored path that includes a UUID prefix (e.g., 3b1c..._report.pdf), strip the prefix for display
+        try {
+            if (!r.original_filename && typeof fname === 'string') {
+                const m = fname.match(/^[0-9a-fA-F]{32}_(.+)$/);
+                if (m && m[1]) fname = m[1];
+            }
+        } catch (e) { /* noop */ }
         name.textContent = fname;
         name.style.fontWeight = '600';
         name.style.whiteSpace = 'nowrap';

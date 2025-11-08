@@ -23,7 +23,11 @@ def run_async(gen):
 
 def test_create_session_and_send_message(monkeypatch):
     # Setup in-memory SQLite for tests
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    # Use shared in-memory SQLite DB across threads (StaticPool) so FastAPI threadpool sessions see tables
+    from sqlalchemy.pool import StaticPool
+    engine = create_engine(
+        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+    )
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     Base.metadata.create_all(bind=engine)
 
@@ -38,6 +42,9 @@ def test_create_session_and_send_message(monkeypatch):
             db.close()
 
     app.dependency_overrides[deps.get_db] = override_get_db
+
+    # Ensure tables exist on the test engine (explicit create after override to avoid race with app import)
+    models.Base.metadata.create_all(bind=engine)
 
     # Patch streaming generator to return deterministic tokens
     async def fake_stream(user_message, image_path=None):
