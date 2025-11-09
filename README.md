@@ -34,11 +34,14 @@ This application provides a comprehensive medical document analysis platform fea
 |-----------|------------|---------|
 | **Backend** | FastAPI | High-performance async web framework |
 | **Database** | PostgreSQL/SQLite | Data persistence with SQLAlchemy ORM |
-| **AI Models** | MedGemma 4B | Medical vision-language understanding |
-| **Document Parsing** | Docling + OCR | Multi-tier PDF and image processing |
+| **AI Model** | MedGemma 4B (Q4_K_M) | Medical-specialized LLM via Ollama |
+| **Model Serving** | Ollama | Local LLM deployment and management |
+| **Document Parsing** | Docling + RapidOCR | Multi-tier PDF and image processing |
 | **Voice Synthesis** | Kokoro TTS | Natural-sounding speech generation |
 | **Security** | JWT + Guardrails | Authentication and medical safety |
 | **Frontend** | HTML5 + Vanilla JS | Responsive web interface |
+
+**🔧 Configurable**: AI model can be changed via `MODEL_NAME` in `.env` file.
 
 ### AI Pipeline
 
@@ -47,7 +50,7 @@ Input (Text/Image/PDF)
         ↓
 Document Parsing (Docling/OCR)
         ↓
-MedGemma Analysis (8GB Model)
+MedGemma 4B Analysis (Configurable via MODEL_NAME)
         ↓
 Safety Guardrails Check
         ↓
@@ -346,6 +349,9 @@ python download_models.py
 Create `.env` file in project root:
 
 ```plaintext
+# AI Model Configuration
+MODEL_NAME=edwardlo12/medgemma-4b-it-Q4_K_M
+
 # Database Configuration
 # Option 1: Neon (Cloud)
 DATABASE_URL=postgresql://username:password@ep-example-123.us-east-2.aws.neon.tech/neondb?sslmode=require
@@ -362,6 +368,17 @@ ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 ```
 
+**📝 Configuration Notes:**
+
+- **MODEL_NAME**: Ollama model for medical analysis. The application will auto-download if not present.
+  - Default: `edwardlo12/medgemma-4b-it-Q4_K_M` (recommended, ~2.6GB)
+  - Alternatives: `llama3.2:latest`, `mistral:latest`, or any Ollama model
+  
+- **DATABASE_URL**: Choose based on your deployment
+  - **Neon**: Best for production (free tier available)
+  - **PostgreSQL**: For self-hosted production
+  - **SQLite**: Quick start for development only
+
 ### Step 7: Initialize Database
 
 ```powershell
@@ -370,6 +387,22 @@ ACCESS_TOKEN_EXPIRE_MINUTES=60
 ```
 
 ## ▶️ Running the Application
+
+### First-Time Startup
+
+On first run, the application will:
+
+1. ✅ **Verify Ollama Model**: Check if `MODEL_NAME` model exists
+2. 📥 **Auto-Download Model**: If not found, automatically downloads via Ollama
+3. 🗄️ **Initialize Database**: Create necessary tables
+4. 🚀 **Start Server**: Ready to accept requests
+
+**Startup logs will show**:
+```
+🔍 Checking for Ollama model: edwardlo12/medgemma-4b-it-Q4_K_M
+📋 Available Ollama models: [...]
+✅ Model 'edwardlo12/medgemma-4b-it-Q4_K_M' is available
+```
 
 ### Development Mode
 

@@ -2,8 +2,11 @@
 
 Welcome to the **Medical Report Analysis & Voice Summary System** documentation!
 
-## � Recent changes (Nov 2025)
+## 🆕 Recent changes (Nov 2025)
 
+- **MODEL_NAME Configuration**: AI model now configurable via `.env` file (`MODEL_NAME=edwardlo12/medgemma-4b-it-Q4_K_M`)
+- **Auto Model Verification**: Application checks and auto-downloads Ollama model on startup
+- **Improved Testing Docs**: TESTING.md now shows report-wise results with drag-and-drop audio downloads
 - Added a right-side Files drawer and Files button in the chat header for viewing uploaded files and session reports.
 - Introduced a persistent theme toggle (emerald theme + light/dark) in the dashboard; preference is stored in localStorage.
 - Session rename persistence: frontend now PATCHes `/api/v1/chat/sessions/{id}` and the backend persists the `title`.
@@ -62,21 +65,42 @@ Read: **[DEPLOYMENT.md](DEPLOYMENT.md)**
 
 ---
 
-### Model Storage
+### Model Storage & Configuration
 
-All AI models are saved to: **`d:\Prushal\models\`**
+**AI Model Configuration** (New!):
+- Model is now configurable via `.env` file
+- Default: `MODEL_NAME=edwardlo12/medgemma-4b-it-Q4_K_M`
+- Application auto-verifies and downloads model on startup via Ollama
 
-**Download command**:
-```powershell
-python download_models.py
+**Local Model Storage**: **`d:\Prushal\models\`** (Ollama manages this)
+
+**Startup Verification**:
+```
+🔍 Checking for Ollama model: edwardlo12/medgemma-4b-it-Q4_K_M
+📋 Available Ollama models: [...]
+✅ Model is available
 ```
 
 **Models included**:
-- MedGemma (8GB) - Medical AI analysis
-- Kokoro TTS (100MB) - Voice generation
+- MedGemma 4B Q4_K_M (~2.6GB) - Medical AI analysis via Ollama
+- Kokoro TTS (~330MB) - Voice generation
 - Docling (~500MB) - Document parsing
 
-**Full details**: [README.md](README.md#ai-models-detailed)
+**Alternative Models**:
+You can switch to any Ollama-compatible model:
+```env
+MODEL_NAME=llama3.2:latest
+MODEL_NAME=mistral:latest
+MODEL_NAME=any-ollama-model
+```
+
+**Download Additional Models**:
+```powershell
+python scripts/download_models.py  # For TTS and Docling
+ollama pull edwardlo12/medgemma-4b-it-Q4_K_M  # For AI model
+```
+
+**Full details**: [README.md](../README.md#ai-models-detailed)
 
 ---
 
