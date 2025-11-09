@@ -1,0 +1,17 @@
+Age/Sex
+
+:
+
+59 Yrs. / M
+
+## VITAMIN B12
+
+| Test        |   Result | Unit   | Biological Ref. Range   |
+|-------------|----------|--------|-------------------------|
+| VITAMIN B12 |      448 | pg/mL  | 200-911 pg/mL           |
+
+METHOD :Chemin-Luminescence Immunoassay (CLIA).
+
+Clinical significance: Vitamin B12 or Cyanocobalamin, is a complex corrinoid compound found exclusively from animal dietary sources, such as meat eggs and milk. It is critical in normal DNA synthesis, which in turn affects erythrocyte maturation and in the formation of myelin sheath. Vitamin-B12 is used to find out neurological abnormalities and impaired DNA synthesis associated with macrocytic anemias.
+
+-------------------- End Of Report --------------------

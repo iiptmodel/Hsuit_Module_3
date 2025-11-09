@@ -1,0 +1,45 @@
+Test
+
+TSH (ultra)
+
+Method:
+
+:
+
+Chemi-Luminescence ImmunoAssay (CLIA)
+
+## Reference ranges:-
+
+| FOR PREGNANT WOMEN   | T3 (ng / dl )   | T4 (ng / dl )   | TSH (ulU/ml )   |
+|----------------------|-----------------|-----------------|-----------------|
+| 1 st TRIMESTER       | 81.1 -176.6     | 5.61 - 13.3     | 0.0878 - 2.8    |
+| 2 nd TRIMESTER       | 92.8 - 205.1    | 7.36 14.18      | 0.1998 - 2.8    |
+| 3 rd TRIMESTER       | 90.9 - 205.1    | 7.37 - 15.02    | 0.307 - 2.9     |
+
+REF: 1. TIETZ fundamentals of clinical chemistry 2 . guidlines of the American thyroid association durling pregnancy and postpartum , 2011
+
+<!-- image -->
+
+| HbA1c (Glycosylated Hemoglobin)   | HbA1c (Glycosylated Hemoglobin)   | HbA1c (Glycosylated Hemoglobin)   | HbA1c (Glycosylated Hemoglobin)                                                                                                                      |
+|-----------------------------------|-----------------------------------|-----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Test                              | Result                            | Unit                              | Biological Ref. Range                                                                                                                                |
+| HbA1C                             | 10.90                             | %                                 | Normal: <5.7 ; Prediabetic: 5.7-6.4 Diabetic: >=6.5 For known Diabetic (control):- Good: < 6.5 ; Fair: 6.5-7.4 Unsatisfactory: 7.0-8.0 ; Poor: > 8.0 |
+| Method: HPLC                      |                                   |                                   |                                                                                                                                                      |
+| Mean Blood Glucose (MBG)          | 266.13                            | mg/dL                             |                                                                                                                                                      |
+| Method: Calculated                |                                   |                                   |                                                                                                                                                      |
+
+-------------------- End Of Report --------------------
+
+Age/Sex : 46 Yrs. / F
+
+## TSH (Thyroid Stimulating Hormone)
+
+Result
+
+0.60
+
+Unit mlU/mL
+
+Biological Ref. Range
+
+0.30 - 4.5  mlU/mL

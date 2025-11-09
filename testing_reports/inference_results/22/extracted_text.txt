@@ -1,0 +1,61 @@
+Age/Sex
+
+:
+
+37 Yrs. / F
+
+## TSH (Thyroid Stimulating Hormone)
+
+Test
+
+Result
+
+Unit
+
+Biological Ref. Range
+
+TSH (ultra)
+
+:
+
+4.96
+
+mlU/mL
+
+0.30 - 4.5  mlU/mL
+
+Method:
+
+Chemi-Luminescence ImmunoAssay (CLIA)
+
+## Reference ranges:-
+
+| FOR PREGNANT WOMEN   | T3 (ng / dl )   | T4 (ng / dl )   | TSH (ulU/ml )   |
+|----------------------|-----------------|-----------------|-----------------|
+| 1 st TRIMESTER       | 81.1 -176.6     | 5.61 - 13.3     | 0.0878 - 2.8    |
+| 2 nd TRIMESTER       | 92.8 - 205.1    | 7.36 14.18      | 0.1998 - 2.8    |
+| 3 rd TRIMESTER       | 90.9 - 205.1    | 7.37 - 15.02    | 0.307 - 2.9     |
+
+REF: 1. TIETZ fundamentals of clinical chemistry 2 . guidlines of the American thyroid association durling pregnancy and postpartum , 2011
+
+## VITAMIN B12
+
+Test
+
+Result
+
+Unit pg/mL
+
+Biological Ref. Range
+
+VITAMIN B12 :
+
+370.0
+
+110-800 pg/mL
+
+METHOD :Chemin-Luminescence Immunoassay (CLIA).
+
+Clinical significance: Vitamin B12 or Cyanocobalamin, is a complex corrinoid compound found exclusively from animal dietary sources, such as meat eggs and milk. It is critical in normal DNA synthesis, which in turn affects erythrocyte maturation and in the formation of myelin sheath. Vitamin-B12 is used to find out neurological abnormalities and impaired DNA synthesis associated with macrocytic anemias.
+
+-------------------- End Of Report --------------------

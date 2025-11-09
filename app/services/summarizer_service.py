@@ -112,7 +112,7 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
 
 
 def generate_patient_summary_from_text(text: str, language: str = 'English') -> str:
-    """Generate a patient-facing summary (now moderately detailed: ~3-5 sentences).
+    """Generate a patient-facing summary in clear, readable format.
 
     Goals:
       - Plain language explanation of the key findings.
@@ -126,24 +126,49 @@ def generate_patient_summary_from_text(text: str, language: str = 'English') -> 
     logger.info(f"Generating patient summary (expanded) via Ollama (text length={len(text)})")
     try:
         system_prompt = (
-            "You are a medical assistant writing for a patient. Using the provided medical report text, create a clear, "
-            "reassuring summary in " f"{language}. Write 3-5 short sentences. Follow this structure: "
-            "1) Core findings (simple wording). 2) What these findings GENERALLY might indicate (avoid diagnosis). "
-            "3) A simple healthy next-step or monitoring suggestion. 4) A reminder to consult a healthcare professional. "
-            "Avoid definitive terms (e.g., 'confirm', 'diagnose'). If medical terms appear, briefly explain them in parentheses. "
-            "Do NOT recommend medications or dosages."
+            f"You are a medical assistant writing a friendly, easy-to-read summary for a patient in {language}.\n\n"
+            "**Instructions:**\n"
+            "1. Start with a clear heading like '📋 Your Test Results Summary'\n"
+            "2. Extract the key test name and values from the report\n"
+            "3. Explain what the test measures in simple terms\n"
+            "4. State if the results are within normal range or not (in plain language)\n"
+            "5. Provide a brief, general explanation of what this might indicate\n"
+            "6. Give one simple health tip or next step (but NO medications)\n"
+            "7. End with a reminder to discuss with their healthcare provider\n\n"
+            "**Format Requirements:**\n"
+            "- Use short paragraphs with line breaks for readability\n"
+            "- Use bullet points (•) for lists\n"
+            "- Use emojis sparingly for visual appeal (✓ for normal, ⚠️ for attention needed)\n"
+            "- Avoid medical jargon or explain it in parentheses\n"
+            "- Be reassuring but honest\n"
+            "- NEVER diagnose or prescribe medications\n\n"
+            "**Example Format:**\n"
+            "📋 Your Test Results Summary\n\n"
+            "Test Name: [Extract from report]\n"
+            "Your Result: [Value] [Unit]\n"
+            "Normal Range: [Reference range]\n\n"
+            "What This Means:\n"
+            "[Plain language explanation of what this test measures]\n\n"
+            "Your Results:\n"
+            "✓ Your levels are within the normal range / ⚠️ Your levels are [higher/lower] than the normal range\n\n"
+            "What to Know:\n"
+            "[Brief, non-diagnostic context about what this generally indicates]\n\n"
+            "Next Steps:\n"
+            "• [Simple health tip or monitoring suggestion]\n"
+            "• Discuss these results with your healthcare provider for personalized advice\n\n"
+            "Remember: This is a simplified summary. Your doctor can provide a complete interpretation and personalized recommendations."
         )
 
         messages = [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": text}
+            {"role": "user", "content": f"Create a patient-friendly summary of this medical report:\n\n{text}"}
         ]
 
         from app.services.ollama_client import chat_with_retries
         resp = chat_with_retries(
             model='amsaravi/medgemma-4b-it:q8',
             messages=messages,
-            options={"temperature": 0.1, "num_predict": 250}  # allow a bit more length/detail
+            options={"temperature": 0.2, "num_predict": 500}  # Allow more length for structured format
         )
 
         summary = resp.get('message', {}).get('content', '')
@@ -174,16 +199,125 @@ def generate_detailed_report_from_text(text: str, language: str = 'English') -> 
     logger.info(f"Generating expanded clinician report via Ollama (text length={len(text)})")
     try:
         system_prompt = (
-            "You are a clinical report assistant. Produce a structured, comprehensive yet concise clinician-facing report. "
-            "Follow the required section order and headers: Report Summary; Key Results; Interpretive Context / Pathophysiology; "
-            "Clinical Significance & Risk Stratification; Limitations / Data Quality; Recommended Follow-Up; Education Points. "
-            "Use restrained clinical language (no diagnosis or treatment prescriptions). If uncertainty exists, explicitly flag it. "
-            f"Respond in {language}."
+            f"You are an advanced clinical decision support assistant creating a comprehensive, structured medical report for healthcare professionals in {language}.\n\n"
+            
+            "**CRITICAL INSTRUCTIONS:**\n"
+            "You MUST create a detailed, well-structured report using the EXACT format and sections below. Each section is MANDATORY.\n\n"
+            
+            "**REQUIRED REPORT STRUCTURE:**\n\n"
+            
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "📊 CLINICAL ANALYSIS REPORT\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            
+            "## 1️⃣ EXECUTIVE SUMMARY\n"
+            "[Provide a 2-3 sentence high-level overview of the report type, key findings, and overall clinical picture]\n\n"
+            
+            "## 2️⃣ KEY LABORATORY/DIAGNOSTIC RESULTS\n"
+            "[Extract and present ALL test values in structured format. For EACH result include:]\n"
+            "• **Test Name:** [Full name]\n"
+            "  - Result: [Numeric value] [Unit]\n"
+            "  - Reference Range: [Lower limit - Upper limit] [Unit]\n"
+            "  - Status: [Normal ✓ / Elevated ↑ / Decreased ↓ / Critical ⚠️]\n"
+            "  - Deviation: [If abnormal, calculate % above/below reference range]\n\n"
+            "[If multiple tests, list each one separately with clear visual separation]\n\n"
+            
+            "## 3️⃣ INTERPRETIVE CONTEXT & PATHOPHYSIOLOGY\n"
+            "[Provide detailed scientific context WITHOUT diagnosing:]\n"
+            "• **Biological Significance:**\n"
+            "  - What does this marker/parameter measure at the molecular/cellular level?\n"
+            "  - What physiological processes does it reflect?\n"
+            "  - What mechanisms could cause elevation/reduction?\n\n"
+            "• **Clinical Correlations:**\n"
+            "  - What clinical conditions are COMMONLY associated with these patterns?\n"
+            "  - What are the differential considerations? (List 3-5 possibilities)\n"
+            "  - Are there any patterns across multiple markers?\n\n"
+            "• **Contextual Factors:**\n"
+            "  - Age/demographic considerations if relevant\n"
+            "  - Temporal trends if multiple values present\n"
+            "  - Potential confounding factors (medications, diet, timing)\n\n"
+            
+            "## 4️⃣ CLINICAL SIGNIFICANCE & RISK STRATIFICATION\n"
+            "[Categorize findings based on clinical importance:]\n\n"
+            "**🟢 Normal/Low Risk Findings:**\n"
+            "• [List parameters within expected ranges]\n"
+            "• Clinical Implication: [Brief explanation]\n\n"
+            
+            "**🟡 Borderline/Moderate Risk Findings:**\n"
+            "• [List parameters slightly outside reference but not critical]\n"
+            "• Clinical Implication: [Explain significance and monitoring needs]\n\n"
+            
+            "**🔴 Abnormal/High Risk Findings:**\n"
+            "• [List significantly abnormal values]\n"
+            "• Clinical Implication: [Explain urgency and potential clinical impact]\n"
+            "• Action Threshold: [Indicate if values cross critical decision points]\n\n"
+            
+            "**⚡ Critical/Immediate Attention:**\n"
+            "• [List any life-threatening values if present]\n"
+            "• Immediate Considerations: [What requires urgent evaluation]\n\n"
+            
+            "## 5️⃣ DATA QUALITY & LIMITATIONS\n"
+            "[Critically assess the report quality:]\n"
+            "• **Completeness:** [Are all expected values present? Any missing tests?]\n"
+            "• **Methodology:** [Test method noted? Any limitations of technique?]\n"
+            "• **Specimen Quality:** [Any collection/handling issues noted?]\n"
+            "• **OCR/Data Extraction:** [Any unclear values or potential transcription errors?]\n"
+            "• **Uncertainty Factors:** [What clinical context is missing?]\n\n"
+            
+            "## 6️⃣ RECOMMENDED FOLLOW-UP ACTIONS\n"
+            "[Evidence-based next steps WITHOUT prescribing:]\n\n"
+            "**Immediate Actions (0-24 hours):**\n"
+            "• [List any urgent evaluations needed]\n\n"
+            
+            "**Short-term Follow-up (1-4 weeks):**\n"
+            "• [Recommended repeat testing or additional investigations]\n"
+            "• [Clinical correlation needed with symptoms/history]\n\n"
+            
+            "**Long-term Monitoring:**\n"
+            "• [Ongoing surveillance recommendations]\n"
+            "• [Frequency of repeat testing based on current findings]\n\n"
+            
+            "**Additional Diagnostic Workup (if indicated):**\n"
+            "• [Complementary tests that would provide additional context]\n"
+            "• [Imaging or specialized studies to consider]\n\n"
+            
+            "**Patient Education/Lifestyle:**\n"
+            "• [General health recommendations relevant to findings]\n"
+            "• [Monitoring guidance for patient]\n\n"
+            
+            "## 7️⃣ CLINICAL PEARLS & EDUCATION POINTS\n"
+            "[Provide educational context for clinicians:]\n\n"
+            "**Technical Terminology:**\n"
+            "• [Define any complex medical terms with brief explanations]\n\n"
+            
+            "**Clinical Pearls:**\n"
+            "• [Important practice points or common pitfalls to avoid]\n"
+            "• [Evidence-based insights related to these findings]\n\n"
+            
+            "**Reference Standards:**\n"
+            "• [Note if reference ranges are population-specific]\n"
+            "• [Mention any recent guideline updates relevant to interpretation]\n\n"
+            
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "**DISCLAIMER:** This analysis is for informational and educational purposes only. It does NOT constitute a diagnosis, treatment recommendation, or replace clinical judgment. All findings must be interpreted in the context of complete patient history, physical examination, and additional clinical data. Consult appropriate specialists as needed.\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            
+            "**FORMATTING REQUIREMENTS:**\n"
+            "- Use markdown formatting with headers (##), bold (**), and bullet points (•)\n"
+            "- Use emojis for visual hierarchy (numbers, symbols, indicators)\n"
+            "- Include actual numeric values with units\n"
+            "- Calculate deviations from reference ranges when abnormal\n"
+            "- Use clinical terminology appropriate for healthcare professionals\n"
+            "- Be comprehensive but organized - use subsections liberally\n"
+            "- NEVER provide definitive diagnoses or medication prescriptions\n"
+            "- Always acknowledge uncertainty and need for clinical correlation\n"
         )
 
         user_prompt = (
-            "Extracted document text below. Derive structured report as specified.\n\n"
-            "---BEGIN EXTRACTED TEXT---\n" + text + "\n---END EXTRACTED TEXT---"
+            "Generate a comprehensive clinical analysis report from the following medical document.\n"
+            "Follow the EXACT structure provided in the system prompt. Each section MUST be present and detailed.\n\n"
+            "---BEGIN MEDICAL DOCUMENT---\n" + text + "\n---END MEDICAL DOCUMENT---\n\n"
+            "Create the full structured report now, ensuring ALL 7 sections are thoroughly completed:"
         )
 
         messages = [
@@ -195,7 +329,7 @@ def generate_detailed_report_from_text(text: str, language: str = 'English') -> 
         resp = chat_with_retries(
             model='amsaravi/medgemma-4b-it:q8',
             messages=messages,
-            options={"temperature": 0.0, "num_predict": 800}  # allow more space for richer sections
+            options={"temperature": 0.1, "num_predict": 2000}  # Much longer for comprehensive report
         )
 
         report = resp.get('message', {}).get('content', '')

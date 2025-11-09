@@ -1,0 +1,81 @@
+Age/Sex
+
+:
+
+42 Yrs. / F
+
+## Luteinizing Hormone (LH)
+
+Test
+
+Result
+
+Unit
+
+## Biological Ref. Range
+
+Luteinising Hormone (LH) :
+
+7.78
+
+mIU/mL
+
+Folliicular phase: 2.40 - 12.60
+
+Ovulatory phase: 14.0 - 96.0
+
+Luteal phase: 1.0 - 11.40
+
+Postmenopause: 7.7 - 59.0
+
+Method:
+
+ChemiLuminescence ImmunoAssay (CLIA)
+
+## Follicle Stimulating Hormone (FSH)
+
+Test
+
+Result
+
+Unit
+
+Biological Ref. Range
+
+Follicle Stimulating Hormone ( FSH) :
+
+9.86
+
+mIU/mL
+
+Follicular Phase:- 3.2 - 15
+
+Mid Cycle:- 7.5 - 20.0
+
+Leuteal Phase:- 1.3 - 11.0
+
+Postmenopausal:- 36 - 138
+
+METHOD :- Chemi-Luminescence ImmunoAssay (CLIA)
+
+## ANTI MULLERIAN HORMONE (AMH)
+
+Test
+
+Result
+
+Unit ng/ml
+
+Biological Ref. Range
+
+Anti Mullerian Hormone :
+
+0.29
+
+0.027 - 5.267 ng/ml
+
+METHOD :Chemi-Luminescence ImmunoAssay (CLIA)
+
+AntiMullerian hormone (AMH) , also known as mullerian-inhibiting substance is produced by Sertoli cells of the testis in males and by ovarian granulosa cells in females. In males, AMH serum concentrations are elevated under 2 years and then progressively decrease until puberty, when there is a sharp decline. In females, AMH is produced by the granulosa cells of small growing follicles from the 36th week of gestation onwards until menopause when levels become undetectable. Due to the gender differences in AMH concentrations, its changes in circulating concentrations with sexual development, and its specificity for Sertoli and granulosa cells, measurement of AMH has utility in the assessment of gender, gonadal function, fertility, and as a gonadal tumor marker. Since AMH is produced continuously in the granulosa cells of small follicles during the menstrual cycle, it is superior to the episodically released gonadotropins and ovarian steroids as a marker of ovarian reserve.
+
+-------------------- End Of Report --------------------

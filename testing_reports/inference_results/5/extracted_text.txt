@@ -1,0 +1,18 @@
+| Thyroid Function Test (ultra)   | Thyroid Function Test (ultra)   | Thyroid Function Test (ultra)   | Thyroid Function Test (ultra)   | Thyroid Function Test (ultra)   |
+|---------------------------------|---------------------------------|---------------------------------|---------------------------------|---------------------------------|
+| Test                            |                                 | Result                          | Unit                            | Biological Ref. Range           |
+| T3 - Triiodothyronine           | :                               | 1.96                            | ng/mL                           | 0.69 - 2.15 ng/mL               |
+| T4 - Thyroxine                  | :                               | 10.55                           | mcg/dL                          | 5.2 - 12.7 mcg/dL               |
+| TSH (ultra)                     | :                               | 0.11                            | mlU/mL                          | 0.30 - 4.5 mlU/mL               |
+
+Method:Chemi-Luminescence ImmunoAssay (CLIA)
+
+NOTE :  Primary malfunction of thyroid gland may result in excessive (hyper) or below normal (hypo) release of T3 or T4. In addition, as TSH directly affects thyroid function, malfunction of pituitary or the hypothalamus influences the thyroid gland activity. Disease of any portion the thyroid-pituitary-hypothalamus system may influence the levels of T3 and T4 in the blood.
+
+| FOR PREGNANT WOMEN   | T3 (ng / dl )   | T4 (ng / dl )   | TSH (ulU/ml )   |
+|----------------------|-----------------|-----------------|-----------------|
+| 1 st TRIMESTER       | 81.1 -176.6     | 5.61 - 13.3     | 0.0878 - 2.8    |
+| 2 nd TRIMESTER       | 92.8 - 205.1    | 7.36 14.18      | 0.1998 - 2.8    |
+| 3 rd TRIMESTER       | 90.9 - 205.1    | 7.37 - 15.02    | 0.307 - 2.9     |
+
+-------------------- End Of Report --------------------

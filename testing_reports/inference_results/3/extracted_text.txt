@@ -1,0 +1,12 @@
+| Anti-CCP Antibodies   | Anti-CCP Antibodies   | Anti-CCP Antibodies   | Anti-CCP Antibodies   |
+|-----------------------|-----------------------|-----------------------|-----------------------|
+| Test                  | Result                | Unit                  | Biological Ref. Range |
+| Anti-CCP Antibodies   | 6.46                  | U/mL                  | <17.0 : Negative U/mL |
+
+METHOD :Chemi-Luminescence ImmunoAssay (CLIA)
+
+## Interpretation:-
+
+Anti-cyclic citrullinated peptide (anti-CCP), IgG antibodies are present in about 69-83 percent of patients with rheumatoid arthritis (RA) and have specificities of 93-95 percent. These autoantibodies may be present in the preclinical phase of disease, are associated with future RA development, and may predict radiographic joint destruction. Anti-CCP antibodies helps in detection of rheumatoid Arthritis earlier and more accurately, before the disease develops irreversible damage and the patient have negative RF test. CCP antibodies may be detected in about 50 - 60 % of patients with early RA [as early as 3 - 4 months after the beginning of symptoms]. Early detection of RA, helps in beginning aggressive treatment and minimizing the associated complications. CCP may be ordered to help evaluate the likely development of RA in patients with undifferentiated arthritis [those whose symptoms suggest but do not yet meet the criteria of RA]. The reason it is more useful in confounding clinical presentations is that CCP is more specific test for RA than the traditional RF.  Patients with weak positive ACCP results should be monitored and testing repeated.
+
+-------------------- End Of Report --------------------

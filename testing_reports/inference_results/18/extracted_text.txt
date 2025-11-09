@@ -1,0 +1,39 @@
+Test
+
+TSH (ultra)
+
+Method:
+
+:
+
+Chemi-Luminescence ImmunoAssay (CLIA)
+
+## Reference ranges:-
+
+| FOR PREGNANT WOMEN   | T3 (ng / dl )   | T4 (ng / dl )   | TSH (ulU/ml )   |
+|----------------------|-----------------|-----------------|-----------------|
+| 1 st TRIMESTER       | 81.1 -176.6     | 5.61 - 13.3     | 0.0878 - 2.8    |
+| 2 nd TRIMESTER       | 92.8 - 205.1    | 7.36 14.18      | 0.1998 - 2.8    |
+| 3 rd TRIMESTER       | 90.9 - 205.1    | 7.37 - 15.02    | 0.307 - 2.9     |
+
+REF: 1. TIETZ fundamentals of clinical chemistry 2 . guidlines of the American thyroid association durling pregnancy and postpartum , 2011
+
+-------------------- End Of Report --------------------
+
+Age/Sex
+
+:
+
+24 Yrs. / F
+
+## TSH (Thyroid Stimulating Hormone)
+
+Result
+
+4.52
+
+Unit mlU/mL
+
+Biological Ref. Range
+
+0.30 - 4.5  mlU/mL

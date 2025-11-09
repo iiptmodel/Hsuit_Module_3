@@ -1,0 +1,11 @@
+| IgE Total Test       |   Result | Unit   | Biological Ref. Range   |
+|----------------------|----------|--------|-------------------------|
+| S. Total IgE Level : |    201.9 | IU/mL  | 0.0-378 IU/mL           |
+
+Method:
+
+ECLIA
+
+Immunoglobulin E (IgE) is an antibody that is produced by the body is immune system in response to a perceived threat. It is one of five classes of immunoglobulins (A, G, M, D, and E) and is normally present in the blood in very small amounts. This test measures the amount of IgE in the blood. Immunoglobulins are proteins that play a key role in the body's immune system. They are produced by specific immune cells called plasma cells and respond to bacteria, viruses, and other microorganisms as well as substances that are recognized as non-self and harmful antigens.
+
+-------------------- End Of Report --------------------

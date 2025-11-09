@@ -1,0 +1,52 @@
+Age/Sex
+
+:
+
+52 Yrs. / F
+
+## Culture &amp; Sensitivity - URINE
+
+## Test
+
+Result
+
+Unit
+
+Biological Ref. Range
+
+Specimen :
+
+URINE
+
+Media Used :
+
+CLED AGAR
+
+Organism Isolated :
+
+Escherichia coli
+
+Colony Count :
+
+1,00,000 CFU/ml
+
+SENSITIVITY :
+
+Ampicillin, Amoxicillin-Clavulanic Acid, Ampicillin-Sulbactam, Cefuroxime, Cefotaxime, Ceftriaxone, Ceftazidime, Ceftizoxime, Cefpime, Cefixime, Ticarcillin-Clavulanic Acid, Tazobactam-Piperacillin, Cefoperazone-Sulbactam, Ciprofloxacin, Levofloxacin, Gentamycin,Tobramicin, Imipenem, Meropenem, Ceftazidime/Avibactam, Meropenem/Vaborbactam, Imipenem/Relebactam, Cefiderocol, Ceftolozane/Tazobactam, Plazomicin, Eravacycline, Aztreonam, Trimethoprim, Tetracycline.
+
+INTERMEDIATE SUSCEPTIBILITY :
+
+Nil
+
+RESISTANT :
+
+Amikacin, Netilmicin, Chloramphenicol, Nitrofurantoin, Norfloxacin
+
+## Sterile Pyuria:
+
+Negative Urine Culture in Presence of Clinical and Microscopic Findings Suggestive of Infection. Causes:
+
+1. Patient is Already on Antibiotics When Urine is collected for Culture.
+2. Infection by Fastidious Organisms. 3. Interstitial Nephritis/ Cystitis.
+
+-------------------- End Of Report --------------------

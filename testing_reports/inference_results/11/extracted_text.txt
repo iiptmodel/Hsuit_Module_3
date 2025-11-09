@@ -1,0 +1,248 @@
+Age/Sex
+
+:
+
+39 Yrs. / F
+
+## COMPLETE BLOOD COUNT (CBC)
+
+| Test                      |    | Result   | Unit          | Biological Ref. Range   |
+|---------------------------|----|----------|---------------|-------------------------|
+| HAEMOGLOBIN               | :  | 10.6     | gms%          | 12.0-16.0 gms%          |
+| R.B.C. Count              | :  | 4.10     | millions/cumm | 4.2-5.5 millions/cumm   |
+| PCV                       | :  | 29.20    | %             | 37-47%                  |
+| MCV                       | :  | 71.22    | fl            | 80-96 fl                |
+| MCHC                      | :  | 34.20    | gm/dL         | 32.5-36 gm/dL           |
+| MCH                       | :  | 25.70    | Pg            | 27-32 Pg                |
+| RDW-CV                    | :  | 16.30    | %             | 11-14.5%                |
+| RDW-SD                    | :  | 53.00    | fL            | 39-46 fL                |
+| Platelet Count            | :  | 284000   | /ul           | 150000-450000 /ul       |
+| MPV                       | :  | 10.70    | fL            | 3-12 fL                 |
+| PDW                       | :  | 16.10    | %             | 10-20%                  |
+| W.B.C. Count (TLC)        | :  | 6760     | /cumm         | 4000-11000 /cumm        |
+| DIFFERENTIAL COUNT:       |    |          |               |                         |
+| Neutrophils               | :  | 55.60    | %             | 40-70%                  |
+| Lymphocytes               | :  | 39.90    | %             | 20-40%                  |
+| Monocytes                 | :  | 3.40     | %             | 2-10%                   |
+| Eosoniphils               | :  | 1.10     | %             | 1-6%                    |
+| Basophils                 | :  | 0        | %             | 0-1%                    |
+| P-LCR                     | :  | 35.60    | %             | 15-45%                  |
+| Absolute Neutrophil Count | :  | 3758.56  | / cmm         | 1500 - 8000 / cmm       |
+| Absolute Lymphocyte Count | :  | 2697.24  | / cmm         | 1000-4800 / cmm         |
+| Absolute Monocytes Count  | :  | 229.84   | /cumm         | 100 - 1000 /cumm        |
+| Absolute Eosinophil Count | :  | 74       | /cumm         | 40-440 /cumm            |
+| Absolute Basophil Count   | :  | 0.00     | /uL           | 0-100 /uL               |
+
+## SMEAR EXAMINATION
+
+RBC Morphology :
+
+Microcytosis, Hypochromasia &amp; mild Anisopoikilocytosis
+
+WBC Morphology :
+
+Within normal limit
+
+Platelets on Smear
+
+:
+
+Adequate on smear.
+
+Method:Impedance for RBC &amp; PLT, Cyanide free reagent for Hb, FlowCytometry+Tri-angle laser scatter+Chemical dye for WBC 5-part differential analysis.
+
+-------------------- End Of Report --------------------
+
+<!-- image -->
+
+Test
+
+Calcium, Serum
+
+:
+
+Age/Sex
+
+:
+
+39 Yrs. / F
+
+## ESR (Erythrocyte Sedimentation Rate)
+
+| Test                                        |                                 | Result                          | Unit mmat 1hr                   | Biological Ref. Range 0-20 mmat 1hr                                                                                                                  |
+|---------------------------------------------|---------------------------------|---------------------------------|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| E.S.R (by WESTERGREN)                       | :                               | 17                              |                                 |                                                                                                                                                      |
+| GLUCOSE - FASTING                           | GLUCOSE - FASTING               | GLUCOSE - FASTING               | GLUCOSE - FASTING               | GLUCOSE - FASTING                                                                                                                                    |
+| Test Blood Sugar - Fasting Method:- GOD/POD | :                               | Result 91                       | Unit mg/dL                      | Biological Ref. Range 74 - 100 mg/dL                                                                                                                 |
+| HbA1c (Glycosylated Hemoglobin)             | HbA1c (Glycosylated Hemoglobin) | HbA1c (Glycosylated Hemoglobin) | HbA1c (Glycosylated Hemoglobin) | HbA1c (Glycosylated Hemoglobin)                                                                                                                      |
+| Test                                        |                                 | Result                          | Unit                            | Biological Ref. Range                                                                                                                                |
+| HbA1C                                       | :                               | 5.80                            | %                               | Normal: <5.7 ; Prediabetic: 5.7-6.4 Diabetic: >=6.5 For known Diabetic (control):- Good: < 6.5 ; Fair: 6.5-7.4 Unsatisfactory: 7.0-8.0 ; Poor: > 8.0 |
+| Method: HPLC Mean Blood Glucose (MBG)       | :                               | 119.76                          | mg/dL                           |                                                                                                                                                      |
+
+## CALCIUM, Serum
+
+Result
+
+9.33
+
+Unit mg/dL
+
+Biological Ref. Range
+
+8.6 - 10.3 mg/dL
+
+Method:
+
+Ferene
+
+Age/Sex
+
+:
+
+39 Yrs. / F
+
+## IRON STUDIES (Iron &amp; TIBC)
+
+| Test                               |    |   Result | Unit   | Biological Ref. Range   |
+|------------------------------------|----|----------|--------|-------------------------|
+| IRON                               | :  |    36    | ug/dL  | 28-170 ug/dL            |
+| Total Iron binding Capacity (TIBC) | :  |   356    | ug/dL  | 250-400 ug/dl ug/dL     |
+| Transferin Saturation              | :  |    10.11 | %      | 20 - 50%                |
+
+Note:Serum iron measures the level of iron in the liquid portion of the blood. Low iron levels maybe seen in anemia (microcytic and hypochromic). High levels of serum iron in hereditary hemochromatosis, multiple blood transfusions, and a few other conditions.  TIBC (Total iron-binding capacity) measures all the proteins in blood available to bind with iron, including transferrin. TIBC test is a good indirect measurement of transferrin.
+
+| RENAL FUNCTION TESTS                       | RENAL FUNCTION TESTS   | RENAL FUNCTION TESTS   | RENAL FUNCTION TESTS   | RENAL FUNCTION TESTS   |
+|--------------------------------------------|------------------------|------------------------|------------------------|------------------------|
+| Test                                       |                        | Result                 | Unit                   | Biological Ref. Range  |
+| Blood Urea                                 | :                      | 21                     | mg/dL                  | 13 - 43 mg/dL          |
+| Method: - Urease UV/GLDH                   |                        |                        |                        |                        |
+| BUN (Blood Urea Nitrogen)                  | :                      | 9.79                   | mg/dL                  | 5 - 21 mg/dL           |
+| Method: Calculated                         |                        |                        |                        |                        |
+| Creatinine, Serum                          | :                      | 0.68                   | mg/dL                  | 0.50 - 1.20 mg/dL      |
+| Method : Enzymatic - Kinetic               |                        |                        |                        |                        |
+| Uric Acid, Serum                           | :                      | 3.32                   | mg/dL                  | 2.6 - 6.0 mg/dL        |
+| Method: - Uricase Enzymatic - colorimetric |                        |                        |                        |                        |
+| BUN/Creat Ratio                            | :                      | 14.40                  |                        | 5-20                   |
+| Method:- Calculation                       |                        |                        |                        |                        |
+
+## VITAMIN B12
+
+| Test        |   Result | Unit   | Biological Ref. Range   |
+|-------------|----------|--------|-------------------------|
+| VITAMIN B12 |      302 | pg/mL  | 110-800 pg/mL           |
+
+METHOD :Chemin-Luminescence Immunoassay (CLIA).
+
+Clinical significance: Vitamin B12 or Cyanocobalamin, is a complex corrinoid compound found exclusively from animal dietary sources, such as meat eggs and milk. It is critical in normal DNA synthesis, which in turn affects erythrocyte maturation and in the formation of myelin sheath. Vitamin-B12 is used to find out neurological abnormalities and impaired DNA synthesis associated with macrocytic anemias.
+
+Age/Sex
+
+: 39 Yrs. / F
+
+## VITAMIN D Total (25-OH)
+
+Test
+
+Result
+
+Unit
+
+VITAMIN D Total (25-OH) :
+
+22.80
+
+ng/mL
+
+Method:- Chemi-Luminescence Immunoassay (CLIA)
+
+Note:Vitamin D is a fat soluble vitamin and exists in two main forms as cholecalciferol (vitamin D3) which is synthesized in skin from 7-dehydrocholesterol in response to sunlight exposure &amp; Ergocalciferol(vitamin D2) present mainly in dietary sources. Both Cholecalciferol &amp; Ergocalciferol are converted to 25(OH). A low blood level of 25-hydroxyvitamin D may mean that a person is not getting enough exposure to sunlight or enough dietary vitamin D to meet his or her body's demand or that there is a problem with its absorption from the intestines.
+
+## Thyroid Function Test (ultra)
+
+| Test                  |   Result | Unit   | Biological Ref. Range   |
+|-----------------------|----------|--------|-------------------------|
+| T3 - Triiodothyronine |     1.02 | ng/mL  | 0.69 - 2.15 ng/mL       |
+| T4 - Thyroxine        |     6.54 | mcg/dL | 5.2 - 12.7 mcg/dL       |
+| TSH (ultra)           |     4.87 | mlU/mL | 0.30 - 4.5 mlU/mL       |
+
+Method:- Chemi-Luminescence ImmunoAssay (CLIA)
+
+NOTE :  Primary malfunction of thyroid gland may result in excessive (hyper) or below normal (hypo) release of T3 or T4. In addition, as TSH directly affects thyroid function, malfunction of pituitary or the hypothalamus influences the thyroid gland activity. Disease of any portion the thyroid-pituitary-hypothalamus system may influence the levels of T3 and T4 in the blood.
+
+| FOR PREGNANT WOMEN   | T3 (ng / dl )   | T4 (ng / dl )   | TSH (ulU/ml )   |
+|----------------------|-----------------|-----------------|-----------------|
+| 1 st TRIMESTER       | 81.1 -176.6     | 5.61 - 13.3     | 0.0878 - 2.8    |
+| 2 nd TRIMESTER       | 92.8 - 205.1    | 7.36 14.18      | 0.1998 - 2.8    |
+| 3 rd TRIMESTER       | 90.9 - 205.1    | 7.37 - 15.02    | 0.307 - 2.9     |
+
+-------------------- End Of Report --------------------
+
+Biological Ref. Range
+
+Deficiency : &lt; 20
+
+Insufficiency: 21-30
+
+Sufficient : 31-100
+
+Toxic : &gt;100
+
+Age/Sex
+
+:
+
+39 Yrs. / F
+
+## LIPID PROFILE (Cholesterol Panel)
+
+| Test                 |                      | Result               | Unit                 | Biological Ref. Range                                                                             |
+|----------------------|----------------------|----------------------|----------------------|---------------------------------------------------------------------------------------------------|
+| Total Cholesterol    | :                    | 144                  | mg/dL                | Desirable: < 200 Borderline : 200 - 239 High Risk : > 240                                         |
+| Triglycerides        | :                    | 111                  | mg/dL                | Desirable : < 150 Borderline High : 150 - 199 High : 200 - 499 High Risk : > 500                  |
+| HDL Cholesterol      | :                    | 48                   | mg/dL                | No Risk >60 Moderate Risk 40 - 60 High Risk <40                                                   |
+| LDL Cholesterol      | :                    | 73.8                 | mg/dL                | Normal: < 100 Desirable: 100 - 129 Borderline High : 130 - 159 High : 160 - 189 Very High : > 190 |
+| Method : Calculation | Method : Calculation | Method : Calculation | Method : Calculation | Method : Calculation                                                                              |
+| VLDL Cholesterol     | :                    | 22.2                 | mg/dL                | 5-30 mg/dL                                                                                        |
+| Method : Calculation | Method : Calculation | Method : Calculation | Method : Calculation | Method : Calculation                                                                              |
+| TC/HDL Ratio         | :                    | 3.0                  |                      | 0-5.0                                                                                             |
+| Method : Calculation | Method : Calculation | Method : Calculation | Method : Calculation | Method : Calculation                                                                              |
+| LDL/HDL Ratio        | :                    | 1.5                  |                      | 0-3.5                                                                                             |
+| Method : Calculation |                      |                      |                      |                                                                                                   |
+
+Age/Sex
+
+:
+
+39 Yrs. / F
+
+## LIVER FUNCTION TEST (LFT)
+
+| Test                                    |    | Result   | Unit   | Biological Ref. Range   |
+|-----------------------------------------|----|----------|--------|-------------------------|
+| Bilirubin (Total)                       | :  | 0.60     | mg/dL  | 0 - 1.2 mg/dL           |
+| Method : NBD (p-nitrobenzene diazonium) |    |          |        |                         |
+| Bilirubin (Direct)                      | :  | 0.15     | mg/dL  | 0 - 0.3 mg/dL           |
+| Method: Diazotized Sulfanilic Acid      |    |          |        |                         |
+| Bilirubin (Indirect)                    | :  | 0.45     | mg/dL  | 0.1 - 1.0 mg/dL         |
+| Method: Calculated                      |    |          |        |                         |
+| SGOT (AST)                              | :  | 14       | IU/L   | 0 - 31 IU/L             |
+| Method: UV Kinetic                      |    |          |        |                         |
+| SGPT (ALT)                              | :  | 20       | U/L    | 0-34 U/L                |
+| Method: UV Kinetic                      |    |          |        |                         |
+| Alkaline Phosphatase (ALP)              | :  | 82       | U/L    | 35 - 100 U/L            |
+| Method: PNP AMP Kinetic                 |    |          |        |                         |
+| Total Proteins                          | :  | 7.30     | gm/dL  | 6.4 - 8.3 gm/dL         |
+| Method: Biuret                          |    |          |        |                         |
+| Albumin Fraction                        | :  | 3.88     | g/dL   | 3.5 - 5.2 g/dL          |
+| Method : Capillary electrophoresis      |    |          |        |                         |
+| Globulin                                | :  | 3.42     | gm/dL  | 2.3-3.5 gm/dL           |
+| Method: Calculated                      |    |          |        |                         |
+| A/G Ratio                               | :  | 1.13     |        | 0.90-2.00               |
+
+| GAMMAGT(GGT)   | GAMMAGT(GGT)   | GAMMAGT(GGT)   | GAMMAGT(GGT)          |
+|----------------|----------------|----------------|-----------------------|
+| Test           | Result         | Unit           | Biological Ref. Range |
+| SERUMGAMMAGT   | 19.5           | U/L            | 5 - 60 U/L            |
+| Method:- IFCC  |                |                |                       |
+
+-------------------- End Of Report --------------------

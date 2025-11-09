@@ -1,0 +1,14 @@
+{
+  "report_name": "10.pdf",
+  "extracted_text_length": 817,
+  "patient_summary_length": 209,
+  "doctor_summary_length": 410,
+  "files": {
+    "extracted_text": "inference_results\\10\\extracted_text.txt",
+    "patient_summary": "inference_results\\10\\patient_summary.txt",
+    "doctor_summary": "inference_results\\10\\doctor_summary.txt",
+    "patient_audio": "inference_results\\10\\patient_audio.wav",
+    "doctor_audio": "inference_results\\10\\doctor_audio.wav"
+  },
+  "status": "completed"
+}

@@ -1,0 +1,11 @@
+Age/Sex : 52 Yrs. / F
+
+<!-- image -->
+
+| HbA1c (Glycosylated Hemoglobin)   | HbA1c (Glycosylated Hemoglobin)   | HbA1c (Glycosylated Hemoglobin)   | HbA1c (Glycosylated Hemoglobin)                                                                                                                      |
+|-----------------------------------|-----------------------------------|-----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Test                              | Result                            | Unit                              | Biological Ref. Range                                                                                                                                |
+| HbA1C                             | 9.20                              | %                                 | Normal: <5.7 ; Prediabetic: 5.7-6.4 Diabetic: >=6.5 For known Diabetic (control):- Good: < 6.5 ; Fair: 6.5-7.4 Unsatisfactory: 7.0-8.0 ; Poor: > 8.0 |
+| Method: HPLC                      |                                   |                                   |                                                                                                                                                      |
+| Mean Blood Glucose (MBG)          | 217.34                            | mg/dL                             |                                                                                                                                                      |
+| Method: Calculated                |                                   |                                   |                                                                                                                                                      |
