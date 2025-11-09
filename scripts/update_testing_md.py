@@ -1,9 +1,18 @@
 """
-Update Testing.md with Actual Results
+Update TESTING.md with Actual Results (GitHub-friendly)
 
 This script reads the inference results and populates the TESTING.md file
 with actual summaries and information from each processed report.
-Creates a company-ready document with embedded audio players and clickable PDFs.
+
+Important: Avoids using HTML <audio> tags, since GitHub strips/sanitizes
+them and they often don't render. Instead, it uses plain Markdown links
+to audio files, which GitHub can preview or download directly. Each report
+section is presented in a comprehensive, report-wise layout:
+
+Report N: <file>.pdf
+    - Extracted text (preview + link to full)
+    - Patient summary (inline) + Patient audio (link)
+    - Doctor summary (inline) + Doctor audio (link)
 """
 
 import json
@@ -61,39 +70,32 @@ for result in overall_results['results']:
     pdf_path = f"testing_reports/{report_name}"
     patient_audio_path = f"testing_reports/inference_results/{report_num}/patient_audio.wav"
     doctor_audio_path = f"testing_reports/inference_results/{report_num}/doctor_audio.wav"
-    
-    # Create section with embedded content
+
+    # Prepare truncated preview of extracted text for readability
+    extracted_preview = truncate_text(extracted_text.strip(), max_chars=1200)
+    quoted_extracted_preview = extracted_preview.replace('\n', '\n> ').strip()
+
+    # Create section without HTML <audio>, using GitHub-friendly Markdown
     section = f"""
-### Report {report_num}
+### Report {report_num}: {report_name}
 
-**Original Report**: 📄 [{report_name}]({pdf_path})  
-**Status**: {status_emoji}
+- Original PDF: [{report_name}]({pdf_path})
+- Status: {status_emoji}
 
----
+#### Extracted Text (preview)
+> {quoted_extracted_preview}
+
+[View full extracted_text.txt](testing_reports/inference_results/{report_num}/extracted_text.txt)
 
 #### 👤 Patient Summary
+> {patient_summary.strip()}
 
-{patient_summary.strip()}
-
-**🔊 Listen to Patient Summary:**
-
-<audio controls>
-  <source src="{patient_audio_path}" type="audio/wav">
-  Your browser does not support the audio element. Download: <a href="{patient_audio_path}">patient_audio.wav</a>
-</audio>
-
----
+Patient audio: [testing_reports/inference_results/{report_num}/patient_audio.wav]({patient_audio_path})
 
 #### 👨‍⚕️ Doctor Summary
+> {doctor_summary.strip()}
 
-{doctor_summary.strip()}
-
-**🔊 Listen to Doctor Summary:**
-
-<audio controls>
-  <source src="{doctor_audio_path}" type="audio/wav">
-  Your browser does not support the audio element. Download: <a href="{doctor_audio_path}">doctor_audio.wav</a>
-</audio>
+Doctor audio: [testing_reports/inference_results/{report_num}/doctor_audio.wav]({doctor_audio_path})
 
 ---
 
@@ -146,9 +148,10 @@ The Medical Report Analysis System processes medical reports through the followi
 ## Test Results
 
 Each test report below shows:
-- 📄 **Clickable link** to the original PDF
-- 👤 **Patient summary** with playable audio
-- 👨‍⚕️ **Doctor summary** with playable audio
+- 📄 Clickable link to the original PDF
+- 📄 Extracted text (preview + link to full text)
+- 👤 Patient summary with a direct audio file link (GitHub-playable/downloadable)
+- 👨‍⚕️ Doctor summary with a direct audio file link (GitHub-playable/downloadable)
 
 {''.join(report_sections)}
 
