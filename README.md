@@ -61,14 +61,16 @@ Output (Text + Audio)
 ### Project Structure
 
 ```
-d:\Prushal/
+D:\Prushal/
 ├── 📁 app/                          # Main application
 │   ├── 📁 api/                      # REST API endpoints
 │   │   ├── 📄 __init__.py           # API router configuration
 │   │   ├── 📄 deps.py               # FastAPI dependencies
+│   │   ├── 📄 ws.py                 # WebSocket support
 │   │   └── 📁 endpoints/            # API route handlers
 │   │       ├── 📄 reports.py        # Report processing endpoints
-│   │       └── 📄 chat.py           # Chat with file upload
+│   │       ├── 📄 chat.py           # Chat with file upload
+│   │       └── 📄 infra.py          # Infrastructure endpoints
 │   ├── 📁 core/                     # Core utilities
 │   │   ├── 📄 config.py             # App configuration
 │   │   └── 📄 security.py           # JWT & password utilities
@@ -80,23 +82,74 @@ d:\Prushal/
 │   │   ├── 📄 parser_service.py     # Multi-tier document parsing
 │   │   ├── 📄 summarizer_service.py # MedGemma AI analysis
 │   │   ├── 📄 tts_service.py        # Kokoro text-to-speech
-│   │   └── 📄 chat_service.py       # Chat with guardrails
+│   │   ├── 📄 chat_service.py       # Chat with guardrails
+│   │   └── 📄 ollama_client.py      # Ollama API client
 │   ├── 📁 static/                   # Static assets
 │   │   ├── 📁 css/                  # Stylesheets
 │   │   └── 📁 js/                   # JavaScript files
 │   ├── 📁 templates/                # HTML templates
+│   │   ├── 📄 chat.html             # Chat interface
+│   │   └── 📄 ui-preview.html       # UI preview
+│   ├── 📁 utils/                    # Utility modules
+│   │   ├── 📄 events.py             # Event system
+│   │   └── 📄 text_utils.py         # Text processing
 │   ├── 📄 main.py                   # FastAPI application
 │   └── 📄 pages.py                  # Web page routes
+├── 📁 alembic/                      # Database migrations
+│   ├── 📁 versions/                 # Migration versions
+│   ├── 📄 env.py                    # Alembic environment
+│   └── 📄 script.py.mako            # Migration template
+├── 📁 docs/                         # Documentation
+│   ├── 📄 API.md                    # API documentation
+│   ├── 📄 DEPLOYMENT.md             # Deployment guide
+│   ├── 📄 DOCUMENTATION.md          # Technical docs
+│   ├── 📄 PROJECT_SUMMARY.md        # Project overview
+│   └── 📄 QUICKSTART.md             # Quick start guide
 ├── 📁 media/                        # User-generated content
 │   ├── 📁 reports/                  # Uploaded medical documents
 │   ├── 📁 audio/                    # Generated voice files
 │   └── 📁 chat_uploads/             # Chat file attachments
 ├── 📁 models/                       # AI models (~10GB)
+│   └── 📁 models--unsloth--medgemma-4b-it/  # MedGemma model
 ├── 📁 myenv/                        # Python virtual environment
+├── � scripts/                      # Utility scripts
+│   ├── �📄 run_testing_inference.py  # Testing inference script
+│   ├── 📄 update_testing_md.py      # Update testing docs
+│   ├── 📄 download_models.py        # Model download script
+│   ├── 📄 migrate.py                # Database migration
+│   └── 📄 README.md                 # Scripts documentation
+├── 📁 sdk/                          # Python SDK
+│   ├── 📄 medanalyzer_client.py     # Client library
+│   ├── 📄 requirements.txt          # SDK dependencies
+│   └── 📄 README.md                 # SDK documentation
+├── � testing_reports/              # Testing materials
+│   ├── �📄 1.pdf, 2.pdf, ... 23.pdf  # Test PDF reports (20 total)
+│   └── 📁 inference_results/        # Generated test results
+│       ├── 📁 1/, 2/, ... 23/       # Results per report
+│       │   ├── 📄 extracted_text.txt     # Extracted text
+│       │   ├── 📄 patient_summary.txt    # Patient summary
+│       │   ├── 📄 doctor_summary.txt     # Doctor summary
+│       │   ├── 🔊 patient_audio.wav      # Patient audio
+│       │   ├── 🔊 doctor_audio.wav       # Doctor audio
+│       │   └── 📄 summary.json           # Metadata
+│       └── 📄 overall_results.json  # Overall test results
+├── 📁 tests/                        # Unit tests
+│   ├── 📄 test_chat_endpoint.py     # Chat API tests
+│   ├── 📄 test_file_upload.py       # Upload tests
+│   └── 📄 test_streaming_chat.py    # Streaming tests
+├── 📁 tools/                        # Maintenance tools
+├── 📄 TESTING_RESULTS.md            # Testing documentation (main)
+├── 📄 TESTING_SUMMARY.md            # Testing summary
+├── 📄 TESTING_VIEWING_GUIDE.md      # How to view results
 ├── 📄 requirements.txt              # Python dependencies
-├── 📄 download_models.py            # Model download script
+├── 📄 alembic.ini                   # Alembic configuration
+├── 📄 docker-compose.yml            # Docker Compose config
+├── 📄 Dockerfile                    # Docker image definition
 ├── 📄 .env                          # Environment configuration
+├── 📄 .env.example                  # Environment template
 ├── 📄 README.md                     # This file
+├── 📄 CHANGELOG.md                  # Version history
+├── 📄 CONTRIBUTING.md               # Contribution guide
 └── 📄 .gitignore                    # Git ignore rules
 ```
 
@@ -530,10 +583,93 @@ tesseract --version
 
 ## 📚 Additional Documentation
 
-- [QUICKSTART.md](QUICKSTART.md) - Quick setup guide
-- [DOCUMENTATION.md](DOCUMENTATION.md) - Detailed technical documentation
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Production deployment guide
-- [API.md](API.md) - Complete API reference
+- [QUICKSTART.md](docs/QUICKSTART.md) - Quick setup guide
+- [DOCUMENTATION.md](docs/DOCUMENTATION.md) - Detailed technical documentation
+- [DEPLOYMENT.md](docs/DEPLOYMENT.md) - Production deployment guide
+- [API.md](docs/API.md) - Complete API reference
+- **[TESTING_RESULTS.md](TESTING_RESULTS.md) - Comprehensive testing results** ✨ NEW
+
+## 🧪 Testing & Validation
+
+### Comprehensive Testing Results
+
+The system has been extensively tested on **20 real medical reports** with **100% success rate**, verified by medical professionals.
+
+**📄 View Complete Testing Results**: [TESTING_RESULTS.md](TESTING_RESULTS.md)
+
+#### Testing Summary
+
+| Metric | Result |
+|--------|--------|
+| **Total Reports Tested** | 20 medical PDFs |
+| **Successfully Processed** | 20 (100%) |
+| **Failed** | 0 (0%) |
+| **Doctor Verified** | ✅ Yes |
+| **Patient Summaries Generated** | 20 |
+| **Doctor Summaries Generated** | 20 |
+| **Audio Files Created** | 40 (patient + doctor) |
+
+#### Dual Audience Approach
+
+The system generates two types of summaries for each medical report:
+
+**👤 Patient Summaries**
+- Simple, easy-to-understand language
+- No medical jargon
+- 2-4 concise sentences
+- Includes medical disclaimer
+- 🔊 Audio narration available
+
+**👨‍⚕️ Doctor Summaries**
+- Professional medical terminology
+- Detailed clinical analysis
+- 4-6 comprehensive sentences
+- Specific measurements and findings
+- 🔊 Audio narration available
+
+#### Example Results
+
+**Patient Summary Example:**
+> "Your thyroid hormone levels (T3, T4, and TSH) are within the normal range. Your Vitamin B12 level is also within the normal range. Your iron levels are also within the normal range."
+
+**Doctor Summary Example:**
+> "The patient is a 65-year-old female presenting with thyroid function tests. T3 is low (0.52 ng/mL), T4 is within the normal range (4.19 mcg/dL), and TSH is markedly elevated (96.20 mlU/mL). This suggests hypothyroidism, likely secondary to pituitary or hypothalamic dysfunction..."
+
+#### Testing Documentation
+
+- **[TESTING_RESULTS.md](TESTING_RESULTS.md)** - Full testing report with all 20 test cases
+- **[TESTING_SUMMARY.md](TESTING_SUMMARY.md)** - Quick overview and key highlights
+- **[TESTING_VIEWING_GUIDE.md](TESTING_VIEWING_GUIDE.md)** - How to view and present results
+
+#### Running Tests
+
+To run the comprehensive testing suite:
+
+```powershell
+# Process all test reports and generate summaries
+D:/Prushal/myenv/Scripts/python.exe scripts/run_testing_inference.py
+
+# Update testing documentation
+D:/Prushal/myenv/Scripts/python.exe scripts/update_testing_md.py
+```
+
+**Test Results Location**: `testing_reports/inference_results/`
+
+Each test report generates:
+- 📄 Extracted text from PDF
+- 📝 Patient-friendly summary
+- 📝 Professional doctor summary
+- 🔊 Patient audio narration (WAV)
+- 🔊 Doctor audio narration (WAV)
+- 📊 Metadata JSON file
+
+#### Technology Stack (Testing)
+
+- **Text Extraction**: Docling with RapidOCR fallback
+- **AI Model**: MedGemma 4B (medical-specialized LLM via Ollama)
+- **Text-to-Speech**: Kokoro TTS (American English)
+- **Processing**: Automated Python pipeline
+- **Quality Assurance**: Medical professional verification
 
 ## � SDK & Docker
 
