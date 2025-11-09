@@ -36,6 +36,20 @@ def truncate_text(text, max_chars=500):
         return text
     return text[:max_chars] + "..."
 
+
+def find_audio_file(report_dir, name_base):
+    """Find an audio file for a given base name (patient_audio / doctor_audio).
+    Preference order: .wav, .mp3, .m4a, .mp4. Returns a Path or None.
+    """
+    preferred_exts = [".wav", ".mp3", ".m4a", ".mp4"]
+    for ext in preferred_exts:
+        p = report_dir / f"{name_base}{ext}"
+        if p.exists():
+            return p
+    # Fallback: any file that starts with the base name
+    matches = list(report_dir.glob(f"{name_base}*"))
+    return matches[0] if matches else None
+
 # Read overall results
 overall_results_file = RESULTS_DIR / "overall_results.json"
 overall_results = json.loads(overall_results_file.read_text(encoding='utf-8'))
@@ -66,14 +80,54 @@ for result in overall_results['results']:
     # Determine report number for display
     report_num = report_name.replace('.pdf', '')
     
-    # Create relative paths for linking
+    # Create relative paths for linking (detect actual audio files present)
     pdf_path = f"testing_reports/{report_name}"
-    patient_audio_path = f"testing_reports/inference_results/{report_num}/patient_audio.wav"
-    doctor_audio_path = f"testing_reports/inference_results/{report_num}/doctor_audio.wav"
+    patient_file = find_audio_file(report_dir, 'patient_audio')
+    doctor_file = find_audio_file(report_dir, 'doctor_audio')
+    patient_audio_rel = (f"testing_reports/inference_results/{report_num}/{patient_file.name}" if patient_file else None)
+    doctor_audio_rel = (f"testing_reports/inference_results/{report_num}/{doctor_file.name}" if doctor_file else None)
+    # Also provide WAV download link if WAV exists
+    patient_wav_rel = (f"testing_reports/inference_results/{report_num}/patient_audio.wav" if (report_dir / 'patient_audio.wav').exists() else None)
+    doctor_wav_rel = (f"testing_reports/inference_results/{report_num}/doctor_audio.wav" if (report_dir / 'doctor_audio.wav').exists() else None)
 
     # Prepare truncated preview of extracted text for readability
     extracted_preview = truncate_text(extracted_text.strip(), max_chars=1200)
     quoted_extracted_preview = extracted_preview.replace('\n', '\n> ').strip()
+
+    # Prefer embedding MP4 files (video tag) because GitHub renders mp4 inline.
+    # Fallback to direct audio file links if MP4 not present.
+    patient_mp4_rel = f"testing_reports/inference_results/{report_num}/patient_audio.mp4"
+    doctor_mp4_rel = f"testing_reports/inference_results/{report_num}/doctor_audio.mp4"
+
+    if (report_dir / 'patient_audio.mp4').exists():
+        patient_audio_block = (
+            f"<video width=\"100%\" controls>\n"
+            f"  <source src=\"{patient_mp4_rel}\" type=\"video/mp4\">\n"
+            "  Your browser does not support the video tag.\n"
+            "</video>\n\n"
+            f"[📥 Download MP4]({patient_mp4_rel})"
+        )
+    elif patient_audio_rel:
+        patient_audio_block = f"[🔊 Play/Download]({patient_audio_rel})"
+        if patient_wav_rel and patient_wav_rel != patient_audio_rel:
+            patient_audio_block += f"\n\n[📥 Download WAV]({patient_wav_rel})"
+    else:
+        patient_audio_block = "_No audio available_"
+
+    if (report_dir / 'doctor_audio.mp4').exists():
+        doctor_audio_block = (
+            f"<video width=\"100%\" controls>\n"
+            f"  <source src=\"{doctor_mp4_rel}\" type=\"video/mp4\">\n"
+            "  Your browser does not support the video tag.\n"
+            "</video>\n\n"
+            f"[📥 Download MP4]({doctor_mp4_rel})"
+        )
+    elif doctor_audio_rel:
+        doctor_audio_block = f"[🔊 Play/Download]({doctor_audio_rel})"
+        if doctor_wav_rel and doctor_wav_rel != doctor_audio_rel:
+            doctor_audio_block += f"\n\n[📥 Download WAV]({doctor_wav_rel})"
+    else:
+        doctor_audio_block = "_No audio available_"
 
     # Create beautifully formatted section using <video> tag for inline audio playback on GitHub
     section = f"""
@@ -114,9 +168,7 @@ for result in overall_results['results']:
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)]({patient_audio_path})
-
-[📥 Download WAV]({patient_audio_path})
+{patient_audio_block}
 
 </td>
 </tr>
@@ -138,9 +190,7 @@ for result in overall_results['results']:
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)]({doctor_audio_path})
-
-[📥 Download WAV]({doctor_audio_path})
+{doctor_audio_block}
 
 </td>
 </tr>

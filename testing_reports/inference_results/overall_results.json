@@ -6,8 +6,8 @@
     {
       "report_name": "1.pdf",
       "extracted_text_length": 3396,
-      "patient_summary_length": 182,
-      "doctor_summary_length": 558,
+      "patient_summary_length": 328,
+      "doctor_summary_length": 1290,
       "files": {
         "extracted_text": "inference_results\\1\\extracted_text.txt",
         "patient_summary": "inference_results\\1\\patient_summary.txt",
@@ -21,7 +21,7 @@
       "report_name": "10.pdf",
       "extracted_text_length": 817,
       "patient_summary_length": 209,
-      "doctor_summary_length": 410,
+      "doctor_summary_length": 598,
       "files": {
         "extracted_text": "inference_results\\10\\extracted_text.txt",
         "patient_summary": "inference_results\\10\\patient_summary.txt",
@@ -34,8 +34,8 @@
     {
       "report_name": "11.pdf",
       "extracted_text_length": 16362,
-      "patient_summary_length": 712,
-      "doctor_summary_length": 929,
+      "patient_summary_length": 718,
+      "doctor_summary_length": 980,
       "files": {
         "extracted_text": "inference_results\\11\\extracted_text.txt",
         "patient_summary": "inference_results\\11\\patient_summary.txt",
@@ -48,8 +48,8 @@
     {
       "report_name": "12.pdf",
       "extracted_text_length": 18928,
-      "patient_summary_length": 700,
-      "doctor_summary_length": 1200,
+      "patient_summary_length": 533,
+      "doctor_summary_length": 1056,
       "files": {
         "extracted_text": "inference_results\\12\\extracted_text.txt",
         "patient_summary": "inference_results\\12\\patient_summary.txt",
@@ -63,7 +63,7 @@
       "report_name": "13.pdf",
       "extracted_text_length": 1560,
       "patient_summary_length": 87,
-      "doctor_summary_length": 487,
+      "doctor_summary_length": 1241,
       "files": {
         "extracted_text": "inference_results\\13\\extracted_text.txt",
         "patient_summary": "inference_results\\13\\patient_summary.txt",
@@ -76,8 +76,8 @@
     {
       "report_name": "14.pdf",
       "extracted_text_length": 2659,
-      "patient_summary_length": 155,
-      "doctor_summary_length": 414,
+      "patient_summary_length": 157,
+      "doctor_summary_length": 1292,
       "files": {
         "extracted_text": "inference_results\\14\\extracted_text.txt",
         "patient_summary": "inference_results\\14\\patient_summary.txt",
@@ -90,8 +90,8 @@
     {
       "report_name": "15.pdf",
       "extracted_text_length": 1865,
-      "patient_summary_length": 199,
-      "doctor_summary_length": 674,
+      "patient_summary_length": 116,
+      "doctor_summary_length": 697,
       "files": {
         "extracted_text": "inference_results\\15\\extracted_text.txt",
         "patient_summary": "inference_results\\15\\patient_summary.txt",
@@ -104,8 +104,8 @@
     {
       "report_name": "16.pdf",
       "extracted_text_length": 742,
-      "patient_summary_length": 161,
-      "doctor_summary_length": 433,
+      "patient_summary_length": 171,
+      "doctor_summary_length": 610,
       "files": {
         "extracted_text": "inference_results\\16\\extracted_text.txt",
         "patient_summary": "inference_results\\16\\patient_summary.txt",
@@ -118,8 +118,8 @@
     {
       "report_name": "17.pdf",
       "extracted_text_length": 740,
-      "patient_summary_length": 220,
-      "doctor_summary_length": 679,
+      "patient_summary_length": 175,
+      "doctor_summary_length": 606,
       "files": {
         "extracted_text": "inference_results\\17\\extracted_text.txt",
         "patient_summary": "inference_results\\17\\patient_summary.txt",
@@ -132,8 +132,8 @@
     {
       "report_name": "18.pdf",
       "extracted_text_length": 817,
-      "patient_summary_length": 211,
-      "doctor_summary_length": 443,
+      "patient_summary_length": 157,
+      "doctor_summary_length": 374,
       "files": {
         "extracted_text": "inference_results\\18\\extracted_text.txt",
         "patient_summary": "inference_results\\18\\patient_summary.txt",
@@ -146,8 +146,8 @@
     {
       "report_name": "19.pdf",
       "extracted_text_length": 1911,
-      "patient_summary_length": 137,
-      "doctor_summary_length": 2054,
+      "patient_summary_length": 132,
+      "doctor_summary_length": 458,
       "files": {
         "extracted_text": "inference_results\\19\\extracted_text.txt",
         "patient_summary": "inference_results\\19\\patient_summary.txt",
@@ -161,7 +161,7 @@
       "report_name": "2.pdf",
       "extracted_text_length": 3793,
       "patient_summary_length": 156,
-      "doctor_summary_length": 385,
+      "doctor_summary_length": 331,
       "files": {
         "extracted_text": "inference_results\\2\\extracted_text.txt",
         "patient_summary": "inference_results\\2\\patient_summary.txt",
@@ -174,8 +174,8 @@
     {
       "report_name": "20.pdf",
       "extracted_text_length": 1154,
-      "patient_summary_length": 197,
-      "doctor_summary_length": 909,
+      "patient_summary_length": 248,
+      "doctor_summary_length": 836,
       "files": {
         "extracted_text": "inference_results\\20\\extracted_text.txt",
         "patient_summary": "inference_results\\20\\patient_summary.txt",
@@ -188,8 +188,8 @@
     {
       "report_name": "21.pdf",
       "extracted_text_length": 1822,
-      "patient_summary_length": 180,
-      "doctor_summary_length": 327,
+      "patient_summary_length": 116,
+      "doctor_summary_length": 362,
       "files": {
         "extracted_text": "inference_results\\21\\extracted_text.txt",
         "patient_summary": "inference_results\\21\\patient_summary.txt",
@@ -203,7 +203,7 @@
       "report_name": "22.pdf",
       "extracted_text_length": 1377,
       "patient_summary_length": 99,
-      "doctor_summary_length": 354,
+      "doctor_summary_length": 494,
       "files": {
         "extracted_text": "inference_results\\22\\extracted_text.txt",
         "patient_summary": "inference_results\\22\\patient_summary.txt",
@@ -216,8 +216,8 @@
     {
       "report_name": "23.pdf",
       "extracted_text_length": 818,
-      "patient_summary_length": 98,
-      "doctor_summary_length": 462,
+      "patient_summary_length": 130,
+      "doctor_summary_length": 998,
       "files": {
         "extracted_text": "inference_results\\23\\extracted_text.txt",
         "patient_summary": "inference_results\\23\\patient_summary.txt",
@@ -230,8 +230,8 @@
     {
       "report_name": "3.pdf",
       "extracted_text_length": 1681,
-      "patient_summary_length": 206,
-      "doctor_summary_length": 644,
+      "patient_summary_length": 305,
+      "doctor_summary_length": 753,
       "files": {
         "extracted_text": "inference_results\\3\\extracted_text.txt",
         "patient_summary": "inference_results\\3\\patient_summary.txt",
@@ -244,8 +244,8 @@
     {
       "report_name": "4.pdf",
       "extracted_text_length": 858,
-      "patient_summary_length": 133,
-      "doctor_summary_length": 348,
+      "patient_summary_length": 134,
+      "doctor_summary_length": 523,
       "files": {
         "extracted_text": "inference_results\\4\\extracted_text.txt",
         "patient_summary": "inference_results\\4\\patient_summary.txt",
@@ -258,8 +258,8 @@
     {
       "report_name": "5.pdf",
       "extracted_text_length": 1908,
-      "patient_summary_length": 138,
-      "doctor_summary_length": 474,
+      "patient_summary_length": 132,
+      "doctor_summary_length": 510,
       "files": {
         "extracted_text": "inference_results\\5\\extracted_text.txt",
         "patient_summary": "inference_results\\5\\patient_summary.txt",
@@ -272,8 +272,8 @@
     {
       "report_name": "7.pdf",
       "extracted_text_length": 740,
-      "patient_summary_length": 146,
-      "doctor_summary_length": 513,
+      "patient_summary_length": 135,
+      "doctor_summary_length": 599,
       "files": {
         "extracted_text": "inference_results\\7\\extracted_text.txt",
         "patient_summary": "inference_results\\7\\patient_summary.txt",

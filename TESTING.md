@@ -145,16 +145,21 @@ The Medical Report Analysis System processes medical reports through a sophistic
 <td width="70%">
 
 **Summary:**
-> Your thyroid hormone levels (T3, T4, and TSH) are within the normal range. Your Vitamin B12 level is also within the normal range. Your iron levels are also within the normal range.
+> Here's a summary of your thyroid function test results:
+
+Your T3 and T4 levels are within the normal range, but your TSH is elevated. This suggests your thyroid is not producing enough thyroid hormone. Your Vitamin B12 level is normal. Your iron studies show normal iron levels, but your transferrin saturation is slightly low.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/1/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/1/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/1/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/1/patient_audio.mp4)
 
 </td>
 </tr>
@@ -169,16 +174,37 @@ The Medical Report Analysis System processes medical reports through a sophistic
 <td width="70%">
 
 **Clinical Analysis:**
-> The patient is a 65-year-old female presenting with thyroid function tests. T3 is low (0.52 ng/mL), T4 is within the normal range (4.19 mcg/dL), and TSH is markedly elevated (96.20 mlU/mL). This suggests hypothyroidism, likely secondary to pituitary or hypothalamic dysfunction, given the elevated TSH. Vitamin B12 levels are within the normal range (431.0 pg/mL). Iron studies show a low serum iron (69 ug/dL) and elevated TIBC (331 ug/dL), indicating iron deficiency anemia. Transferrin saturation is also low (20.85%), further supporting iron deficiency.
+> **Analysis of Medical Report**
+
+The report presents thyroid function tests (T3, T4, and TSH) and Vitamin B12 and Iron studies for a 65-year-old female. T3 and T4 levels are within the normal range, while TSH is elevated at 96.20 mlU/mL, indicating hypothyroidism. The patient's T3 and T4 levels are within the normal range, but the elevated TSH suggests that the pituitary gland is producing more TSH in an attempt to stimulate the thyroid. Vitamin B12 levels are within the normal range. Iron studies show a low serum iron level of 69 ug/dL, a high TIBC of 331 ug/dL, and a low transferrin saturation of 20.85%. These findings are consistent with iron deficiency anemia.
+
+**Key Findings and Observations:**
+
+*   **Hypothyroidism:** Elevated TSH (96.20 mlU/mL) suggests hypothyroidism.
+*   **Normal T3 and T4:** T3 and T4 levels are within the normal range, which may be a compensatory response to the elevated TSH.
+*   **Iron Deficiency Anemia:** Low serum iron (69 ug/dL), high TIBC (331 ug/dL), and low transferrin saturation (20.85%) are indicative of iron deficiency anemia.
+
+**Notable Measurements or Test Results:**
+
+*   TSH: 96.20 mlU/mL
+*   T3: 0.52 ng/mL
+*   T4: 4.19 mcg/dL
+*   Serum Iron: 69 ug/dL
+*   TIBC: 331 ug/dL
+*   Transferrin Saturation: 20.85%
+*   Vitamin B12: 431.0 pg
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/1/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/1/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/1/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/1/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -264,9 +290,12 @@ The Medical Report Analysis System processes medical reports through a sophistic
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/10/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/10/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/10/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/10/patient_audio.mp4)
 
 </td>
 </tr>
@@ -281,16 +310,19 @@ The Medical Report Analysis System processes medical reports through a sophistic
 <td width="70%">
 
 **Clinical Analysis:**
-> The TSH result is 8.36 mIU/mL, which is above the reference range of 0.30-4.5 mIU/mL. This indicates possible hypothyroidism. The patient is a 35-year-old female. Further evaluation, including free T4 and possibly free T3 levels, is warranted to confirm the diagnosis and determine the underlying etiology of the elevated TSH. The patient's age and sex should also be considered when interpreting the results.
+> The TSH result is 8.36 mIU/mL, which is significantly elevated above the reference range of 0.30-4.5 mIU/mL. This indicates hypothyroidism. The patient is a 35-year-old female. The elevated TSH suggests the pituitary gland is attempting to stimulate the thyroid gland to produce more thyroid hormone, but the thyroid gland is not responding adequately. This could be due to various causes, including thyroiditis, iodine deficiency, or thyroid hormone resistance. Further evaluation, including free T4 and free T3 levels, is warranted to confirm the diagnosis and determine the underlying etiology.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/10/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/10/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/10/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/10/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -352,24 +384,27 @@ The Medical Report Analysis System processes medical reports through a sophistic
 <td width="70%">
 
 **Summary:**
-> Okay, here's a summary of the lab results for a 39-year-old female:
+> Here's a summary of your lab results:
 
-*   **Complete Blood Count (CBC):** Your hemoglobin is slightly low (10.6 g/dL), which could be causing fatigue. Your red blood cell count and platelet count are within normal limits. Your MCV (size of red blood cells) is slightly low (71.22 fl), suggesting microcytosis. Your RDW is slightly elevated (16.30%), which can indicate variation in red blood cell size.
-
-*   **Vitamin B12:** Your Vitamin B12 level is within the normal range (302 pg/mL).
-
-*   **Vitamin D:** Your Vitamin D level is within the normal range (22.80 ng/mL).
-
-*   **Thyroid Function Test (ultra):** Your TSH (thyroid stimulating hormone) is within the normal range (4.8
+*   **Complete Blood Count (CBC):** Your hemoglobin is slightly low (10.6 g/dL), and your red blood cell count is also a bit low (4.10 million/cumm). Your platelet count is normal. Your MCV (size of red blood cells) is slightly low, indicating microcytosis. Your RDW is normal.
+*   **Vitamin B12:** Your Vitamin B12 level is within the normal range.
+*   **Vitamin D:** Your Vitamin D level is within the normal range.
+*   **Thyroid Function Test (T3, T4, TSH):** Your TSH level is within the normal range.
+*   **Lipid Profile:** Your cholesterol levels are within normal limits.
+*   **Liver Function Test (LFT):** Your liver enzymes (AST, ALT, ALP) are within normal limits.
+*
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/11/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/11/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/11/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/11/patient_audio.mp4)
 
 </td>
 </tr>
@@ -390,32 +425,32 @@ The Medical Report Analysis System processes medical reports through a sophistic
 
 *   **Complete Blood Count (CBC):**
     *   **Hemoglobin (Hb):** 10.6 g/dL (Low - Anemia)
-    *   **RBC Count:** 4.10 million/cumm (Low - Anemia)
-    *   **PCV:** 29.20% (Low - Anemia)
+    *   **Red Blood Cell (RBC) Count:** 4.10 million/cumm (Low - Anemia)
+    *   **Platelet Count:** 284,000/uL (Normal)
     *   **MCV:** 71.22 fl (Low - Microcytic)
     *   **MCHC:** 34.20 gm/dL (Low - Hypochromic)
     *   **MCH:** 25.70 pg (Low - Hypochromic)
-    *   **RDW-CV:** 16.30% (High - Anisopoikilocytosis)
-    *   **RDW-SD:** 53.00 fL (High - Anisopoikilocytosis)
-    *   **Platelet Count:** 284,000 /ul (Normal)
-    *   **MPV:** 10.70 fL (Normal)
-    *   **PDW:** 16.10% (Normal)
-    *   **WBC Count (TLC):** 6760 /cumm (Normal)
-    *   **Differential Count:**
-        *   Neutrophils: 55.60% (Normal)
-        *   Lymphocytes: 39.90% (Normal)
-        *   Monocytes: 3.40% (Normal)
-        *   Eosinophils: 1.10% (Normal)
-        *   Basophils: 0% (
+    *   **RDW-CV:** 16.30% (High - Anisocytosis)
+    *   **WBC Count (TLC):** 6760/cumm (Normal)
+    *   **Differential Count:** Neutrophils 55.6%, Lymphocytes 39.9%, Monocytes 3.4%, Eosinophils 1.1%, Basophils 0%, P-LCR 35.6%
+    *   **Absolute Neutrophil Count:** 3758.56/ cmm (Normal)
+    *   **Absolute Lymphocyte Count:** 2697.24/ cmm (Normal)
+    *   **Absolute Monocytes Count:** 229.84/cumm (Normal)
+    *   **Absolute Eosinophil Count:** 74/cumm (Normal)
+    *   **Absolute Basophil Count:** 0.00/uL (Normal)
+*   **
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/11/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/11/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/11/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/11/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -477,28 +512,21 @@ The Medical Report Analysis System processes medical reports through a sophistic
 <td width="70%">
 
 **Summary:**
-> Okay, here's a summary of the medical report, presented in a patient-friendly way:
+> Here's a summary of the medical report:
 
-**Summary:**
-
-This report shows some results from your blood work.
-
-*   **Complete Blood Count (CBC):** Your hemoglobin is slightly low (9.7 gms%), your red blood cell count is normal (4.16 millions/cumm), and your platelet count is normal (204000 /ul). Your white blood cell count is normal (5340 /cumm). Your red blood cell morphology shows microcytosis, hypochromasia, and mild anisopoikilocytosis.
-
-*   **Vitamin B12:** Your Vitamin B12 level is within the normal range (381.0 pg/mL).
-
-*   **Vitamin D:** Your Vitamin D level is within the normal range (19.07 ng/mL).
-
-*   **Thyroid Function Test (ultra):** Your
+The patient is a 36-year-old female. Her complete blood count (CBC) shows mild anemia (low hemoglobin, RBC count, and hematocrit). Her MCV is slightly low, indicating microcytic anemia. The RDW is normal. The patient's platelet count, WBC count, and differential are within normal limits. The urine examination is normal. Liver function tests are normal. The patient's thyroid function tests are normal. The lipid profile is normal. Vitamin B12 and Vitamin D levels are within normal limits.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/12/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/12/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/12/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/12/patient_audio.mp4)
 
 </td>
 </tr>
@@ -517,25 +545,34 @@ This report shows some results from your blood work.
 
 **1. Key Findings and Observations:**
 
-*   **Complete Blood Count (CBC):**
-    *   **Anemia:** Hemoglobin (9.7 g/dL) is below the normal range (12.0-16.0 g/dL), indicating anemia.
-    *   **RBC Count:** RBC count (4.16 million/cumm) is slightly below the normal range (4.2-5.5 million/cumm).
-    *   **MCV:** Mean Corpuscular Volume (65.63 fl) is below the normal range (80-96 fl), suggesting microcytic anemia.
-    *   **MCHC:** Mean Corpuscular Hemoglobin Concentration (35.40 gm/dL) is within the normal range (32.5-36 gm/dL).
-    *   **MCH:** Mean Corpuscular Hemoglobin (23.30 pg) is below the normal range (27-32 pg), supporting microcytic anemia.
-    *   **RDW-CV:** Red Cell Distribution Width - Coefficient of Variation (17.00%) is elevated, indicating anisocytosis (variation in red blood cell size).
-    *   **Platelet Count:** Platelet count (204,000 /ul) is within the normal range (150,000-450,000 /ul).
-    *   **WBC Count:** White Blood Cell count (5340 /cumm) is within the normal range (4000-11000 /cumm).
-    *   **Differential Count:** Neutrophils (55.30%) are within the normal range (40-70%). Lymphocytes (37.20%)
+*   **Age/Sex:** 36 years old, Female
+*   **CBC (Complete Blood Count):**
+    *   **Hemoglobin (Hb):** 9.7 g/dL (Low - Anemia)
+    *   **RBC Count:** 4.16 million/cumm (Low - Anemia)
+    *   **PCV (Packed Cell Volume):** 27.30% (Low - Anemia)
+    *   **MCV (Mean Corpuscular Volume):** 65.63 fl (Low - Microcytic)
+    *   **MCHC (Mean Corpuscular Hemoglobin Concentration):** 35.40 gm/dL (Low - Hypochromic)
+    *   **MCH (Mean Corpuscular Hemoglobin):** 23.30 pg (Low - Hypochromic)
+    *   **RDW-CV (Red Cell Distribution Width - CV):** 17.00% (High - Anisocytosis)
+    *   **RDW-SD (Red Cell Distribution Width - SD):** 45.00 fL (High - Anisocytosis)
+    *   **Platelet Count:** 204,000/uL (Normal)
+    *   **MPV (Mean Platelet Volume):** 10.10 fL (Normal)
+    *   **PDW (Platelet Distribution Width):** 15.80% (Normal)
+    *   **WBC Count (TLC):** 5340/cumm (Normal)
+    *   **Differential Count:**
+        *   Neutrophils: 55.30% (Normal)
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/12/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/12/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/12/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/12/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -619,9 +656,12 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/13/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/13/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/13/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/13/patient_audio.mp4)
 
 </td>
 </tr>
@@ -636,16 +676,39 @@ This report shows some results from your blood work.
 <td width="70%">
 
 **Clinical Analysis:**
-> The patient is a 52-year-old female with a Vitamin B12 level of 390 pg/mL, which is significantly elevated above the reference range of 110-800 pg/mL. The Vitamin D Total (25-OH) level is 21.96 ng/mL, indicating sufficient Vitamin D levels, falling within the 31-100 ng/mL range. The elevated B12 level warrants further investigation to rule out potential causes such as pernicious anemia or other conditions affecting B12 metabolism. The adequate Vitamin D level is a positive finding.
+> **Analysis of Vitamin B12 and Vitamin D Levels**
+
+The patient is a 52-year-old female presenting with a Vitamin B12 level of 390 pg/mL, which is significantly elevated (above the reference range of 110-800 pg/mL). This elevated level suggests possible Vitamin B12 excess or a laboratory error. The Vitamin D total (25-OH) level is 21.96 ng/mL, indicating sufficient Vitamin D levels (31-100 ng/mL). The patient's Vitamin D level is within the normal range, and there is no indication of deficiency or toxicity.
+
+**Key findings and observations:**
+
+*   **Vitamin B12:** Significantly elevated (390 pg/mL)
+*   **Vitamin D:** Sufficient (21.96 ng/mL)
+
+**Notable measurements or test results:**
+
+*   Vitamin B12: 390 pg/mL
+*   Vitamin D: 21.96 ng/mL
+
+**Clinical significance:**
+
+The elevated Vitamin B12 level warrants further investigation to rule out a laboratory error or a true Vitamin B12 excess. While the Vitamin D level is within the normal range, it is important to consider the patient's sun exposure and dietary intake.
+
+**Any areas requiring attention:**
+
+The significantly elevated Vitamin B12 level needs to be re-evaluated to confirm its accuracy. Further investigation may be needed to determine the cause of the elevated level.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/13/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/13/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/13/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/13/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -710,16 +773,19 @@ This report shows some results from your blood work.
 <td width="70%">
 
 **Summary:**
-> Your TSH level is 0.60, which is within the normal range of 0.30 to 4.5 mlU/mL. This indicates your thyroid function is currently within the normal range.
+> Your TSH level is 0.60, which is within the normal range of 0.30-4.5 mlU/mL. This indicates that your thyroid function is currently within the normal range.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/14/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/14/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/14/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/14/patient_audio.mp4)
 
 </td>
 </tr>
@@ -734,16 +800,25 @@ This report shows some results from your blood work.
 <td width="70%">
 
 **Clinical Analysis:**
-> The TSH level is 0.60 mIU/mL, which falls within the reference range of 0.30-4.5 mIU/mL. The HbA1c is 10.90%, indicating a diabetic state. The Mean Blood Glucose (MBG) is 266.13 mg/dL, also consistent with a diabetic state. The patient's TSH is within normal limits, suggesting no acute thyroid dysfunction. The elevated HbA1c and MBG values warrant further investigation and management of the patient's diabetes.
+> **Analysis of TSH, HbA1c, and Mean Blood Glucose**
+
+The TSH level is within the normal reference range of 0.30-4.5 mIU/mL, indicating normal thyroid function. The HbA1c is elevated at 10.90%, indicating poor glycemic control, which is concerning for a patient with a known diabetic status. The Mean Blood Glucose (MBG) is significantly elevated at 266.13 mg/dL, further supporting the diagnosis of poorly controlled diabetes. The patient's age and sex are provided, but no other relevant clinical information is available.
+
+**Clinical Significance:** The elevated HbA1c and MBG values suggest inadequate glycemic control, potentially leading to complications such as microvascular and macrovascular disease. The patient's diabetic status needs to be addressed with lifestyle modifications and/or pharmacological interventions to achieve target glucose levels.
+
+**Areas Requiring Attention:** The primary area requiring attention is the patient's poorly controlled diabetes, as evidenced by the elevated HbA1c and MBG. Further investigation into the patient's current medication regimen, dietary habits, and physical activity levels is warranted to optimize glycemic control. Regular monitoring of HbA1c and MBG is essential to assess the effectiveness of treatment and prevent complications.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/14/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/14/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/14/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/14/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -792,16 +867,19 @@ This report shows some results from your blood work.
 <td width="70%">
 
 **Summary:**
-> Your HbA1c is 9.20%, which indicates you are diabetic. Your average blood sugar level is also high at 217.34 mg/dL. We will discuss management strategies to help you better control your blood sugar.
+> Your HbA1c is 9.20%, which indicates you are diabetic. Your average blood sugar level is also high at 217.34 mg/dL.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/15/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/15/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/15/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/15/patient_audio.mp4)
 
 </td>
 </tr>
@@ -816,16 +894,21 @@ This report shows some results from your blood work.
 <td width="70%">
 
 **Clinical Analysis:**
-> The patient is a 52-year-old female presenting with a significantly elevated HbA1c of 9.20%, indicating a diagnosis of diabetes mellitus. The calculated Mean Blood Glucose (MBG) is also markedly elevated at 217.34 mg/dL, further supporting the diagnosis of diabetes. This level of hyperglycemia is associated with increased risk of microvascular and macrovascular complications. The patient's HbA1c is above the target range for individuals with diabetes, suggesting suboptimal glycemic control. Further investigation into the patient's medication regimen, dietary habits, and lifestyle factors is warranted to improve glycemic control and mitigate potential complications.
+> **Analysis of Medical Report**
+
+The patient is a 52-year-old female presenting with elevated HbA1c of 9.20%, indicating a diagnosis of diabetes mellitus. The mean blood glucose (MBG) is significantly elevated at 217.34 mg/dL, further supporting the diagnosis of diabetes. The HbA1c value is above the target range for individuals with known diabetes, suggesting suboptimal glycemic control. This patient requires immediate attention to improve glycemic management through lifestyle modifications and/or pharmacological interventions. Further evaluation is warranted to assess the patient's overall health status and identify any potential complications associated with poorly controlled diabetes.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/15/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/15/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/15/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/15/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -880,16 +963,19 @@ This report shows some results from your blood work.
 <td width="70%">
 
 **Summary:**
-> Your Vitamin B12 level is 459 pg/mL, which is within the normal range of 110-800 pg/mL. Vitamin B12 is important for healthy red blood cells and nerve function.
+> Your Vitamin B12 level is 459 pg/mL, which is within the normal range of 110-800 pg/mL. Vitamin B12 is important for healthy red blood cell production and nerve function.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/16/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/16/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/16/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/16/patient_audio.mp4)
 
 </td>
 </tr>
@@ -904,16 +990,21 @@ This report shows some results from your blood work.
 <td width="70%">
 
 **Clinical Analysis:**
-> The patient is a 57-year-old female with a Vitamin B12 level of 459 pg/mL. This result is significantly elevated, falling outside the normal reference range of 110-800 pg/mL. The elevated B12 level could be due to various factors, including dietary intake, malabsorption, or, less commonly, a functional abnormality in B12 metabolism. Further investigation is warranted to determine the underlying cause of the hypervitaminosis B12.
+> **Analysis of Vitamin B12 Report**
+
+The patient is a 57-year-old female with a Vitamin B12 level of 459 pg/mL. The reference range is 110-800 pg/mL. The result indicates Vitamin B12 deficiency, as the patient's level falls below the lower limit of normal. Vitamin B12 is essential for DNA synthesis, red blood cell maturation, and myelin sheath formation. A low Vitamin B12 level can lead to macrocytic anemia and neurological complications. Further investigation is warranted to determine the underlying cause of the deficiency, which could include dietary insufficiency, malabsorption, or pernicious anemia.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/16/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/16/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/16/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/16/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -970,16 +1061,19 @@ This report shows some results from your blood work.
 <td width="70%">
 
 **Summary:**
-> Your Vitamin B12 level is very high, at over 2000 pg/mL. This is likely due to the fact that Vitamin B12 is found in animal products. We will discuss this result with you to determine if further investigation is needed.
+> Your Vitamin B12 level is very high, significantly above the normal range. This result is likely due to a dietary factor, and it's important to discuss this with your doctor.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/17/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/17/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/17/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/17/patient_audio.mp4)
 
 </td>
 </tr>
@@ -994,16 +1088,21 @@ This report shows some results from your blood work.
 <td width="70%">
 
 **Clinical Analysis:**
-> The patient is a 40-year-old female with a significantly elevated Vitamin B12 level of >2000.00 pg/mL, exceeding the normal reference range of 200-911 pg/mL. This hypervitaminosis B12 could be due to excessive supplementation or, less likely, a rare condition causing increased B12 production. Further investigation is warranted to determine the cause of this elevated level, as prolonged exposure to high levels of B12 can lead to neurological complications. The clinical significance of this finding is that it may indicate excessive intake of B12, potentially from supplements or dietary sources, and warrants further evaluation to rule out any underlying medical conditions.
+> **Analysis of Vitamin B12 Report:**
+
+The patient is a 40-year-old female with a significantly elevated Vitamin B12 level of >2000.00 pg/mL, exceeding the normal reference range of 200-911 pg/mL. This hypervitaminosis B12 is likely due to dietary intake or supplementation. Elevated B12 levels can cause neurological symptoms, including peripheral neuropathy, and may be associated with macrocytic anemia. Further investigation into the patient's dietary history and potential supplementation is warranted to determine the cause of the elevated B12 levels and to rule out any underlying medical conditions.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/17/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/17/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/17/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/17/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -1082,16 +1181,19 @@ This report shows some results from your blood work.
 <td width="70%">
 
 **Summary:**
-> Your TSH level is 4.52, which is slightly elevated. This result indicates that your thyroid gland may not be functioning at its optimal level. Further evaluation may be needed to determine the underlying cause.
+> Your TSH level is 4.52, which is within the normal range of 0.30-4.5 mIU/mL. This indicates that your thyroid function is currently within the normal range.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/18/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/18/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/18/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/18/patient_audio.mp4)
 
 </td>
 </tr>
@@ -1106,16 +1208,19 @@ This report shows some results from your blood work.
 <td width="70%">
 
 **Clinical Analysis:**
-> The TSH level is 4.52 mIU/mL, which is above the reference range of 0.30-4.5 mIU/mL. This suggests a possible mild thyroid dysfunction, potentially hypothyroidism. The patient is a 24-year-old female. Further evaluation, including free T4 and possibly free T3, is warranted to determine the etiology of the elevated TSH and rule out other potential causes. The patient's age and gender should also be considered when interpreting the results.
+> The TSH result is 4.52 mIU/mL, which falls within the reference range of 0.30-4.5 mIU/mL. This indicates normal thyroid function. The patient is a 24-year-old female. The TSH level is a key indicator of thyroid health, and this result suggests that the patient's thyroid gland is functioning appropriately. No immediate concerns are apparent based on this single TSH value.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/18/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/18/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/18/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/18/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -1167,16 +1272,19 @@ This report shows some results from your blood work.
 <td width="70%">
 
 **Summary:**
-> Your thyroid hormone levels (T3, T4, and TSH) are within the normal range. This indicates your thyroid gland is functioning as expected.
+> Your thyroid hormone levels (T3, T4, and TSH) are within the normal range. This indicates your thyroid is functioning as it should.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/19/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/19/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/19/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/19/patient_audio.mp4)
 
 </td>
 </tr>
@@ -1191,28 +1299,19 @@ This report shows some results from your blood work.
 <td width="70%">
 
 **Clinical Analysis:**
-> The thyroid function test results indicate that the patient's T3, T4, and TSH levels are within the normal reference ranges. The T3 level is 1.14 ng/mL, T4 is 6.93 mcg/dL, and TSH is 1.47 mlU/mL. These values suggest that the thyroid gland is functioning within the expected physiological parameters. The TSH level is slightly above the lower limit of normal, but still within the reference range.
-
-The patient's T3, T4, and TSH levels are within the normal reference ranges, suggesting that the thyroid gland is functioning within the expected physiological parameters. The TSH level is slightly above the lower limit of normal, but still within the reference range.
-
-The patient's thyroid function tests are within normal limits, indicating that the thyroid gland is functioning appropriately. The TSH level is slightly elevated, but still within the normal range, suggesting that the pituitary gland is appropriately stimulating the thyroid.
-
-The patient's thyroid function tests are within normal limits, indicating that the thyroid gland is functioning appropriately. The TSH level is slightly elevated, but still within the normal range, suggesting that the pituitary gland is appropriately stimulating the thyroid.
-
-The patient's thyroid function tests are within normal limits, indicating that the thyroid gland is functioning appropriately. The TSH level is slightly elevated, but still within the normal range, suggesting that the pituitary gland is appropriately stimulating the thyroid.
-
-The patient's thyroid function tests are within normal limits, indicating that the thyroid gland is functioning appropriately. The TSH level is slightly elevated, but still within the normal range, suggesting that the pituitary gland is appropriately stimulating the thyroid.
-
-The patient's thyroid function tests are within normal limits, indicating that the thyroid gland is functioning appropriately. The TSH level is slightly elevated, but still within the normal range, suggesting that the pituitary gland is appropriately stimulating the thyroid.
+> The thyroid function test (TFT) results indicate that the patient's T3, T4, and TSH levels are within the normal reference ranges. The T3 level is 1.14 ng/mL, T4 is 6.93 mcg/dL, and TSH is 1.47 mlU/mL. These values suggest normal thyroid hormone production and pituitary function. However, it's important to consider the patient's clinical presentation and any other relevant medical history, as the interpretation of these results should be individualized.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/19/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/19/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/19/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/19/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -1268,9 +1367,12 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/2/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/2/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/2/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/2/patient_audio.mp4)
 
 </td>
 </tr>
@@ -1285,16 +1387,19 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Clinical Analysis:**
-> The thyroid function test results show that T3, T4, and TSH are within the normal reference ranges. The T3 level is 1.14 ng/mL, T4 is 7.03 mcg/dL, and TSH is 2.17 mlU/mL. The HbA1c is 6.20%, which is within the normal range. The Mean Blood Glucose (MBG) is 131.24 mg/dL. The patient's thyroid function appears to be within normal limits, and the HbA1c is also within the normal range.
+> The thyroid function test (TFT) results show that T3, T4, and TSH are within the normal reference ranges. The HbA1c is 6.20%, indicating good glycemic control. The mean blood glucose (MBG) is 131.24 mg/dL. The patient is not pregnant. The TFT results suggest normal thyroid function, and the HbA1c indicates good glycemic control.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/2/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/2/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/2/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/2/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -1386,16 +1491,19 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Summary:**
-> The urine culture grew *Escherichia coli*. The bacteria are sensitive to several antibiotics. The sterile pyuria is likely due to the patient already being on antibiotics or a fastidious organism.
+> The urine culture grew *Escherichia coli*. The bacteria is sensitive to several antibiotics. The negative urine culture, despite signs of infection, is likely due to the patient already being on antibiotics or the presence of fastidious organisms.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/20/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/20/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/20/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/20/patient_audio.mp4)
 
 </td>
 </tr>
@@ -1410,16 +1518,21 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Clinical Analysis:**
-> The urine culture reveals the presence of *Escherichia coli* with a colony count of 100,000 CFU/ml, demonstrating a significant bacterial load. The organism exhibits susceptibility to a broad range of antibiotics, including ampicillin, amoxicillin-clavulanic acid, cefuroxime, cefotaxime, ceftriaxone, ceftazidime, ceftizoxime, cefpime, cefixime, ticarcillin-clavulanic acid, tazobactam-piperacillin, cefoperazone-sulbactam, ciprofloxacin, levofloxacin, gentamicin, tobramycin, imipenem, meropenem, ceftazidime/avibactam, meropenem/vaborbactam, imipenem/relebactam, cefiderocol, ceftolozane/tazobactam, plazomicin, eravacycline, aztreonam, trimethoprim, and tetracycline. The report indicates sterile pyuria, which is negative urine culture in the presence of clinical and microscopic findings suggestive of infection, potentially due to the patient being on antibiotics or infection by fastidious organisms.
+> **Analysis of Urine Culture Report**
+
+The urine culture report indicates the presence of *Escherichia coli* with a colony count of 100,000 CFU/mL. The organism is susceptible to a broad range of antibiotics, including ampicillin, amoxicillin-clavulanic acid, cefuroxime, ceftriaxone, ciprofloxacin, levofloxacin, gentamicin, tobramycin, imipenem, meropenem, ceftazidime/avibactam, meropenem/vaborbactam, imipenem/relebactam, cefiderocol, ceftolozane/tazobactam, plazomicin, eravacycline, aztreonam, trimethoprim, and tetracycline. The report also notes sterile pyuria, which is negative urine culture in the presence of clinical and microscopic findings suggestive of infection. This finding suggests that the patient is already on antibiotics or that the infection is caused by fastidious organisms or interstitial nephritis/cystitis.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/20/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/20/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/20/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/20/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -1538,16 +1651,19 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Summary:**
-> Your LH, FSH, and AMH levels are within the normal range. These hormones are important for ovulation and fertility, and your results suggest your ovaries are functioning normally.
+> Your LH, FSH, and AMH levels are within normal ranges. These tests help assess your ovarian function and fertility.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/21/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/21/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/21/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/21/patient_audio.mp4)
 
 </td>
 </tr>
@@ -1562,16 +1678,19 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Clinical Analysis:**
-> The patient is a 42-year-old female presenting with LH, FSH, and AMH levels. LH is within the normal range for the follicular phase (7.78 mIU/mL). FSH is also within the normal range for the follicular phase (9.86 mIU/mL). AMH is within the normal range (0.29 ng/mL). These results suggest normal ovarian function and reserve.
+> The patient is a 42-year-old female presenting with LH, FSH, and AMH levels. LH is within the normal range, indicating normal ovarian function. FSH is also within the normal range, suggesting normal ovarian function. AMH is within the normal range, indicating adequate ovarian reserve. These results suggest normal ovarian function and adequate ovarian reserve.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/21/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/21/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/21/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/21/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -1677,9 +1796,12 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/22/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/22/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/22/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/22/patient_audio.mp4)
 
 </td>
 </tr>
@@ -1694,16 +1816,21 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Clinical Analysis:**
-> The patient is a 37-year-old female with a TSH level of 4.96 mIU/mL, which is within the normal reference range of 0.30-4.5 mIU/mL. The Vitamin B12 level is 370.0 pg/mL, which is within the reference range of 110-800 pg/mL. The TSH level is normal, and the Vitamin B12 level is normal. No immediate clinical concerns are apparent based on these results.
+> **Analysis of Medical Report**
+
+The patient is a 37-year-old female presenting with a TSH level of 4.96 mIU/mL, which falls within the normal reference range of 0.30-4.5 mIU/mL. The Vitamin B12 level is 370 pg/mL, which is within the reference range of 110-800 pg/mL. The TSH level is within normal limits, suggesting no current thyroid dysfunction. The Vitamin B12 level is within the normal range, indicating adequate Vitamin B12 stores. No immediate concerns are evident from these results.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/22/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/22/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/22/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/22/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -1784,16 +1911,19 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Summary:**
-> Your TSH level is within the normal range. This indicates your thyroid function is likely normal.
+> Your TSH level is within the normal range. This indicates that your thyroid function is currently within the expected parameters.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/23/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/23/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/23/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/23/patient_audio.mp4)
 
 </td>
 </tr>
@@ -1808,16 +1938,37 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Clinical Analysis:**
-> The patient is a 25-year-old female with a TSH level of 0.97 mIU/mL, which falls within the normal reference range of 0.30-4.5 mIU/mL. This indicates normal thyroid function. The reference ranges provided are for pregnant women, but the patient is not pregnant, so these ranges are not applicable. No other notable measurements or test results are provided in this report. Therefore, no specific areas requiring attention are evident based on this limited data.
+> **Analysis of TSH Result:**
+
+The TSH level is 0.97 mlU/mL, which falls within the normal reference range of 0.30 - 4.5 mlU/mL. This indicates that the thyroid gland is functioning within the expected parameters. The patient is not pregnant, so the reference ranges for pregnant women are not applicable. No significant abnormalities are evident in this single TSH measurement.
+
+**Key Findings and Observations:**
+
+The TSH level is within the normal range, suggesting that the thyroid gland is functioning appropriately.
+
+**Notable Measurements or Test Results:**
+
+TSH: 0.97 mlU/mL
+
+**Clinical Significance:**
+
+A normal TSH level indicates that the thyroid gland is producing the correct amount of thyroid hormone. This result is consistent with a healthy thyroid function.
+
+**Areas Requiring Attention:**
+
+No specific areas requiring attention are evident based on this single TSH result. Further evaluation may be warranted if the patient presents with symptoms suggestive of thyroid dysfunction.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/23/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/23/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/23/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/23/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -1867,16 +2018,19 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Summary:**
-> Your anti-CCP antibody test result is 6.46 U/mL, which is above the normal range. This indicates the presence of anti-CCP antibodies, which can help detect rheumatoid arthritis earlier and more accurately.
+> Your anti-CCP antibody test result is 6.46 U/mL, which is above the normal range. This indicates the presence of anti-CCP antibodies, which can help detect rheumatoid arthritis earlier and more accurately. This test result may help your doctor determine the likelihood of developing rheumatoid arthritis.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/3/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/3/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/3/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/3/patient_audio.mp4)
 
 </td>
 </tr>
@@ -1891,16 +2045,21 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Clinical Analysis:**
-> The report indicates the presence of anti-cyclic citrullinated peptide (anti-CCP) antibodies, with a result of 6.46 U/mL. This result is above the normal range of <17.0 U/mL, suggesting a positive anti-CCP antibody test. Given the high specificity of anti-CCP antibodies for rheumatoid arthritis (RA), this finding warrants further investigation to assess the likelihood of RA development. The clinical significance of this result is that it may indicate early RA, potentially before the onset of irreversible joint damage. Therefore, close monitoring and repeat testing are recommended, especially in patients with undifferentiated arthritis.
+> **Analysis of Anti-CCP Antibody Test Results**
+
+The Anti-CCP antibody test result is significantly elevated at 6.46 U/mL, exceeding the normal range of <17.0 U/mL. This indicates a high likelihood of anti-CCP antibodies being present in the patient's serum. The presence of these autoantibodies is highly specific for Rheumatoid Arthritis (RA), and their detection can aid in early diagnosis, even before the onset of irreversible joint damage. This test is particularly useful in patients with undifferentiated arthritis, where the clinical presentation is suggestive of RA but does not fully meet the diagnostic criteria. Therefore, the elevated Anti-CCP antibody levels warrant further investigation and consideration of RA diagnosis and management.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/3/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/3/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/3/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/3/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -1951,16 +2110,19 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Summary:**
-> Your IgE level is 201.9 IU/mL. This is within the normal range of 0.0-378 IU/mL. This test measures the amount of IgE in your blood.
+> Your IgE level is 201.9 IU/mL, which is within the normal range of 0.0-378 IU/mL. This test measures the amount of IgE in your blood.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/4/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/4/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/4/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/4/patient_audio.mp4)
 
 </td>
 </tr>
@@ -1975,16 +2137,19 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Clinical Analysis:**
-> The IgE total test result is 201.9 IU/mL, which falls within the reference range of 0.0-378 IU/mL. This indicates a normal level of IgE in the blood. Elevated IgE levels can suggest allergic reactions or parasitic infections. Further investigation may be warranted if the patient reports symptoms suggestive of allergies or parasitic infestations.
+> The S. Total IgE level is 201.9 IU/mL, which falls within the reference range of 0.0-378 IU/mL. Elevated IgE levels can indicate allergic reactions, parasitic infections, or certain inflammatory conditions. While the result is within the normal range, it's important to consider the patient's clinical presentation and any relevant medical history to determine if further investigation is warranted. A normal IgE level does not always rule out the possibility of underlying immune dysregulation or allergic predisposition.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/4/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/4/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/4/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/4/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -2034,16 +2199,19 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Summary:**
-> Your thyroid hormone levels (T3, T4, and TSH) are within the normal range. This indicates your thyroid gland is functioning as it should.
+> Your thyroid hormone levels (T3, T4, and TSH) are within the normal range. This indicates your thyroid is functioning as it should.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/5/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/5/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/5/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/5/patient_audio.mp4)
 
 </td>
 </tr>
@@ -2058,16 +2226,19 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Clinical Analysis:**
-> The thyroid function test results indicate normal thyroid hormone levels. T3 is within the normal range, T4 is also within the normal range, and TSH is suppressed, suggesting hyperthyroidism. The suppressed TSH level is a key finding, potentially indicating an overactive thyroid gland. Further investigation is warranted to determine the underlying cause of the suppressed TSH, which could be due to autonomous thyroid tissue or other factors affecting pituitary function.
+> The thyroid function test results indicate normal thyroid hormone levels. T3 (triiodothyronine) is within the normal range at 1.96 ng/mL, T4 (thyroxine) is within the normal range at 10.55 mcg/dL, and TSH (thyroid-stimulating hormone) is within the normal range at 0.11 mlU/mL. These results suggest that the thyroid gland is functioning within the expected physiological parameters. The normal TSH level indicates that the pituitary gland is appropriately stimulating the thyroid to produce thyroid hormones.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/5/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/5/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/5/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/5/doctor_audio.mp4)
 
 </td>
 </tr>
@@ -2124,16 +2295,19 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Summary:**
-> Your Vitamin B12 level is within the normal range. This is good news, as Vitamin B12 is important for healthy red blood cells and nerve function.
+> Your Vitamin B12 level is within the normal range. This vitamin is important for healthy red blood cell production and nerve function.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/7/patient_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/7/patient_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/7/patient_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/7/patient_audio.mp4)
 
 </td>
 </tr>
@@ -2148,16 +2322,21 @@ The patient's thyroid function tests are within normal limits, indicating that t
 <td width="70%">
 
 **Clinical Analysis:**
-> The patient is a 59-year-old male with a Vitamin B12 level of 448 pg/mL. This result falls within the normal reference range of 200-911 pg/mL. Vitamin B12 is essential for DNA synthesis, erythrocyte maturation, and myelin sheath formation. Elevated levels of Vitamin B12 can be associated with macrocytic anemia and neurological abnormalities. While the current result is within the normal range, it is important to consider the patient's clinical history and any symptoms suggestive of B12 deficiency or excess.
+> **Analysis of Vitamin B12 Report:**
+
+The patient's Vitamin B12 level is 448 pg/mL, which falls within the normal reference range of 200-911 pg/mL. This indicates adequate Vitamin B12 stores. While the result is within the normal range, it's important to consider the patient's clinical presentation and any symptoms suggestive of Vitamin B12 deficiency, such as fatigue, weakness, or neurological symptoms. Further investigation may be warranted if the patient reports any of these symptoms, or if there are other risk factors for Vitamin B12 deficiency, such as vegan diet or malabsorption issues.
 
 </td>
 <td width="30%" align="center">
 
 **🔊 Audio:**
 
-[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/7/doctor_audio.wav)
+<video width="100%" controls>
+  <source src="testing_reports/inference_results/7/doctor_audio.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-[📥 Download WAV](testing_reports/inference_results/7/doctor_audio.wav)
+[📥 Download MP4](testing_reports/inference_results/7/doctor_audio.mp4)
 
 </td>
 </tr>

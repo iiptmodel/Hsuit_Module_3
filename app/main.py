@@ -147,7 +147,7 @@ async def _verify_ollama_model():
         def _check_model():
             try:
                 models_list = ollama.list()
-                available_models = [m.get('name', '') for m in models_list.get('models', [])]
+                available_models = [m.model for m in models_list.models]
                 logger.info(f"📋 Available Ollama models: {available_models}")
                 return required_model in available_models
             except Exception as e:

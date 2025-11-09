@@ -1,8 +1,8 @@
 {
   "report_name": "19.pdf",
   "extracted_text_length": 1911,
-  "patient_summary_length": 137,
-  "doctor_summary_length": 2054,
+  "patient_summary_length": 132,
+  "doctor_summary_length": 458,
   "files": {
     "extracted_text": "inference_results\\19\\extracted_text.txt",
     "patient_summary": "inference_results\\19\\patient_summary.txt",

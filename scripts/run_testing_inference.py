@@ -16,6 +16,7 @@ import sys
 import logging
 from pathlib import Path
 import json
+import subprocess
 
 # Add parent directory to path to import app modules
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -34,6 +35,77 @@ logger = logging.getLogger(__name__)
 TESTING_REPORTS_DIR = Path("D:/Prushal/testing_reports")
 RESULTS_DIR = TESTING_REPORTS_DIR / "inference_results"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+# Static background image for videos
+AUDIO_BG_IMAGE = Path("D:/Prushal/scripts/pngtree-pure-white-minimalist-background-wallpaper-picture-image_1219011.jpg")
+
+
+def convert_audio_to_video(audio_file: Path, video_file: Path) -> bool:
+    """
+    Convert WAV audio file to MP4 video with static background image.
+    
+    Args:
+        audio_file: Path to input WAV file
+        video_file: Path to output MP4 file
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        # Verify audio file exists and has content
+        if not audio_file.exists():
+            logger.error(f"Audio file not found: {audio_file}")
+            return False
+        
+        if audio_file.stat().st_size == 0:
+            logger.error(f"Audio file is empty: {audio_file}")
+            return False
+            
+        logger.info(f"Converting audio ({audio_file.stat().st_size} bytes) to video...")
+        
+        # FFmpeg command to create video from audio + static image
+        cmd = [
+            'ffmpeg',
+            '-y',
+            '-loop', '1',
+            '-i', str(AUDIO_BG_IMAGE),
+            '-i', str(audio_file),
+            '-c:v', 'libx264',
+            '-tune', 'stillimage',
+            '-c:a', 'aac',
+            '-b:a', '256k',  # Increased bitrate for better quality
+            '-ar', '48000',  # Higher sample rate
+            '-ac', '2',  # Stereo audio
+            '-af', 'volume=5.0',  # Boost audio volume by 3x
+            '-pix_fmt', 'yuv420p',
+            '-shortest',
+            '-map', '0:v:0',  # Take video from image
+            '-map', '1:a:0',  # Take audio from WAV
+            '-vf', 'scale=1280:720',
+            '-movflags', '+faststart',  # Enable streaming
+            str(video_file)
+        ]
+        
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        
+        # Log FFmpeg output for debugging
+        if result.stderr:
+            logger.info(f"FFmpeg output: {result.stderr}")
+        
+        # Verify output file was created
+        if not video_file.exists():
+            logger.error("Video file was not created")
+            return False
+            
+        logger.info(f"Video created successfully ({video_file.stat().st_size} bytes)")
+        return True
+        
+    except subprocess.CalledProcessError as e:
+        logger.error(f"FFmpeg conversion failed: {e.stderr}")
+        return False
+    except Exception as e:
+        logger.error(f"Video conversion error: {e}")
+        return False
 
 
 def generate_doctor_summary(extracted_text: str, language: str = 'English') -> str:
@@ -59,7 +131,7 @@ def generate_doctor_summary(extracted_text: str, language: str = 'English') -> s
         ]
 
         resp = chat_with_retries(
-            model='amsaravi/medgemma-4b-it:q8',
+            model='edwardlo12/medgemma-4b-it-Q4_K_M',
             messages=messages,
             options={"temperature": 0.0, "num_predict": 400}
         )
@@ -123,6 +195,7 @@ def process_report(pdf_path: Path, report_name: str):
         # Step 4: Generate Patient Audio
         logger.info("Generating patient audio...")
         patient_audio_file = report_output_dir / "patient_audio.wav"
+        patient_video_file = report_output_dir / "patient_audio.mp4"
         try:
             tts_service.generate_speech(
                 text=patient_summary,
@@ -130,6 +203,10 @@ def process_report(pdf_path: Path, report_name: str):
                 output_file_path=str(patient_audio_file)
             )
             logger.info(f"Saved patient audio to {patient_audio_file}")
+            
+            # Convert WAV to MP4 with static background
+            convert_audio_to_video(patient_audio_file, patient_video_file)
+            logger.info(f"Converted to video: {patient_video_file}")
         except Exception as e:
             logger.error(f"Failed to generate patient audio: {e}")
             patient_audio_file.write_text(f"Audio generation failed: {str(e)}", encoding='utf-8')
@@ -137,6 +214,7 @@ def process_report(pdf_path: Path, report_name: str):
         # Step 5: Generate Doctor Audio
         logger.info("Generating doctor audio...")
         doctor_audio_file = report_output_dir / "doctor_audio.wav"
+        doctor_video_file = report_output_dir / "doctor_audio.mp4"
         try:
             tts_service.generate_speech(
                 text=doctor_summary,
@@ -144,6 +222,10 @@ def process_report(pdf_path: Path, report_name: str):
                 output_file_path=str(doctor_audio_file)
             )
             logger.info(f"Saved doctor audio to {doctor_audio_file}")
+            
+            # Convert WAV to MP4 with static background
+            convert_audio_to_video(doctor_audio_file, doctor_video_file)
+            logger.info(f"Converted to video: {doctor_video_file}")
         except Exception as e:
             logger.error(f"Failed to generate doctor audio: {e}")
             doctor_audio_file.write_text(f"Audio generation failed: {str(e)}", encoding='utf-8')

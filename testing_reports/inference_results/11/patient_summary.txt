@@ -1,9 +1,9 @@
-Okay, here's a summary of the lab results for a 39-year-old female:
+Here's a summary of your lab results:
 
-*   **Complete Blood Count (CBC):** Your hemoglobin is slightly low (10.6 g/dL), which could be causing fatigue. Your red blood cell count and platelet count are within normal limits. Your MCV (size of red blood cells) is slightly low (71.22 fl), suggesting microcytosis. Your RDW is slightly elevated (16.30%), which can indicate variation in red blood cell size.
-
-*   **Vitamin B12:** Your Vitamin B12 level is within the normal range (302 pg/mL).
-
-*   **Vitamin D:** Your Vitamin D level is within the normal range (22.80 ng/mL).
-
-*   **Thyroid Function Test (ultra):** Your TSH (thyroid stimulating hormone) is within the normal range (4.8
+*   **Complete Blood Count (CBC):** Your hemoglobin is slightly low (10.6 g/dL), and your red blood cell count is also a bit low (4.10 million/cumm). Your platelet count is normal. Your MCV (size of red blood cells) is slightly low, indicating microcytosis. Your RDW is normal.
+*   **Vitamin B12:** Your Vitamin B12 level is within the normal range.
+*   **Vitamin D:** Your Vitamin D level is within the normal range.
+*   **Thyroid Function Test (T3, T4, TSH):** Your TSH level is within the normal range.
+*   **Lipid Profile:** Your cholesterol levels are within normal limits.
+*   **Liver Function Test (LFT):** Your liver enzymes (AST, ALT, ALP) are within normal limits.
+*   

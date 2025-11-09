@@ -2,7 +2,7 @@
   "report_name": "22.pdf",
   "extracted_text_length": 1377,
   "patient_summary_length": 99,
-  "doctor_summary_length": 354,
+  "doctor_summary_length": 494,
   "files": {
     "extracted_text": "inference_results\\22\\extracted_text.txt",
     "patient_summary": "inference_results\\22\\patient_summary.txt",

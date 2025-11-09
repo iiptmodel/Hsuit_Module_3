@@ -4,20 +4,17 @@ Here's a comprehensive analysis of the provided medical report:
 
 *   **Complete Blood Count (CBC):**
     *   **Hemoglobin (Hb):** 10.6 g/dL (Low - Anemia)
-    *   **RBC Count:** 4.10 million/cumm (Low - Anemia)
-    *   **PCV:** 29.20% (Low - Anemia)
+    *   **Red Blood Cell (RBC) Count:** 4.10 million/cumm (Low - Anemia)
+    *   **Platelet Count:** 284,000/uL (Normal)
     *   **MCV:** 71.22 fl (Low - Microcytic)
     *   **MCHC:** 34.20 gm/dL (Low - Hypochromic)
     *   **MCH:** 25.70 pg (Low - Hypochromic)
-    *   **RDW-CV:** 16.30% (High - Anisopoikilocytosis)
-    *   **RDW-SD:** 53.00 fL (High - Anisopoikilocytosis)
-    *   **Platelet Count:** 284,000 /ul (Normal)
-    *   **MPV:** 10.70 fL (Normal)
-    *   **PDW:** 16.10% (Normal)
-    *   **WBC Count (TLC):** 6760 /cumm (Normal)
-    *   **Differential Count:**
-        *   Neutrophils: 55.60% (Normal)
-        *   Lymphocytes: 39.90% (Normal)
-        *   Monocytes: 3.40% (Normal)
-        *   Eosinophils: 1.10% (Normal)
-        *   Basophils: 0% (
+    *   **RDW-CV:** 16.30% (High - Anisocytosis)
+    *   **WBC Count (TLC):** 6760/cumm (Normal)
+    *   **Differential Count:** Neutrophils 55.6%, Lymphocytes 39.9%, Monocytes 3.4%, Eosinophils 1.1%, Basophils 0%, P-LCR 35.6%
+    *   **Absolute Neutrophil Count:** 3758.56/ cmm (Normal)
+    *   **Absolute Lymphocyte Count:** 2697.24/ cmm (Normal)
+    *   **Absolute Monocytes Count:** 229.84/cumm (Normal)
+    *   **Absolute Eosinophil Count:** 74/cumm (Normal)
+    *   **Absolute Basophil Count:** 0.00/uL (Normal)
+*   **
