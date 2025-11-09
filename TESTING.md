@@ -152,10 +152,9 @@ The Medical Report Analysis System processes medical reports through a sophistic
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/1/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/1/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/1/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/1/patient_audio.wav)
 
 </td>
 </tr>
@@ -177,10 +176,9 @@ The Medical Report Analysis System processes medical reports through a sophistic
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/1/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/1/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/1/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/1/doctor_audio.wav)
 
 </td>
 </tr>
@@ -266,10 +264,9 @@ The Medical Report Analysis System processes medical reports through a sophistic
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/10/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/10/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/10/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/10/patient_audio.wav)
 
 </td>
 </tr>
@@ -291,10 +288,9 @@ The Medical Report Analysis System processes medical reports through a sophistic
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/10/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/10/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/10/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/10/doctor_audio.wav)
 
 </td>
 </tr>
@@ -371,10 +367,9 @@ The Medical Report Analysis System processes medical reports through a sophistic
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/11/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/11/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/11/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/11/patient_audio.wav)
 
 </td>
 </tr>
@@ -418,10 +413,9 @@ The Medical Report Analysis System processes medical reports through a sophistic
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/11/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/11/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/11/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/11/doctor_audio.wav)
 
 </td>
 </tr>
@@ -502,10 +496,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/12/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/12/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/12/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/12/patient_audio.wav)
 
 </td>
 </tr>
@@ -540,10 +533,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/12/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/12/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/12/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/12/doctor_audio.wav)
 
 </td>
 </tr>
@@ -627,10 +619,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/13/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/13/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/13/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/13/patient_audio.wav)
 
 </td>
 </tr>
@@ -652,10 +643,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/13/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/13/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/13/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/13/doctor_audio.wav)
 
 </td>
 </tr>
@@ -727,10 +717,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/14/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/14/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/14/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/14/patient_audio.wav)
 
 </td>
 </tr>
@@ -752,10 +741,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/14/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/14/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/14/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/14/doctor_audio.wav)
 
 </td>
 </tr>
@@ -811,10 +799,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/15/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/15/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/15/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/15/patient_audio.wav)
 
 </td>
 </tr>
@@ -836,10 +823,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/15/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/15/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/15/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/15/doctor_audio.wav)
 
 </td>
 </tr>
@@ -901,10 +887,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/16/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/16/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/16/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/16/patient_audio.wav)
 
 </td>
 </tr>
@@ -926,10 +911,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/16/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/16/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/16/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/16/doctor_audio.wav)
 
 </td>
 </tr>
@@ -993,10 +977,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/17/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/17/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/17/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/17/patient_audio.wav)
 
 </td>
 </tr>
@@ -1018,10 +1001,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/17/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/17/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/17/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/17/doctor_audio.wav)
 
 </td>
 </tr>
@@ -1107,10 +1089,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/18/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/18/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/18/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/18/patient_audio.wav)
 
 </td>
 </tr>
@@ -1132,10 +1113,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/18/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/18/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/18/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/18/doctor_audio.wav)
 
 </td>
 </tr>
@@ -1194,10 +1174,9 @@ This report shows some results from your blood work.
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/19/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/19/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/19/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/19/patient_audio.wav)
 
 </td>
 </tr>
@@ -1231,10 +1210,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/19/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/19/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/19/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/19/doctor_audio.wav)
 
 </td>
 </tr>
@@ -1290,10 +1268,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/2/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/2/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/2/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/2/patient_audio.wav)
 
 </td>
 </tr>
@@ -1315,10 +1292,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/2/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/2/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/2/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/2/doctor_audio.wav)
 
 </td>
 </tr>
@@ -1417,10 +1393,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/20/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/20/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/20/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/20/patient_audio.wav)
 
 </td>
 </tr>
@@ -1442,10 +1417,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/20/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/20/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/20/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/20/doctor_audio.wav)
 
 </td>
 </tr>
@@ -1571,10 +1545,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/21/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/21/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/21/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/21/patient_audio.wav)
 
 </td>
 </tr>
@@ -1596,10 +1569,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/21/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/21/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/21/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/21/doctor_audio.wav)
 
 </td>
 </tr>
@@ -1705,10 +1677,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/22/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/22/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/22/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/22/patient_audio.wav)
 
 </td>
 </tr>
@@ -1730,10 +1701,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/22/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/22/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/22/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/22/doctor_audio.wav)
 
 </td>
 </tr>
@@ -1821,10 +1791,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/23/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/23/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/23/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/23/patient_audio.wav)
 
 </td>
 </tr>
@@ -1846,10 +1815,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/23/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/23/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/23/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/23/doctor_audio.wav)
 
 </td>
 </tr>
@@ -1906,10 +1874,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/3/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/3/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/3/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/3/patient_audio.wav)
 
 </td>
 </tr>
@@ -1931,10 +1898,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/3/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/3/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/3/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/3/doctor_audio.wav)
 
 </td>
 </tr>
@@ -1992,10 +1958,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/4/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/4/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/4/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/4/patient_audio.wav)
 
 </td>
 </tr>
@@ -2017,10 +1982,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/4/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/4/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/4/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/4/doctor_audio.wav)
 
 </td>
 </tr>
@@ -2077,10 +2041,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/5/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/5/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/5/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/5/patient_audio.wav)
 
 </td>
 </tr>
@@ -2102,10 +2065,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/5/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/5/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/5/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/5/doctor_audio.wav)
 
 </td>
 </tr>
@@ -2169,10 +2131,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/7/patient_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/7/patient_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)](testing_reports/inference_results/7/patient_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/7/patient_audio.wav)
 
 </td>
 </tr>
@@ -2194,10 +2155,9 @@ The patient's thyroid function tests are within normal limits, indicating that t
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="testing_reports/inference_results/7/doctor_audio.wav" type="audio/wav">
-  <a href="testing_reports/inference_results/7/doctor_audio.wav">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)](testing_reports/inference_results/7/doctor_audio.wav)
+
+[📥 Download WAV](testing_reports/inference_results/7/doctor_audio.wav)
 
 </td>
 </tr>

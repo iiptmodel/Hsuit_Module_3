@@ -114,10 +114,9 @@ for result in overall_results['results']:
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="{patient_audio_path}" type="audio/wav">
-  <a href="{patient_audio_path}">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Patient_Audio-blue?style=for-the-badge)]({patient_audio_path})
+
+[📥 Download WAV]({patient_audio_path})
 
 </td>
 </tr>
@@ -139,10 +138,9 @@ for result in overall_results['results']:
 
 **🔊 Audio:**
 
-<video controls width="100%" height="50">
-  <source src="{doctor_audio_path}" type="audio/wav">
-  <a href="{doctor_audio_path}">Download</a>
-</video>
+[![Audio](https://img.shields.io/badge/▶️_Play-Doctor_Audio-green?style=for-the-badge)]({doctor_audio_path})
+
+[📥 Download WAV]({doctor_audio_path})
 
 </td>
 </tr>
