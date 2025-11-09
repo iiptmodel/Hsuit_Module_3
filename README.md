@@ -138,7 +138,7 @@ D:\Prushal/
 │   ├── 📄 test_file_upload.py       # Upload tests
 │   └── 📄 test_streaming_chat.py    # Streaming tests
 ├── 📁 tools/                        # Maintenance tools
-├── 📄 TESTING_RESULTS.md            # Testing documentation (main)
+├── 📄 TESTING.md                    # Testing documentation (GitHub tab)
 ├── 📄 TESTING_SUMMARY.md            # Testing summary
 ├── 📄 TESTING_VIEWING_GUIDE.md      # How to view results
 ├── 📄 requirements.txt              # Python dependencies
@@ -587,7 +587,7 @@ tesseract --version
 - [DOCUMENTATION.md](docs/DOCUMENTATION.md) - Detailed technical documentation
 - [DEPLOYMENT.md](docs/DEPLOYMENT.md) - Production deployment guide
 - [API.md](docs/API.md) - Complete API reference
-- **[TESTING_RESULTS.md](TESTING_RESULTS.md) - Comprehensive testing results** ✨ NEW
+- **[TESTING.md](TESTING.md) - Comprehensive testing results** ✨ NEW
 
 ## 🧪 Testing & Validation
 

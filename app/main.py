@@ -132,20 +132,75 @@ def _run_migrations_if_possible():
 # MODEL PRELOADING (OPTIONAL)
 # ============================================================================
 
+async def _verify_ollama_model():
+    """
+    Verify that required Ollama model is available.
+    Downloads the model if not present.
+    """
+    try:
+        import ollama
+        
+        required_model = settings.MODEL_NAME
+        logger.info(f"🔍 Checking for Ollama model: {required_model}")
+        
+        # List available models
+        def _check_model():
+            try:
+                models_list = ollama.list()
+                available_models = [m.get('name', '') for m in models_list.get('models', [])]
+                logger.info(f"📋 Available Ollama models: {available_models}")
+                return required_model in available_models
+            except Exception as e:
+                logger.error(f"Failed to list Ollama models: {e}")
+                return False
+        
+        model_exists = await asyncio.to_thread(_check_model)
+        
+        if not model_exists:
+            logger.warning(f"⚠️  Model '{required_model}' not found locally")
+            logger.info(f"📥 Downloading {required_model}... (this may take a while)")
+            
+            def _pull_model():
+                try:
+                    ollama.pull(required_model)
+                    logger.info(f"✅ Successfully downloaded {required_model}")
+                    return True
+                except Exception as e:
+                    logger.error(f"❌ Failed to download model: {e}")
+                    return False
+            
+            success = await asyncio.to_thread(_pull_model)
+            if not success:
+                logger.error(f"❌ Could not download required model. Please run: ollama pull {required_model}")
+                return False
+        else:
+            logger.info(f"✅ Model '{required_model}' is available")
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Error verifying Ollama model: {e}")
+        return False
+
+
 async def _preload_models_background(app: FastAPI):
     """
     Background task to prepare AI models and services without blocking startup.
     
     This function:
-    1. Downloads required models (Kokoro TTS, Docling) if not present
-    2. Imports and initializes all service modules
-    3. Updates app.state.models_ready flag when complete
+    1. Verifies and downloads Ollama model if needed
+    2. Downloads required models (Kokoro TTS, Docling) if not present
+    3. Imports and initializes all service modules
+    4. Updates app.state.models_ready flag when complete
     
     Only runs if PRELOAD_MODELS=1 environment variable is set.
     By default (PRELOAD_MODELS=0), models load lazily on first request.
     """
     try:
         logger.info("🔄 Starting background AI model preparation...")
+        
+        # Verify Ollama model first
+        await _verify_ollama_model()
         
         # Run potentially blocking model downloads in worker thread
         await asyncio.to_thread(_download_models.check_and_download_models)
@@ -226,6 +281,10 @@ async def lifespan(app: FastAPI):
     if os.environ.get("API_ONLY", "0") != "1":
         app.include_router(page_router, tags=["Pages"])
     logger.info("✅ Routers registered successfully")
+    
+    # Always verify Ollama model on startup (quick check)
+    logger.info("🔍 Verifying Ollama model availability...")
+    await _verify_ollama_model()
     
     # Optionally preload AI models in background
     preload = os.environ.get("PRELOAD_MODELS", "0")

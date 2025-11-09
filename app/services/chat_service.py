@@ -15,6 +15,7 @@ import re
 import ollama
 
 from app.services.ollama_client import chat_with_retries, is_ollama_reachable
+from app.core.config import settings
 
 
 logger = logging.getLogger(__name__)
@@ -182,7 +183,7 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
         logger.info("Calling Ollama streaming chat...")
         # Use ollama.chat with stream=True
         stream = ollama.chat(
-            model="amsaravi/medgemma-4b-it:q6",
+            model=settings.MODEL_NAME,
             messages=messages,
             options={"temperature": 0.7, "top_p": 0.9, "num_predict": 300},
             stream=True
@@ -258,7 +259,7 @@ def generate_chat_response(user_message: str, image_path: str = None) -> str:
 
         logger.info("Calling Ollama via chat_with_retries...")
         resp = chat_with_retries(
-            model="amsaravi/medgemma-4b-it:q8",
+            model=settings.MODEL_NAME,
             messages=messages,
             options={"temperature": 0.7, "top_p": 0.9, "num_predict": 300},
         )

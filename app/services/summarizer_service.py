@@ -3,6 +3,7 @@ import os
 import ollama
 from typing import List, Dict
 from app.services import parser_service
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ def generate_summary_from_text(text: str, language: str = 'English') -> str:
 
         from app.services.ollama_client import chat_with_retries
         resp = chat_with_retries(
-            model='amsaravi/medgemma-4b-it:q8',
+            model=settings.MODEL_NAME,
             messages=messages,
             options={"temperature": 0.0, "num_predict": 200}
         )
@@ -83,7 +84,7 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
 
         from app.services.ollama_client import chat_with_retries
         resp = chat_with_retries(
-            model='amsaravi/medgemma-4b-it:q8',  # Use local MedGemma vision-enabled model
+            model=settings.MODEL_NAME,  # Use configured MedGemma model
             messages=messages,
             options={
                 "temperature": 0.3,  # Lower temperature for more focused medical analysis
@@ -166,7 +167,7 @@ def generate_patient_summary_from_text(text: str, language: str = 'English') -> 
 
         from app.services.ollama_client import chat_with_retries
         resp = chat_with_retries(
-            model='amsaravi/medgemma-4b-it:q8',
+            model=settings.MODEL_NAME,
             messages=messages,
             options={"temperature": 0.2, "num_predict": 500}  # Allow more length for structured format
         )
@@ -327,7 +328,7 @@ def generate_detailed_report_from_text(text: str, language: str = 'English') -> 
 
         from app.services.ollama_client import chat_with_retries
         resp = chat_with_retries(
-            model='amsaravi/medgemma-4b-it:q8',
+            model=settings.MODEL_NAME,
             messages=messages,
             options={"temperature": 0.1, "num_predict": 2000}  # Much longer for comprehensive report
         )
@@ -379,7 +380,7 @@ def summarize_chat_context(conversation_history: List[Dict[str, str]], language:
 
         from app.services.ollama_client import chat_with_retries
         resp = chat_with_retries(
-            model='amsaravi/medgemma-4b-it:q8',
+            model=settings.MODEL_NAME,
             messages=messages,
             options={"temperature": 0.0, "num_predict": 150}  # Keep summary short
         )
