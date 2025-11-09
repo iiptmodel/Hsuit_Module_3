@@ -591,57 +591,30 @@ tesseract --version
 
 ## 🧪 Testing & Validation
 
-### Comprehensive Testing Results
-
 The system has been extensively tested on **20 real medical reports** with **100% success rate**, verified by medical professionals.
 
-**📄 View Complete Testing Results**: [TESTING_RESULTS.md](TESTING_RESULTS.md)
+**� [View Complete Testing Results](TESTING.md)** ← Click to see the Testing tab on GitHub
 
-#### Testing Summary
+### Quick Testing Summary
 
 | Metric | Result |
 |--------|--------|
 | **Total Reports Tested** | 20 medical PDFs |
-| **Successfully Processed** | 20 (100%) |
+| **Successfully Processed** | 20 (100%) ✅ |
 | **Failed** | 0 (0%) |
-| **Doctor Verified** | ✅ Yes |
-| **Patient Summaries Generated** | 20 |
-| **Doctor Summaries Generated** | 20 |
-| **Audio Files Created** | 40 (patient + doctor) |
+| **Medical Validation** | Verified by Licensed Physicians |
+| **Audio Files Generated** | 40 (patient + doctor versions) |
 
-#### Dual Audience Approach
+For comprehensive testing documentation including:
+- 🎯 Complete test results for all 20 medical reports
+- � Dual audience summaries (patient + doctor)
+- 🔊 Audio file downloads and playback
+- 📊 Quality assurance details
+- 🔄 Instructions to regenerate tests
 
-The system generates two types of summaries for each medical report:
+**Visit the [TESTING.md](TESTING.md) file** or click the "Testing" tab on GitHub.
 
-**👤 Patient Summaries**
-- Simple, easy-to-understand language
-- No medical jargon
-- 2-4 concise sentences
-- Includes medical disclaimer
-- 🔊 Audio narration available
-
-**👨‍⚕️ Doctor Summaries**
-- Professional medical terminology
-- Detailed clinical analysis
-- 4-6 comprehensive sentences
-- Specific measurements and findings
-- 🔊 Audio narration available
-
-#### Example Results
-
-**Patient Summary Example:**
-> "Your thyroid hormone levels (T3, T4, and TSH) are within the normal range. Your Vitamin B12 level is also within the normal range. Your iron levels are also within the normal range."
-
-**Doctor Summary Example:**
-> "The patient is a 65-year-old female presenting with thyroid function tests. T3 is low (0.52 ng/mL), T4 is within the normal range (4.19 mcg/dL), and TSH is markedly elevated (96.20 mlU/mL). This suggests hypothyroidism, likely secondary to pituitary or hypothalamic dysfunction..."
-
-#### Testing Documentation
-
-- **[TESTING_RESULTS.md](TESTING_RESULTS.md)** - Full testing report with all 20 test cases
-- **[TESTING_SUMMARY.md](TESTING_SUMMARY.md)** - Quick overview and key highlights
-- **[TESTING_VIEWING_GUIDE.md](TESTING_VIEWING_GUIDE.md)** - How to view and present results
-
-#### Running Tests
+### Running Tests
 
 To run the comprehensive testing suite:
 

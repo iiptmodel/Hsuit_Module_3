@@ -369,6 +369,12 @@ API_ONLY = os.environ.get("API_ONLY", "0")
 if API_ONLY != "1":
     # Serve static assets (CSS, JS) and media files (uploaded reports, audio)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+    # Ensure media directory exists before mounting
+    if not os.path.exists("media"):
+        os.makedirs("media")
+        logger.info("📁 Created missing 'media' directory for file uploads")
+
     app.mount("/media", StaticFiles(directory="media"), name="media")
     logger.info("📁 Static and media file serving enabled")
 

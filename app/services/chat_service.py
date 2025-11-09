@@ -182,7 +182,7 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
         logger.info("Calling Ollama streaming chat...")
         # Use ollama.chat with stream=True
         stream = ollama.chat(
-            model="amsaravi/medgemma-4b-it:q8",
+            model="amsaravi/medgemma-4b-it:q6",
             messages=messages,
             options={"temperature": 0.7, "top_p": 0.9, "num_predict": 300},
             stream=True
