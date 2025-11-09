@@ -75,89 +75,200 @@ for result in overall_results['results']:
     extracted_preview = truncate_text(extracted_text.strip(), max_chars=1200)
     quoted_extracted_preview = extracted_preview.replace('\n', '\n> ').strip()
 
-    # Create section without HTML <audio>, using GitHub-friendly Markdown
+    # Create beautifully formatted section using <video> tag for inline audio playback on GitHub
     section = f"""
-### Report {report_num}: {report_name}
+<div align="center">
 
-- Original PDF: [{report_name}]({pdf_path})
-- Status: {status_emoji}
+### 📋 Report {report_num}: `{report_name}`
 
-#### Extracted Text (preview)
-> {quoted_extracted_preview}
+![Status](https://img.shields.io/badge/Status-{status_emoji.replace(' ', '%20')}-brightgreen?style=flat-square)
 
-[View full extracted_text.txt](testing_reports/inference_results/{report_num}/extracted_text.txt)
-
-#### 👤 Patient Summary
-> {patient_summary.strip()}
-
-Patient audio: [testing_reports/inference_results/{report_num}/patient_audio.wav]({patient_audio_path})
-
-#### 👨‍⚕️ Doctor Summary
-> {doctor_summary.strip()}
-
-Doctor audio: [testing_reports/inference_results/{report_num}/doctor_audio.wav]({doctor_audio_path})
+</div>
 
 ---
+
+#### 📄 **Original Document**
+📎 [**{report_name}**]({pdf_path}) • [Full Extracted Text](testing_reports/inference_results/{report_num}/extracted_text.txt)
+
+<details>
+<summary><b>🔍 View Extracted Text Preview</b></summary>
+<br>
+
+> {quoted_extracted_preview}
+
+</details>
+
+---
+
+#### 👤 **Patient Summary**
+
+<table>
+<tr>
+<td width="70%">
+
+**Summary:**
+> {patient_summary.strip()}
+
+</td>
+<td width="30%" align="center">
+
+**🔊 Audio:**
+
+<video controls width="100%" height="50">
+  <source src="{patient_audio_path}" type="audio/wav">
+  <a href="{patient_audio_path}">Download</a>
+</video>
+
+</td>
+</tr>
+</table>
+
+---
+
+#### 👨‍⚕️ **Doctor Summary**
+
+<table>
+<tr>
+<td width="70%">
+
+**Clinical Analysis:**
+> {doctor_summary.strip()}
+
+</td>
+<td width="30%" align="center">
+
+**🔊 Audio:**
+
+<video controls width="100%" height="50">
+  <source src="{doctor_audio_path}" type="audio/wav">
+  <a href="{doctor_audio_path}">Download</a>
+</video>
+
+</td>
+</tr>
+</table>
+
+---
+
+<br>
 
 """
     
     report_sections.append(section)
 
-# Create the full updated Testing.md
-updated_content = f"""# Medical Report Analysis System - Testing Results
+# Create the full updated Testing.md with beautiful formatting
+updated_content = f"""<div align="center">
 
-## Executive Summary
+# 🏥 Medical Report Analysis System
+## Testing Results & Validation
 
-This document presents comprehensive testing results for the Medical Report Analysis System, demonstrating the system's capability to process medical reports and generate audience-appropriate summaries with audio playback.
+![Total Reports](https://img.shields.io/badge/Total%20Reports-{overall_results['total_reports']}-blue?style=for-the-badge)
+![Success Rate](https://img.shields.io/badge/Success%20Rate-{(overall_results['completed'] / overall_results['total_reports'] * 100):.0f}%25-success?style=for-the-badge)
+![Completed](https://img.shields.io/badge/Completed-{overall_results['completed']}-brightgreen?style=for-the-badge)
+![Failed](https://img.shields.io/badge/Failed-{overall_results['failed']}-red?style=for-the-badge)
 
-**Testing Overview:**
-- **Total Reports Tested**: {overall_results['total_reports']}
-- **Successfully Processed**: {overall_results['completed']}
-- **Failed**: {overall_results['failed']}
-- **Success Rate**: {(overall_results['completed'] / overall_results['total_reports'] * 100):.1f}%
-
----
-
-## System Capabilities
-
-The Medical Report Analysis System processes medical reports through the following pipeline:
-
-### Processing Steps
-
-1. **📄 Text Extraction** - Uses Docling with OCR fallback for robust PDF text extraction
-2. **🤖 AI Analysis** - Powered by MedGemma (medical-specialized LLM)
-3. **✍️ Summary Generation** - Creates audience-specific summaries
-4. **🔊 Audio Synthesis** - Converts text to natural-sounding speech using Kokoro TTS
-
-### Dual Audience Approach
-
-#### 👤 Patient Summaries
-- **Language**: Simple, easy-to-understand, non-technical
-- **Length**: 2-4 concise sentences
-- **Focus**: Key findings in accessible terms
-- **Safety**: Includes medical disclaimer
-
-#### 👨‍⚕️ Doctor Summaries
-- **Language**: Professional medical terminology
-- **Length**: 4-6 comprehensive sentences
-- **Focus**: Clinical significance, measurements, diagnostic indicators
-- **Detail**: Thorough analysis with medical context
+</div>
 
 ---
 
-## Test Results
+## 📊 Executive Summary
 
-Each test report below shows:
-- 📄 Clickable link to the original PDF
-- 📄 Extracted text (preview + link to full text)
-- 👤 Patient summary with a direct audio file link (GitHub-playable/downloadable)
-- 👨‍⚕️ Doctor summary with a direct audio file link (GitHub-playable/downloadable)
+This document presents **comprehensive testing results** for the **Medical Report Analysis System**, demonstrating the system's capability to process medical reports and generate audience-appropriate summaries with audio playback.
+
+<table>
+<tr>
+<td align="center"><b>📝 Total Reports Tested</b></td>
+<td align="center"><b>✅ Successfully Processed</b></td>
+<td align="center"><b>❌ Failed</b></td>
+<td align="center"><b>🎯 Success Rate</b></td>
+</tr>
+<tr>
+<td align="center"><h3>{overall_results['total_reports']}</h3></td>
+<td align="center"><h3>{overall_results['completed']}</h3></td>
+<td align="center"><h3>{overall_results['failed']}</h3></td>
+<td align="center"><h3>{(overall_results['completed'] / overall_results['total_reports'] * 100):.1f}%</h3></td>
+</tr>
+</table>
+
+---
+
+## 🔬 System Capabilities
+
+The Medical Report Analysis System processes medical reports through a sophisticated **multi-stage pipeline**:
+
+<table>
+<tr>
+<td width="25%" align="center">
+<h3>📄</h3>
+<b>Text Extraction</b><br>
+<small>Docling + OCR fallback</small>
+</td>
+<td width="25%" align="center">
+<h3>🤖</h3>
+<b>AI Analysis</b><br>
+<small>MedGemma LLM</small>
+</td>
+<td width="25%" align="center">
+<h3>✍️</h3>
+<b>Summary Generation</b><br>
+<small>Dual audience</small>
+</td>
+<td width="25%" align="center">
+<h3>🔊</h3>
+<b>Audio Synthesis</b><br>
+<small>Kokoro TTS</small>
+</td>
+</tr>
+</table>
+
+### 🎯 Dual Audience Approach
+
+<table>
+<tr>
+<td width="50%">
+
+#### 👤 **Patient Summaries**
+- ✅ Simple, easy-to-understand language
+- ✅ Non-technical terminology
+- ✅ 2-4 concise sentences
+- ✅ Focus on key findings
+- ✅ Includes medical disclaimer
+
+</td>
+<td width="50%">
+
+#### 👨‍⚕️ **Doctor Summaries**
+- ✅ Professional medical terminology
+- ✅ 4-6 comprehensive sentences
+- ✅ Clinical significance highlighted
+- ✅ Detailed measurements & ranges
+- ✅ Diagnostic context provided
+
+</td>
+</tr>
+</table>
+
+---
+
+## 📑 Test Results
+
+> **Note:** Each test report below includes:
+> - 📄 Original PDF document link
+> - 🔍 Collapsible extracted text preview
+> - 👤 Patient summary with embedded audio player
+> - 👨‍⚕️ Doctor summary with embedded audio player
 
 {''.join(report_sections)}
 
-## How to Run Tests
+---
+
+## 🚀 How to Run Tests
+
+<div align="center">
 
 ### Running the Test Script
+
+</div>
 
 ```powershell
 D:/Prushal/myenv/Scripts/python.exe scripts/run_testing_inference.py
@@ -167,22 +278,31 @@ This will process all PDFs in the `testing_reports/` directory and generate summ
 
 ---
 
-## Technical Details
+## 🛠️ Technical Details
 
-### Technology Stack
+<table>
+<tr>
+<td width="50%">
 
-- **Text Extraction**: Docling with RapidOCR fallback
-- **AI Model**: MedGemma 4B (medical-specialized language model via Ollama)
-- **Text-to-Speech**: Kokoro TTS (American English)
-- **Processing**: Python-based pipeline with automated audio generation
+### 📚 Technology Stack
 
-### Output Structure
+| Component | Technology |
+|-----------|------------|
+| **Text Extraction** | Docling + RapidOCR |
+| **AI Model** | MedGemma 4B via Ollama |
+| **Text-to-Speech** | Kokoro TTS (American) |
+| **Processing** | Python Pipeline |
 
-```text
+</td>
+<td width="50%">
+
+### 📂 Output Structure
+
+```
 testing_reports/
-├── [Original PDF files]
+├── [Original PDFs]
 └── inference_results/
-    ├── 1/, 2/, 3/, ... (one folder per report)
+    ├── 1/, 2/, 3/, ...
     │   ├── extracted_text.txt
     │   ├── patient_summary.txt
     │   ├── doctor_summary.txt
@@ -191,19 +311,33 @@ testing_reports/
     └── overall_results.json
 ```
 
----
-
-## Notes
-
-- All testing scripts are separate from main application code
-- Audio files use WAV format for maximum compatibility
-- PDFs are processed automatically with no manual intervention required
-- System includes safeguards and medical disclaimers in patient-facing content
+</td>
+</tr>
+</table>
 
 ---
 
-*Testing completed: November 9, 2025*  
-*System tested and validated on {overall_results['total_reports']} medical reports*
+## 📝 Notes
+
+> - ✅ All testing scripts are separate from main application code
+> - ✅ Audio files use WAV format for maximum compatibility
+> - ✅ PDFs are processed automatically with no manual intervention
+> - ✅ System includes safeguards and medical disclaimers
+
+---
+
+<div align="center">
+
+### ⚡ Testing Summary
+
+**Testing completed:** *November 9, 2025*  
+**System validated on:** *{overall_results['total_reports']} medical reports*
+
+---
+
+Made with ❤️ for Healthcare Innovation
+
+</div>
 """
 
 # Write the updated file
