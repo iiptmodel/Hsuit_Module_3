@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     """If True, enable extra verbose logging in services."""
     
     # ========== AI MODEL CONFIGURATION ==========
-    MODEL_NAME: str = "edwardlo12/medgemma-4b-it-Q4_K_M"
+    MODEL_NAME: str
     """Ollama model name for medical analysis and chat."""
 
     # Pydantic configuration
