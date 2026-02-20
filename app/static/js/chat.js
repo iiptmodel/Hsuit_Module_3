@@ -382,6 +382,8 @@ async function sendMessage() {
         // Append audience (patient/doctor)
         const audience = audienceSelect ? audienceSelect.value : 'patient';
         formData.append('audience', audience);
+        // Append language (always 'en' now)
+        formData.append('language', 'en');
         
         if (uploadedFile) {
             formData.append('file', uploadedFile);

@@ -58,6 +58,26 @@ class Settings(BaseSettings):
     MODEL_NAME: str
     """Ollama model name for medical analysis and chat."""
 
+    # ========== TTS CONFIGURATION ==========
+    ENABLE_TTS: bool = True
+    """Enable/disable text-to-speech functionality."""
+    
+    TTS_DEFAULT_VOICE: str = "af_heart"
+    """Default TTS voice selection."""
+    
+    TTS_DEFAULT_SPEED: float = 1.0
+    """Default TTS speech speed (0.5 to 2.0)."""
+
+    # ========== MULTILINGUAL CONFIGURATION ==========
+    DEFAULT_LANGUAGE: str = "en"
+    """Default language code (en, hi)."""
+    
+    SUPPORTED_LANGUAGES: str = "en,hi"
+    """Comma-separated list of supported language codes."""
+    
+    ENABLE_MULTILINGUAL: bool = True
+    """Enable multilingual text and voice support."""
+
     # Pydantic configuration
     model_config = SettingsConfigDict(env_file=".env")
 

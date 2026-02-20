@@ -10,33 +10,35 @@ logger = logging.getLogger(__name__)
 # Use local Ollama model for summarization rather than loading heavy transformers
 # This keeps the service lightweight and delegates model serving to Ollama.
 
-def _guardrail_validator(text: str) -> str:
+def _guardrail_validator(text: str, language: str = 'en') -> str:
+    """Apply guardrails with disclaimer support."""
     # Basic guardrail checks to avoid diagnoses, prescriptions, or casual chat
-    prohibited = ['diagnos', 'prescrib', 'you have', 'take ', 'lol', 'omg']
-    for p in prohibited:
+    prohibited_patterns = ['diagnos', 'prescrib', 'you have', 'take ', 'lol', 'omg']
+    
+    disclaimer_text = (
+        "\n\n[Disclaimer] I can help explain findings and what they might indicate, but I cannot provide a definitive diagnosis or prescribe medications. "
+        "Please consult a qualified healthcare professional for diagnosis and treatment."
+    )
+    
+    for p in prohibited_patterns:
         if p in text.lower():
             logger.warning(f"Guardrail triggered for pattern: {p}")
-            # Instead of replacing the entire output with a canned disclaimer (which can be
-            # overly conservative), append a short disclaimer while preserving the model's
-            # analysis. This loosens the guardrail but keeps an explicit safety notice.
-            disclaimer = (
-                "\n\n[Disclaimer] I can help explain findings and what they might indicate, but I cannot provide a definitive diagnosis or prescribe medications. "
-                "Please consult a qualified healthcare professional for diagnosis and treatment."
-            )
-            # If the model output already contains the disclaimer text, avoid duplicating it.
-            if 'consult a' in text.lower() or 'i cannot provide a definitive diagnosis' in text.lower():
+            
+            # Check if disclaimer already exists in the text
+            disclaimer_indicators = ['consult a', 'i cannot provide a definitive diagnosis']
+            if any(indicator in text.lower() for indicator in disclaimer_indicators):
                 return text
-            return text + disclaimer
+            return text + disclaimer_text
     return text
 
 
-def generate_summary_from_text(text: str, language: str = 'English') -> str:
+def generate_summary_from_text(text: str, language: str = 'en') -> str:
     """Generate a concise summary using Ollama chat model."""
     logger.info(f"Generating summary via Ollama (text length={len(text)})")
     try:
         system_prompt = (
-            "You are a concise, professional medical assistant. Summarize the following extracted text from a medical report in "
-            f"{language}. Do not diagnose or prescribe. Keep it clear and patient-friendly. Aim for 2-4 short sentences suitable for a patient."
+            "You are a concise, professional medical assistant. Summarize the following extracted text from a medical report in English. "
+            "Do not diagnose or prescribe. Keep it clear and patient-friendly. Aim for 2-4 short sentences suitable for a patient."
         )
 
         messages = [
@@ -51,14 +53,14 @@ def generate_summary_from_text(text: str, language: str = 'English') -> str:
             options={"temperature": 0.0, "num_predict": 200}
         )
         summary = resp.get('message', {}).get('content', '')
-        return _guardrail_validator(summary)
+        return _guardrail_validator(summary, language)
     except Exception as e:
         logger.error(f"Ollama summarization failed: {e}", exc_info=True)
         # Fallback: return short snippet
         return (text.strip().replace('\n', ' ')[:300] + '...')
 
 
-def generate_summary_from_image(image_path: str, language: str) -> str:
+def generate_summary_from_image(image_path: str, language: str = 'en') -> str:
     """
     Analyze medical image directly using MedGemma VLM (Vision-Language Model).
     MedGemma can process images directly without needing text extraction.
@@ -67,8 +69,8 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
     try:
         system_prompt = (
             "You are a medical assistant specialized in analyzing medical images. "
-            "Describe what you see in this medical image in clear, professional language. "
-            f"Provide your response in {language}. "
+            "Describe what you see in this medical image in clear, professional English. "
+            "Provide your response in English. "
             "Do NOT diagnose or prescribe. Focus on describing visible findings and what they typically indicate. "
             "Always recommend consulting with a healthcare professional for proper diagnosis."
         )
@@ -77,8 +79,8 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
         messages = [
             {
                 "role": "user",
-                "content": "Analyze this medical image and describe the findings. What can you see?",
-                "images": [image_path]  # Pass image directly to the model
+                "content": "Analyze this medical image and describe findings. What can you see?",
+                "images": [image_path]  # Pass image directly to model
             }
         ]
 
@@ -96,7 +98,7 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
         logger.info(f"MedGemma VLM analysis completed: {analysis[:100]}...")
 
         # Apply guardrails to the response
-        return _guardrail_validator(analysis)
+        return _guardrail_validator(analysis, language)
 
     except Exception as e:
         logger.error(f"MedGemma VLM analysis failed: {e}", exc_info=True)

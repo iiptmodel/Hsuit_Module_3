@@ -241,11 +241,10 @@ async function handleTextUpload(event) {
     const button = form.querySelector('#text-submit-button');
     
     const textContent = form.querySelector('#text-content').value;
-    const language = form.querySelector('#text-language').value;
     
     const formData = new FormData();
     formData.append('text_content', textContent);
-    formData.append('language', language);
+    formData.append('language', 'en');
 
     setButtonLoading(button, true);
 
@@ -279,7 +278,6 @@ async function handleFileUpload(event) {
     const button = form.querySelector('#file-submit-button');
 
     const file = form.querySelector('#file-upload').files[0];
-    const language = form.querySelector('#file-language').value;
     
     if (!file) {
         showNotification('Please select a file.', 'error');
@@ -288,7 +286,7 @@ async function handleFileUpload(event) {
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('language', language);
+    formData.append('language', 'en');
 
     setButtonLoading(button, true);
 

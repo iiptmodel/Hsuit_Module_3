@@ -21,6 +21,8 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
+
+
 # Prohibited topics and regex patterns for safety
 PROHIBITED_PATTERNS: Dict[str, List[str]] = {
     "diagnosis": [
@@ -73,12 +75,10 @@ def is_simple_greeting(query: str) -> bool:
 
 
 def generate_greeting_response() -> str:
-    """Static friendly greeting used for simple greeting fast-path."""
-    return (
-        "Hello! I'm your MedAnalyzer Assistant. You can ask me to explain imaging, lab, or other medical reports, "
-        "summarize uploaded documents for a patient or a doctor, or clarify medical terms. "
+    """Generate a greeting response."""
+    return "Hello! I'm MedAnalyzer Assistant, ready to help you understand your medical reports., " \
+        "summarize uploaded documents for a patient or a doctor, or clarify medical terms. " \
         "Feel free to upload a PDF or image, then ask a question like: 'Explain the key findings for a patient.'"
-    )
 
 
 def validate_user_query(query: str) -> Tuple[bool, str]:
@@ -151,7 +151,8 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
     Applies guardrails after full response is received.
     """
     logger.info("Generating streaming chat response for message: %.100s...", user_message)
-
+    
+    
     # Allow simple greetings to yield a single static message (still via streaming interface)
     if is_simple_greeting(user_message):
         yield generate_greeting_response()
@@ -162,6 +163,7 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
         yield err
         return
 
+    # System prompt
     system_prompt = (
         "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results."
     )

@@ -396,7 +396,7 @@ d:\Prushal\
 - ✅ Complete API
 
 ### Planned Features
-- 🔮 Multi-language support (Spanish, Hindi)
+- 🔮 Multi-language support (Spanish)
 - 🔮 Batch processing API
 - 🔮 WebSocket real-time updates
 - 🔮 Report comparison

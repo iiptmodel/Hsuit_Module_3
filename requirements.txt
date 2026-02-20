@@ -15,3 +15,8 @@ pypdf
 pdf2image
 pytesseract
 alembic
+pyttsx3
+soundfile
+kokoro-onnx
+gTTS
+pyaudio

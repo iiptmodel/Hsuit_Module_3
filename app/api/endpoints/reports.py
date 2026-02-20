@@ -11,6 +11,7 @@ from app.api.deps import get_db
 from app.services import parser_service, summarizer_service, tts_service
 from app.utils.text_utils import sanitize_text
 from app.utils import events as events
+from app.core.config import settings
 import asyncio
 import json
 from uuid import uuid4
@@ -26,17 +27,30 @@ REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 
 
+def validate_language(language: str) -> str:
+    """Validate and normalize language code."""
+    supported_langs = [lang.strip() for lang in settings.SUPPORTED_LANGUAGES.split(',')]
+    if language not in supported_langs:
+        logger.warning(f"Unsupported language '{language}', falling back to default: {settings.DEFAULT_LANGUAGE}")
+        return settings.DEFAULT_LANGUAGE
+    return language
+
+
 @router.post("/upload-text", response_model=schemas.Report)
 async def upload_text_report(
     text_content: str = Form(...),
-    language: str = Form(...),
+    language: str = Form(settings.DEFAULT_LANGUAGE),
     chat_session_id: int = Form(None),
     db: Session = Depends(get_db),
 ):
     """
     Submits and PROCESSES a new text-based report synchronously.
     The user will wait for this endpoint to finish.
+    Supports multilingual text and voice generation.
     """
+    # Validate language
+    language = validate_language(language)
+    
     # 1. Create initial report in DB
     new_report = models.Report(
         language=language,
@@ -103,7 +117,7 @@ async def upload_text_report(
 
 @router.post("/upload-files", response_model=List[schemas.Report])
 async def upload_files_report(
-    language: str = Form(...),
+    language: str = Form(settings.DEFAULT_LANGUAGE),
     files: List[UploadFile] = File(...),
     chat_session_id: int = Form(None),
     db: Session = Depends(get_db),
@@ -113,7 +127,10 @@ async def upload_files_report(
     For images (e.g., X-rays), uses MedGemma directly.
     For documents/PDFs, extracts text with Docling then summarizes.
     The user will wait for this endpoint to finish.
+    Supports multilingual text and voice generation.
     """
+    # Validate language
+    language = validate_language(language)
 
     # 1. Save file and create initial report
     results: List[models.Report] = []
@@ -211,6 +228,17 @@ async def upload_files_report(
         results.append(new_report)
 
     return results
+
+
+@router.get("/languages")
+def get_supported_languages():
+    """Get list of supported languages for text and voice generation."""
+    from app.services.tts_service import get_supported_languages
+    return {
+        "supported_languages": get_supported_languages(),
+        "default_language": settings.DEFAULT_LANGUAGE,
+        "multilingual_enabled": settings.ENABLE_MULTILINGUAL
+    }
 
 
 @router.get("/", response_model=List[schemas.Report])
