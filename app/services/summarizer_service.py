@@ -4,6 +4,7 @@ import ollama
 from typing import List, Dict
 from app.services import parser_service
 from app.core.config import settings
+from app.services.translation_service import translation_service
 
 logger = logging.getLogger(__name__)
 
@@ -15,18 +16,33 @@ def _guardrail_validator(text: str, language: str = 'en') -> str:
     # Basic guardrail checks to avoid diagnoses, prescriptions, or casual chat
     prohibited_patterns = ['diagnos', 'prescrib', 'you have', 'take ', 'lol', 'omg']
     
-    disclaimer_text = (
-        "\n\n[Disclaimer] I can help explain findings and what they might indicate, but I cannot provide a definitive diagnosis or prescribe medications. "
-        "Please consult a qualified healthcare professional for diagnosis and treatment."
-    )
+    if language in ['hi', 'Hindi']:
+        disclaimer_text = (
+            "\n\n[अस्वीकरण] मैं निष्कर्षों को समझाने में मदद कर सकता हूँ, लेकिन मैं निश्चित निदान प्रदान नहीं कर सकता या दवाएं निर्धारित नहीं कर सकता। "
+            "कृपया निदान और उपचार के लिए एक योग्य स्वास्थ्य देखभाल पेशेवर से परामर्श लें।"
+        )
+    elif language in ['mr', 'Marathi']:
+        disclaimer_text = (
+            "\n\n[अस्वीकरण] मी निष्कर्ष समजून घेण्यास मदत करू शकतो, परंतु मी निश्चित निदान देऊ शकत नाही किंवा औषधे लिहून देऊ शकत नाही. "
+            "कृपया निदान आणि उपचारांसाठी पात्र आरोग्य सेवा व्यावसायिकाचा सल्ला घ्या."
+        )
+    else:
+        disclaimer_text = (
+            "\n\n[Disclaimer] I can help explain findings and what they might indicate, but I cannot provide a definitive diagnosis or prescribe medications. "
+            "Please consult a qualified healthcare professional for diagnosis and treatment."
+        )
     
+    text_lower = text.lower()
     for p in prohibited_patterns:
-        if p in text.lower():
+        if p in text_lower:
             logger.warning(f"Guardrail triggered for pattern: {p}")
             
             # Check if disclaimer already exists in the text
-            disclaimer_indicators = ['consult a', 'i cannot provide a definitive diagnosis']
-            if any(indicator in text.lower() for indicator in disclaimer_indicators):
+            disclaimer_indicators = [
+                'consult a', 'i cannot provide a definitive diagnosis',
+                'परामर्श लें', 'निदान प्रदान नहीं कर सकता'
+            ]
+            if any(indicator in text_lower for indicator in disclaimer_indicators):
                 return text
             return text + disclaimer_text
     return text
@@ -36,8 +52,15 @@ def generate_summary_from_text(text: str, language: str = 'en') -> str:
     """Generate a concise summary using Ollama chat model."""
     logger.info(f"Generating summary via Ollama (text length={len(text)})")
     try:
+        if language in ['hi', 'Hindi']:
+            target_lang_name = "Hindi"
+        elif language in ['mr', 'Marathi']:
+            target_lang_name = "Marathi"
+        else:
+            target_lang_name = "English"
         system_prompt = (
-            "You are a concise, professional medical assistant. Summarize the following extracted text from a medical report in English. "
+            f"You are a concise, professional medical assistant. Summarize the following extracted text from a medical report in {target_lang_name}. "
+            f"You MUST respond entirely in {target_lang_name}. "
             "Do not diagnose or prescribe. Keep it clear and patient-friendly. Aim for 2-4 short sentences suitable for a patient."
         )
 
@@ -53,11 +76,28 @@ def generate_summary_from_text(text: str, language: str = 'en') -> str:
             options={"temperature": 0.0, "num_predict": 200}
         )
         summary = resp.get('message', {}).get('content', '')
+        
+        # Translation Safety Net for Devanagari languages
+        if language in ['hi', 'Hindi', 'mr', 'Marathi']:
+            # Check if response is mostly English
+            import re
+            target_lang_code = 'mr' if language in ['mr', 'Marathi'] else 'hi'
+            english_words = len(re.findall(r'\b[a-zA-Z]{3,}\b', summary))
+            total_words = len(summary.split())
+            if total_words > 0 and english_words > total_words * 0.3:
+                logger.info(f"LLM responded in English for {target_lang_name} request, translating...")
+                summary = translation_service.translate_to_target(summary, target_lang=target_lang_code)
+
         return _guardrail_validator(summary, language)
     except Exception as e:
         logger.error(f"Ollama summarization failed: {e}", exc_info=True)
         # Fallback: return short snippet
-        return (text.strip().replace('\n', ' ')[:300] + '...')
+        fallback = (text.strip().replace('\n', ' ')[:300] + '...')
+        if language in ['hi', 'Hindi']:
+            fallback = translation_service.translate_to_target(fallback, target_lang='hi')
+        elif language in ['mr', 'Marathi']:
+            fallback = translation_service.translate_to_target(fallback, target_lang='mr')
+        return fallback
 
 
 def generate_summary_from_image(image_path: str, language: str = 'en') -> str:
@@ -67,10 +107,16 @@ def generate_summary_from_image(image_path: str, language: str = 'en') -> str:
     """
     logger.info(f"Analyzing medical image directly with MedGemma VLM: {image_path}")
     try:
+        if language in ['hi', 'Hindi']:
+            target_lang_name = "Hindi"
+        elif language in ['mr', 'Marathi']:
+            target_lang_name = "Marathi"
+        else:
+            target_lang_name = "English"
         system_prompt = (
             "You are a medical assistant specialized in analyzing medical images. "
-            "Describe what you see in this medical image in clear, professional English. "
-            "Provide your response in English. "
+            f"Describe what you see in this medical image in clear, professional {target_lang_name}. "
+            f"Provide your response entirely in {target_lang_name}. "
             "Do NOT diagnose or prescribe. Focus on describing visible findings and what they typically indicate. "
             "Always recommend consulting with a healthcare professional for proper diagnosis."
         )
@@ -96,6 +142,16 @@ def generate_summary_from_image(image_path: str, language: str = 'en') -> str:
 
         analysis = resp.get('message', {}).get('content', '')
         logger.info(f"MedGemma VLM analysis completed: {analysis[:100]}...")
+
+        # Translation Safety Net for Devanagari
+        if language in ['hi', 'Hindi', 'mr', 'Marathi']:
+            import re
+            target_lang_code = 'mr' if language in ['mr', 'Marathi'] else 'hi'
+            english_words = len(re.findall(r'\b[a-zA-Z]{3,}\b', analysis))
+            total_words = len(analysis.split())
+            if total_words > 0 and english_words > total_words * 0.3:
+                logger.info(f"VLM responded in English for {target_lang_name} request, translating...")
+                analysis = translation_service.translate_to_target(analysis, target_lang=target_lang_code)
 
         # Apply guardrails to the response
         return _guardrail_validator(analysis, language)
@@ -127,40 +183,90 @@ def generate_patient_summary_from_text(text: str, language: str = 'English') -> 
       - Avoid jargon unless briefly explained in parentheses.
     """
     logger.info(f"Generating patient summary (expanded) via Ollama (text length={len(text)})")
+    if language in ['hi', 'Hindi']:
+        target_lang_name = "Hindi"
+    elif language in ['mr', 'Marathi']:
+        target_lang_name = "Marathi"
+    else:
+        target_lang_name = "English"
     try:
-        system_prompt = (
-            f"You are a medical assistant writing a friendly, easy-to-read summary for a patient in {language}.\n\n"
-            "**Instructions:**\n"
-            "1. Start with a clear heading like '📋 Your Test Results Summary'\n"
-            "2. Extract the key test name and values from the report\n"
-            "3. Explain what the test measures in simple terms\n"
-            "4. State if the results are within normal range or not (in plain language)\n"
-            "5. Provide a brief, general explanation of what this might indicate\n"
-            "6. Give one simple health tip or next step (but NO medications)\n"
-            "7. End with a reminder to discuss with their healthcare provider\n\n"
-            "**Format Requirements:**\n"
-            "- Use short paragraphs with line breaks for readability\n"
-            "- Use bullet points (•) for lists\n"
-            "- Use emojis sparingly for visual appeal (✓ for normal, ⚠️ for attention needed)\n"
-            "- Avoid medical jargon or explain it in parentheses\n"
-            "- Be reassuring but honest\n"
-            "- NEVER diagnose or prescribe medications\n\n"
-            "**Example Format:**\n"
-            "📋 Your Test Results Summary\n\n"
-            "Test Name: [Extract from report]\n"
-            "Your Result: [Value] [Unit]\n"
-            "Normal Range: [Reference range]\n\n"
-            "What This Means:\n"
-            "[Plain language explanation of what this test measures]\n\n"
-            "Your Results:\n"
-            "✓ Your levels are within the normal range / ⚠️ Your levels are [higher/lower] than the normal range\n\n"
-            "What to Know:\n"
-            "[Brief, non-diagnostic context about what this generally indicates]\n\n"
-            "Next Steps:\n"
-            "• [Simple health tip or monitoring suggestion]\n"
-            "• Discuss these results with your healthcare provider for personalized advice\n\n"
-            "Remember: This is a simplified summary. Your doctor can provide a complete interpretation and personalized recommendations."
-        )
+        if target_lang_name == "Hindi":
+            system_prompt = (
+                "You are a medical assistant writing a friendly, easy-to-read summary for a patient in Hindi.\n"
+                "You MUST respond entirely in Hindi language (Devanagari script).\n\n"
+                "**Instructions:**\n"
+                "1. Start with a clear heading like '📋 आपके परीक्षण परिणामों का सारांश'\n"
+                "2. रिपोर्ट से मुख्य परीक्षण नाम और मान निकालें\n"
+                "3. सरल शब्दों में समझाएं कि परीक्षण क्या मापता है\n"
+                "4. बताएं कि परिणाम सामान्य सीमा के भीतर हैं या नहीं\n"
+                "5. यह क्या संकेत दे सकता है, इसका संक्षिप्त विवरण दें\n"
+                "6. एक सरल स्वास्थ्य टिप दें (लेकिन कोई दवा नहीं)\n"
+                "7. अपने डॉक्टर से चर्चा करने के लिए अनुस्मारक के साथ समाप्त करें\n\n"
+                "**Format Requirements:**\n"
+                "- Use simple Hindi, avoid complex Sanskritized words\n"
+                "- Use bullet points (•)\n"
+                "- NEVER diagnose or prescribe medications\n\n"
+                "**Example Format:**\n"
+                "📋 आपके परीक्षण परिणामों का सारांश\n\n"
+                "परीक्षण का नाम: [रिपोर्ट से]\n"
+                "आपका परिणाम: [मान] [इकाई]\n"
+                "सामान्य सीमा: [संदर्भ सीमा]\n\n"
+                "इसका क्या मतलब है:\n"
+                "[सरल भाषा में विवरण]\n\n"
+                "आपके परिणाम:\n"
+                "✓ आपके स्तर सामान्य सीमा के भीतर हैं / ⚠️ आपके स्तर सामान्य सीमा से [अधिक/कम] हैं\n\n"
+                "क्या जानना है:\n"
+                "[संक्षिप्त विवरण]\n\n"
+                "अगले कदम:\n"
+                "• [सरल टिप]\n"
+                "• व्यक्तिगत सलाह के लिए अपने डॉक्टर से बात करें"
+            )
+        elif target_lang_name == "Marathi":
+            system_prompt = (
+                "You are a medical assistant writing a friendly, easy-to-read summary for a patient in Marathi.\n"
+                "You MUST respond entirely in Marathi language (Devanagari script).\n\n"
+                "**Instructions:**\n"
+                "1. Start with a clear heading like '📋 तुमच्या चाचणी निकालांचा सारांश'\n"
+                "2. Extract key test names and values from the report\n"
+                "3. Explain what the test measures in simple Marathi\n"
+                "4. State if results are normal or not\n"
+                "5. Provide a simple health tip and a reminder to see a doctor\n\n"
+                "Format as a clear bulleted list."
+            )
+        else:
+            system_prompt = (
+                f"You are a medical assistant writing a friendly, easy-to-read summary for a patient in {target_lang_name}.\n\n"
+                "**Instructions:**\n"
+                "1. Start with a clear heading like '📋 Your Test Results Summary'\n"
+                "2. Extract the key test name and values from the report\n"
+                "3. Explain what the test measures in simple terms\n"
+                "4. State if the results are within normal range or not (in plain language)\n"
+                "5. Provide a brief, general explanation of what this might indicate\n"
+                "6. Give one simple health tip or next step (but NO medications)\n"
+                "7. End with a reminder to discuss with their healthcare provider\n\n"
+                "**Format Requirements:**\n"
+                "- Use short paragraphs with line breaks for readability\n"
+                "- Use bullet points (•) for lists\n"
+                "- Use emojis sparingly for visual appeal (✓ for normal, ⚠️ for attention needed)\n"
+                "- Avoid medical jargon or explain it in parentheses\n"
+                "- Be reassuring but honest\n"
+                "- NEVER diagnose or prescribe medications\n\n"
+                "**Example Format:**\n"
+                "📋 Your Test Results Summary\n\n"
+                "Test Name: [Extract from report]\n"
+                "Your Result: [Value] [Unit]\n"
+                "Normal Range: [Reference range]\n\n"
+                "What This Means:\n"
+                "[Plain language explanation of what this test measures]\n\n"
+                "Your Results:\n"
+                "✓ Your levels are within the normal range / ⚠️ Your levels are [higher/lower] than the normal range\n\n"
+                "What to Know:\n"
+                "[Brief, non-diagnostic context about what this generally indicates]\n\n"
+                "Next Steps:\n"
+                "• [Simple health tip or monitoring suggestion]\n"
+                "• Discuss these results with your healthcare provider for personalized advice\n\n"
+                "Remember: This is a simplified summary. Your doctor can provide a complete interpretation and personalized recommendations."
+            )
 
         messages = [
             {"role": "system", "content": system_prompt},
@@ -175,7 +281,18 @@ def generate_patient_summary_from_text(text: str, language: str = 'English') -> 
         )
 
         summary = resp.get('message', {}).get('content', '')
-        return _guardrail_validator(summary.strip())
+        
+        # Translation Safety Net for Devanagari
+        if language in ['hi', 'Hindi', 'mr', 'Marathi']:
+            import re
+            target_lang_code = 'mr' if language in ['mr', 'Marathi'] else 'hi'
+            english_words = len(re.findall(r'\b[a-zA-Z]{3,}\b', summary))
+            total_words = len(summary.split())
+            if total_words > 0 and english_words > total_words * 0.3:
+                logger.info(f"LLM patient summary in English, translating to {target_lang_name}...")
+                summary = translation_service.translate_to_target(summary, target_lang=target_lang_code)
+
+        return _guardrail_validator(summary.strip(), language)
     except Exception as e:
         logger.error(f"Expanded patient summary generation failed: {e}", exc_info=True)
         return generate_summary_from_text(text, language)
@@ -200,9 +317,16 @@ def generate_detailed_report_from_text(text: str, language: str = 'English') -> 
       - If reference ranges appear, format: VALUE (Ref: X–Y).
     """
     logger.info(f"Generating expanded clinician report via Ollama (text length={len(text)})")
+    if language in ['hi', 'Hindi']:
+        target_lang_name = "Hindi"
+    elif language in ['mr', 'Marathi']:
+        target_lang_name = "Marathi"
+    else:
+        target_lang_name = "English"
     try:
         system_prompt = (
-            f"You are an advanced clinical decision support assistant creating a comprehensive, structured medical report for healthcare professionals in {language}.\n\n"
+            f"You are an advanced clinical decision support assistant creating a comprehensive, structured medical report for healthcare professionals in {target_lang_name}.\n\n"
+            f"You MUST respond entirely in {target_lang_name}. "
             
             "**CRITICAL INSTRUCTIONS:**\n"
             "You MUST create a detailed, well-structured report using the EXACT format and sections below. Each section is MANDATORY.\n\n"
@@ -336,7 +460,18 @@ def generate_detailed_report_from_text(text: str, language: str = 'English') -> 
         )
 
         report = resp.get('message', {}).get('content', '')
-        return _guardrail_validator(report)
+        
+        # Translation Safety Net for Devanagari
+        if language in ['hi', 'Hindi', 'mr', 'Marathi']:
+            import re
+            target_lang_code = 'mr' if language in ['mr', 'Marathi'] else 'hi'
+            english_words = len(re.findall(r'\b[a-zA-Z]{3,}\b', report))
+            total_words = len(report.split())
+            if total_words > 0 and english_words > total_words * 0.3:
+                logger.info(f"LLM clinician report in English, translating to {target_lang_name}...")
+                report = translation_service.translate_to_target(report, target_lang=target_lang_code)
+
+        return _guardrail_validator(report, language)
     except Exception as e:
         logger.error(f"Expanded clinician report generation failed: {e}", exc_info=True)
         return generate_summary_from_text(text, language)

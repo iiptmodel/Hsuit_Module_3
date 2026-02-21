@@ -24,6 +24,7 @@ let uploadedFiles;
 let clearChatBtn;
 let sessionTitle;
 let audienceSelect;
+let languageSelect;
 let themeToggleBtn;
 let filesToggleBtn;
 let filesPanel;
@@ -64,6 +65,7 @@ function initDomElements() {
     clearChatBtn = document.getElementById('clearChatBtn');
     sessionTitle = document.getElementById('sessionTitle');
     audienceSelect = document.getElementById('audienceSelect');
+    languageSelect = document.getElementById('languageSelect');
     themeToggleBtn = document.getElementById('themeToggleBtn');
     filesToggleBtn = document.getElementById('filesToggleBtn');
     filesPanel = document.getElementById('filesPanel');
@@ -79,28 +81,28 @@ function setupEventListeners() {
     // New session buttons
     newSessionBtn.addEventListener('click', createNewSession);
     quickStartBtn.addEventListener('click', createNewSession);
-    
+
     // Message input
     messageInput.addEventListener('input', () => {
         adjustTextareaHeight();
         updateSendButtonState();
     });
-    
+
     messageInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     });
-    
+
     // Send button
     sendBtn.addEventListener('click', sendMessage);
-    
+
     // File attachment
     attachBtn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', handleFileSelect);
     if (fileChipRemove) fileChipRemove.addEventListener('click', () => clearUploadedFile());
-    
+
     // Clear chat
     clearChatBtn.addEventListener('click', clearCurrentSession);
 
@@ -157,14 +159,14 @@ function toggleTheme() {
     const current = document.documentElement.getAttribute('data-theme');
     if (current === 'dark') {
         document.documentElement.removeAttribute('data-theme');
-        try { localStorage.setItem('app-theme', 'light'); } catch (e) {}
+        try { localStorage.setItem('app-theme', 'light'); } catch (e) { }
         if (themeToggleBtn) {
             themeToggleBtn.setAttribute('aria-pressed', 'false');
             themeToggleBtn.classList.remove('is-dark');
         }
     } else {
         document.documentElement.setAttribute('data-theme', 'dark');
-        try { localStorage.setItem('app-theme', 'dark'); } catch (e) {}
+        try { localStorage.setItem('app-theme', 'dark'); } catch (e) { }
         if (themeToggleBtn) {
             themeToggleBtn.setAttribute('aria-pressed', 'true');
             themeToggleBtn.classList.add('is-dark');
@@ -207,9 +209,9 @@ async function loadSessions() {
     try {
         const response = await fetch('/api/v1/chat/sessions');
         const sessions = await response.json();
-        
+
         sessionList.innerHTML = '';
-        
+
         if (sessions.length === 0) {
             sessionList.innerHTML = `
                 <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
@@ -219,12 +221,12 @@ async function loadSessions() {
             `;
             return;
         }
-        
+
         sessions.forEach(session => {
             const sessionEl = createSessionElement(session);
             sessionList.appendChild(sessionEl);
         });
-        
+
     } catch (error) {
         console.error('Error loading sessions:', error);
         showError('Failed to load chat sessions');
@@ -237,21 +239,21 @@ function createSessionElement(session) {
     if (session.id === currentSessionId) {
         div.classList.add('active');
     }
-    
+
     const title = session.title || 'New Chat';
-    const preview = session.messages && session.messages.length > 0 
+    const preview = session.messages && session.messages.length > 0
         ? session.messages[session.messages.length - 1].content.substring(0, 50) + '...'
         : 'No messages yet';
     const time = new Date(session.created_at).toLocaleString();
-    
+
     div.innerHTML = `
         <div class="session-title">${title}</div>
         <div class="session-preview">${preview}</div>
         <div class="session-time">${time}</div>
     `;
-    
+
     div.addEventListener('click', () => loadSession(session.id));
-    
+
     return div;
 }
 
@@ -262,22 +264,22 @@ async function createNewSession() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title: 'New Medical Analysis Chat' })
         });
-        
+
         const session = await response.json();
         currentSessionId = session.id;
-        
+
         // Update UI
         welcomeScreen.style.display = 'none';
         chatScreen.style.display = 'flex';
         messagesContainer.innerHTML = '';
         sessionTitle.textContent = session.title;
-    // Open websocket for realtime updates for this session
-    setupWebsocket(currentSessionId);
-        
+        // Open websocket for realtime updates for this session
+        setupWebsocket(currentSessionId);
+
         // Reload sessions list
         loadSessions();
         loadStats();
-        
+
     } catch (error) {
         console.error('Error creating session:', error);
         showError('Failed to create new chat session');
@@ -288,16 +290,16 @@ async function loadSession(sessionId) {
     try {
         const response = await fetch(`/api/v1/chat/sessions/${sessionId}`);
         const session = await response.json();
-        
+
         currentSessionId = sessionId;
-            // update currentSessionId and UI
-            currentSessionId = sessionId;
-            if (session.title) sessionTitle.textContent = session.title;
-        
+        // update currentSessionId and UI
+        currentSessionId = sessionId;
+        if (session.title) sessionTitle.textContent = session.title;
+
         // Show chat screen
         welcomeScreen.style.display = 'none';
         chatScreen.style.display = 'flex';
-        
+
         // Load messages
         messagesContainer.innerHTML = '';
         if (session.messages && session.messages.length > 0) {
@@ -307,28 +309,30 @@ async function loadSession(sessionId) {
         if (typeof renderReports === 'function') {
             renderReports(session.reports || []);
         }
-        
+
         // Update session list
         loadSessions();
-        
+
         // Scroll to bottom
         scrollToBottom();
-    // Open websocket for realtime updates for this session
-    setupWebsocket(currentSessionId);
+        // Open websocket for realtime updates for this session
+        setupWebsocket(currentSessionId);
 
-    // Heuristic: if the latest assistant message may still be streaming, start a short polling fallback
-    try {
-        const lastMsg = (session.messages || []).slice(-1)[0];
-        if (lastMsg && lastMsg.role === 'assistant') {
-            // Initialize stream state if not present
-            streamState[lastMsg.id] = streamState[lastMsg.id] || { lastText: lastMsg.content || '', final: false };
-            // Poll for a brief window to catch up if we refreshed mid-stream
-            startMessagePollFallback(lastMsg.id, 10000, 1000);
+        // Heuristic: if the latest assistant message may still be streaming, start a short polling fallback
+        try {
+            const lastMsg = (session.messages || []).slice(-1)[0];
+            if (lastMsg && lastMsg.role === 'assistant') {
+                // Initialize stream state if not present
+                streamState[lastMsg.id] = streamState[lastMsg.id] || { lastText: lastMsg.content || '', final: false };
+                // ONLY start poll fallback if we don't have an active websocket or it's closed
+                if (!sessionSocket || sessionSocket.readyState !== WebSocket.OPEN) {
+                    startMessagePollFallback(lastMsg.id, 10000, 1000);
+                }
+            }
+        } catch (e) {
+            // ignore
         }
-    } catch (e) {
-        // ignore
-    }
-        
+
     } catch (error) {
         console.error('Error loading session:', error);
         showError('Failed to load chat session');
@@ -337,20 +341,20 @@ async function loadSession(sessionId) {
 
 async function clearCurrentSession() {
     if (!currentSessionId) return;
-    
+
     if (!confirm('Are you sure you want to delete this chat session?')) return;
-    
+
     try {
         await fetch(`/api/v1/chat/sessions/${currentSessionId}`, {
             method: 'DELETE'
         });
-        
+
         currentSessionId = null;
         welcomeScreen.style.display = 'flex';
         chatScreen.style.display = 'none';
         loadSessions();
         loadStats();
-        
+
     } catch (error) {
         console.error('Error deleting session:', error);
         showError('Failed to delete chat session');
@@ -364,17 +368,17 @@ async function sendMessage() {
     }
     // Make sure websocket is up before sending to maximize chance to receive early deltas
     ensureWebsocketForCurrentSession();
-    
+
     const content = messageInput.value.trim();
-    
+
     if (!content && !uploadedFile) {
         return;
     }
-    
+
     // Disable input
     sendBtn.disabled = true;
     messageInput.disabled = true;
-    
+
     try {
         // Create FormData for multipart upload
         const formData = new FormData();
@@ -382,13 +386,14 @@ async function sendMessage() {
         // Append audience (patient/doctor)
         const audience = audienceSelect ? audienceSelect.value : 'patient';
         formData.append('audience', audience);
-        // Append language (always 'en' now)
-        formData.append('language', 'en');
-        
+        // Append language from dropdown
+        const language = languageSelect ? languageSelect.value : 'en';
+        formData.append('language', language);
+
         if (uploadedFile) {
             formData.append('file', uploadedFile);
         }
-        
+
         // Display user message immediately
         const userMsg = {
             role: 'user',
@@ -396,26 +401,26 @@ async function sendMessage() {
             created_at: new Date().toISOString()
         };
         displayMessage(userMsg);
-        
+
         // Clear input
         messageInput.value = '';
         clearUploadedFile();
         adjustTextareaHeight();
-        
+
         // Show typing indicator
         showTypingIndicator();
-        
+
         // Send message
         const response = await fetch(`/api/v1/chat/sessions/${currentSessionId}/messages`, {
             method: 'POST',
             body: formData
         });
-        
-    const aiMessage = await response.json();
-        
+
+        const aiMessage = await response.json();
+
         // Remove typing indicator
         removeTypingIndicator();
-        
+
         // Display AI response if websocket didn't render it (DOM absence check), regardless of socket state
         const maybeExisting = messagesContainer.querySelector(`[data-message-id='${aiMessage.id}']`);
         if (!maybeExisting) {
@@ -425,11 +430,11 @@ async function sendMessage() {
         // Mark stream state as final if server already finished
         streamState[aiMessage.id] = streamState[aiMessage.id] || { lastText: '', final: true };
         streamState[aiMessage.id].final = true;
-        
+
         // Update stats
         loadStats();
         loadSessions();
-        
+
     } catch (error) {
         console.error('Error sending message:', error);
         removeTypingIndicator();
@@ -464,7 +469,7 @@ function displayMessage(message) {
     // If this is a user message starting with a paperclip line, render a compact attachment card
     if (message.role === 'user' && typeof message.content === 'string' && message.content.startsWith('📎')) {
         const firstLine = message.content.split('\n')[0];
-        const rawName = firstLine.replace('📎','').trim();
+        const rawName = firstLine.replace('📎', '').trim();
         const cleanName = sanitizeFilename(rawName);
         const card = `<div class=\"attachment-card\">📎 <span class=\"attachment-name\" title=\"${cleanName}\">${truncateFilename(cleanName)}</span></div>`;
         const rest = message.content.split('\n').slice(2).join('\n');
@@ -580,7 +585,7 @@ function setupWebsocket(sessionId) {
         // keepalive ping every 25s so server receive loop stays healthy through proxies
         if (sessionSocketPing) clearInterval(sessionSocketPing);
         sessionSocketPing = setInterval(() => {
-            try { sessionSocket && sessionSocket.readyState === WebSocket.OPEN && sessionSocket.send('ping'); } catch (_) {}
+            try { sessionSocket && sessionSocket.readyState === WebSocket.OPEN && sessionSocket.send('ping'); } catch (_) { }
         }, 25000);
     };
 
@@ -606,7 +611,7 @@ function setupWebsocket(sessionId) {
         if (currentSessionId !== sessionId || event.wasClean) return;
         wsRetryAttempts = Math.min(wsRetryAttempts + 1, 6);
         const backoff = Math.min(30000, 1000 * Math.pow(2, wsRetryAttempts));
-        console.info(`Reconnecting WebSocket in ${Math.round(backoff/1000)}s (attempt ${wsRetryAttempts})...`);
+        console.info(`Reconnecting WebSocket in ${Math.round(backoff / 1000)}s (attempt ${wsRetryAttempts})...`);
         setTimeout(() => { if (currentSessionId === sessionId) setupWebsocket(sessionId); }, backoff);
     };
 
@@ -636,90 +641,109 @@ function handleAudioReady(payload) {
                 scrollToBottom();
             }
         } else {
-            // If message element not found, optionally reload messages for the session
-            // Fallback: reload session messages to pick up audio path
-            loadSession(currentSessionId);
+            // If message element not found, we don't reload as it interrupts media playback.
+            // Client will catch up eventually or user can manual reload.
+            logger.debug('handleAudioReady: message element not found', messageId);
         }
     } catch (e) {
         console.error('Failed to handle audio_ready websocket message', e);
     }
 }
-        function handleAssistantInit(payload) {
-            try {
-                const existing = messagesContainer.querySelector(`[data-message-id='${payload.message_id}']`);
-                if (existing) return; // already present
-
-                const msg = {
-                    id: payload.message_id,
-                    role: 'assistant',
-                    content: payload.content || '',
-                    created_at: new Date().toISOString()
-                };
-                displayMessage(msg);
-                streamState[payload.message_id] = { lastText: payload.content || '', final: false };
-            } catch (e) {
-                console.error('Failed to handle assistant_init', e);
-            }
+function handleAssistantInit(payload) {
+    try {
+        const existing = messagesContainer.querySelector(`[data-message-id='${payload.message_id}']`);
+        if (existing) {
+            removeTypingIndicator();
+            return;
         }
 
-        function handleAssistantDelta(payload) {
-            try {
-                const messageId = payload.message_id;
-                const content = payload.content || '';
-                const msgEl = messagesContainer.querySelector(`[data-message-id='${messageId}']`);
-                if (msgEl) {
-                    const contentEl = msgEl.querySelector('.message-content');
-                    if (contentEl) {
-                        // Incremental update: append only the new tail to avoid flicker
-                        const st = streamState[messageId] = streamState[messageId] || { lastText: '', final: false };
-                        const prev = st.lastText || '';
-                        let newTail = '';
-                        if (content.startsWith(prev)) {
-                            newTail = content.slice(prev.length);
-                        } else {
-                            // Fallback: server sent full text but prefix mismatch, replace fully
-                            newTail = null;
-                        }
+        // Always ensure typing indicator is gone when starting a real message
+        removeTypingIndicator();
 
-                        const timeEl = contentEl.querySelector('.message-time');
-                        const existingAudio = contentEl.querySelector('.message-audio');
-                        if (newTail !== null) {
-                            // Find the text container (everything before audio/time)
-                            const shadow = document.createElement('div');
-                            shadow.innerHTML = formatMessageContent(newTail);
-                            // Insert before audio/time
-                            if (timeEl) contentEl.insertBefore(shadow, timeEl);
-                            else contentEl.appendChild(shadow);
-                        } else {
-                            // Replace content fully if divergence detected
-                            const audioHtml = existingAudio ? existingAudio.outerHTML : '';
-                            contentEl.innerHTML = formatMessageContent(content) + audioHtml + (timeEl ? timeEl.outerHTML : '');
-                        }
-                        st.lastText = content;
-                        if (payload.final) {
-                            st.final = true;
-                            // add completion indicator once
-                            const existingIndicator = contentEl.querySelector('.completion-indicator');
-                            if (!existingIndicator) {
-                                const doneEl = document.createElement('div');
-                                doneEl.className = 'completion-indicator';
-                                doneEl.textContent = '✓ complete';
-                                contentEl.appendChild(doneEl);
-                            }
-                        }
-                        scrollToBottom();
-                    }
+        const msg = {
+            id: payload.message_id,
+            role: 'assistant',
+            content: payload.content || '',
+            created_at: new Date().toISOString()
+        };
+        displayMessage(msg);
+        streamState[payload.message_id] = { lastText: payload.content || '', final: false };
+    } catch (e) {
+        console.error('Failed to handle assistant_init', e);
+    }
+}
+
+function handleAssistantDelta(payload) {
+    try {
+        const messageId = payload.message_id;
+        const content = payload.content || '';
+
+        // Safety: remove typing indicator if it's still there when deltas arrive
+        removeTypingIndicator();
+
+        const msgEl = messagesContainer.querySelector(`[data-message-id='${messageId}']`);
+        if (msgEl) {
+            const contentEl = msgEl.querySelector('.message-content');
+            if (contentEl) {
+                // Incremental update: append only the new tail to avoid flicker
+                const st = streamState[messageId] = streamState[messageId] || { lastText: '', final: false };
+                const prev = st.lastText || '';
+                let newTail = '';
+                if (content.startsWith(prev)) {
+                    newTail = content.slice(prev.length);
                 } else {
-                    // If not present, reload session to pick up the message
-                    loadSession(currentSessionId);
+                    // Fallback: server sent full text but prefix mismatch, replace fully
+                    newTail = null;
                 }
-            } catch (e) {
-                console.error('Failed to handle assistant_delta', e);
+
+                const timeEl = contentEl.querySelector('.message-time');
+                const existingAudio = contentEl.querySelector('.message-audio');
+                if (newTail !== null && newTail !== '') {
+                    // Find the text container (everything before audio/time)
+                    // We replace the WHOLE content to ensure markdown renders correctly for the full context
+                    const audioHtml = existingAudio ? existingAudio.outerHTML : '';
+                    contentEl.innerHTML = formatMessageContent(content) + audioHtml + (timeEl ? timeEl.outerHTML : '');
+                } else if (newTail === null) {
+                    // Replace content fully if divergence detected
+                    const audioHtml = existingAudio ? existingAudio.outerHTML : '';
+                    contentEl.innerHTML = formatMessageContent(content) + audioHtml + (timeEl ? timeEl.outerHTML : '');
+                }
+                st.lastText = content;
+                if (payload.final) {
+                    st.final = true;
+                    // add completion indicator once
+                    const existingIndicator = contentEl.querySelector('.completion-indicator');
+                    if (!existingIndicator) {
+                        const doneEl = document.createElement('div');
+                        doneEl.className = 'completion-indicator';
+                        doneEl.textContent = '✓ complete';
+                        contentEl.appendChild(doneEl);
+                    }
+                }
+                scrollToBottom();
             }
+        } else {
+            // Removed automatic loadSession here to prevent audio interruption
+            console.debug('handleAssistantDelta: message element not found', messageId);
         }
+    } catch (e) {
+        console.error('Failed to handle assistant_delta', e);
+    }
+}
 
 function formatMessageContent(content) {
-    // Convert line breaks to <br>
+    if (!content) return '';
+
+    // Check if marked is available (added via CDN)
+    if (typeof marked !== 'undefined' && typeof marked.parse === 'function') {
+        try {
+            return marked.parse(content);
+        } catch (e) {
+            console.warn('Marked parsing failed', e);
+        }
+    }
+
+    // Fallback if marked is not loaded
     return content.replace(/\n/g, '<br>');
 }
 
@@ -760,9 +784,9 @@ function looksLikeBinary(text) {
     const lowered = text.toLowerCase();
     if (lowered.includes('%pdf') || lowered.includes('endstream') || lowered.includes('%%eof') || lowered.includes('startxref')) return true;
     // Only treat as binary if both: (a) substantial length and (b) high ratio of control/non-printable chars.
-    // This avoids flagging short messages that include emoji or a few non-ASCII characters (like a paperclip).
+    // We include Devanagari range (\u0900-\u097F) in the "printable" category for this check.
     if (text.length > 200) {
-        const nonPrintable = (text.match(/[^\x20-\x7E\r\n\t]/g) || []).length;
+        const nonPrintable = (text.match(/[^\x20-\x7E\r\n\t\u0900-\u097F]/g) || []).length;
         if (nonPrintable / Math.max(1, text.length) > 0.3) return true;
     }
     return false;
@@ -785,9 +809,11 @@ function truncateFilename(name, maxLen = 60) {
 
 function showTypingIndicator() {
     const div = document.createElement('div');
+    if (document.getElementById('typingIndicator')) return;
+
     div.className = 'message assistant typing-indicator-message';
     div.id = 'typingIndicator';
-    
+
     div.innerHTML = `
         <div class="message-avatar">🤖</div>
         <div class="message-content">
@@ -798,7 +824,7 @@ function showTypingIndicator() {
             </div>
         </div>
     `;
-    
+
     messagesContainer.appendChild(div);
     scrollToBottom();
 }
@@ -814,7 +840,7 @@ function removeTypingIndicator() {
 function handleFileSelect(e) {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     // Validate file type (allow images, documents and common audio formats)
     const validTypes = [
         'application/pdf',
@@ -825,13 +851,13 @@ function handleFileSelect(e) {
         showError('Please upload a PDF, image file (PNG, JPG, BMP, TIFF) or audio (WAV/MP3/OGG)');
         return;
     }
-    
+
     // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
         showError('File size must be less than 10MB');
         return;
     }
-    
+
     uploadedFile = file;
     displayUploadedFile(file);
     updateSendButtonState();
@@ -908,12 +934,12 @@ async function loadStats() {
         const reportsResponse = await fetch('/api/v1/reports/');
         const reports = await reportsResponse.json();
         totalReportsEl.textContent = reports.length || 0;
-        
+
         // Load chats count
         const chatsResponse = await fetch('/api/v1/chat/sessions');
         const chats = await chatsResponse.json();
         totalChatsEl.textContent = chats.length || 0;
-        
+
     } catch (error) {
         console.error('Error loading stats:', error);
     }
@@ -966,9 +992,9 @@ function renderReports(reports) {
         left.style.alignItems = 'center';
         left.style.gap = '0.75rem';
 
-    const icon = document.createElement('div');
-    icon.className = 'file-icon';
-    icon.textContent = r.report_type && r.report_type === 'image' ? '🖼️' : '📄';
+        const icon = document.createElement('div');
+        icon.className = 'file-icon';
+        icon.textContent = r.report_type && r.report_type === 'image' ? '🖼️' : '📄';
 
         const info = document.createElement('div');
         info.style.display = 'flex';
@@ -978,7 +1004,7 @@ function renderReports(reports) {
         try {
             const m = fname && fname.match(/^[0-9a-fA-F]{32}_(.+)$/);
             if (m) fname = m[1];
-        } catch (e) {}
+        } catch (e) { }
         name.textContent = fname;
         name.style.fontWeight = '600';
         name.style.whiteSpace = 'nowrap';
@@ -1110,7 +1136,7 @@ function closeFilesPanel() {
     releaseFocusTrap();
     try {
         if (previousActiveElement && typeof previousActiveElement.focus === 'function') previousActiveElement.focus();
-    } catch (e) {}
+    } catch (e) { }
     // Announce to screen readers
     announceA11y('Files panel closed');
 }

@@ -16,6 +16,7 @@ import ollama
 
 from app.services.ollama_client import chat_with_retries, is_ollama_reachable
 from app.core.config import settings
+from app.services.translation_service import translation_service
 
 
 logger = logging.getLogger(__name__)
@@ -145,141 +146,295 @@ def apply_response_guardrails(response: str) -> str:
 
     return response
 
-async def generate_chat_response_streaming(user_message: str, image_path: str = None):
-    """Generate a chat response using Ollama streaming API, yielding tokens in real-time.
+# In generate_chat_response_streaming function, replace the translation logic:
 
-    Applies guardrails after full response is received.
-    """
-    logger.info("Generating streaming chat response for message: %.100s...", user_message)
+async def generate_chat_response_streaming(user_message: str, history: List[Dict[str, str]] = None, image_path: str = None, target_language: str = 'en'):
+    """Generate streaming chat response with proper multilingual support and history."""
+    logger.info(f"Streaming response for: {user_message[:50]}..., target_language: {target_language}")
     
+    # STEP 1: Always translate user message to English for AI processing
+    # (LLaMA works best with English, especially for medical terms)
+    processed_message = user_message
     
-    # Allow simple greetings to yield a single static message (still via streaming interface)
-    if is_simple_greeting(user_message):
-        yield generate_greeting_response()
+    detected_lang = translation_service.detect_language(user_message)
+    if detected_lang in ['hi', 'mr']:
+        # User wrote in Hindi or Marathi, translate to English for AI
+        processed_message = translation_service.translate_to_english(user_message)
+        logger.info(f"Translated {detected_lang} input to English: {processed_message[:50]}...")
+        # If user wrote in English, keep as-is for AI but we'll translate output later
+    
+    # Handle greetings with proper language
+    if is_simple_greeting(processed_message):
+        greeting_response = generate_greeting_response()
+        if target_language in ['hi', 'mr']:
+            greeting_response = translation_service.translate_to_target(greeting_response, target_lang=target_language)
+        yield greeting_response
         return
 
-    is_valid, err = validate_user_query(user_message)
+    # Validate query (in English)
+    is_valid, err = validate_user_query(processed_message)
     if not is_valid:
+        if target_language in ['hi', 'mr']:
+            err = translation_service.translate_to_target(err, target_lang=target_language)
         yield err
         return
 
-    # System prompt
-    system_prompt = (
-        "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results."
-    )
+    # STEP 2: Create system prompt that instructs AI to respond in target language
+    if target_language == 'hi':
+        system_prompt = (
+            "You are MedAnalyzer Assistant (मेडएनालाइजर असिस्टेंट), a professional medical information assistant. "
+            "You MUST respond ENTIRELY in Hindi language (Devanagari script). "
+            "Use clear, professional Hindi. Do NOT use English words like 'felt', 'risk', 'important' etc. in the middle of Hindi sentences. "
+            "Translate them naturally: 'महसूस' for 'felt', 'जोखिम' for 'risk', 'महत्वपूर्ण' for 'important'. "
+            "Format your response with proper Markdown headings and bullet points. "
+            "For medical terms, you MAY include the English term in parentheses after the Hindi term, e.g., 'मधुमेह (Diabetes)'. "
+            "Do NOT include meta-comments like '(Continuation)' or 'Still searching'. "
+            "Respond only with the requested information."
+        )
+    elif target_language == 'mr':
+        system_prompt = (
+            "You are MedAnalyzer Assistant (मेडएनालाइजर असिस्टंट), a professional medical information assistant. "
+            "You MUST respond ENTIRELY in Marathi language (Devanagari script). "
+            "Use clear, professional Marathi. Do NOT use English words in the middle of Marathi sentences. "
+            "Translate them naturally: 'वाटले' for 'felt', 'धोका' for 'risk', 'महत्वाचे' for 'important'. "
+            "Format your response with proper Markdown headings and bullet points. "
+            "For medical terms, you MAY include the English term in parentheses after the Marathi term, e.g., 'मधुमेह (Diabetes)'. "
+            "Do NOT include meta-comments and respond only with information."
+        )
+    else:
+        system_prompt = (
+            "You are MedAnalyzer Assistant, a professional medical information assistant "
+            "specialized in helping patients understand their medical reports and test results. "
+            "Respond in clear, professional English."
+        )
+
+    # Detect if user is switching languages from previous context
+    if history and len(history) > 0:
+        last_asst_msg = next((m for m in reversed(history) if m.get('role') == 'assistant'), None)
+        if last_asst_msg:
+            last_content = last_asst_msg.get('content', '')
+            last_lang = translation_service.detect_language(last_content)
+            # If previous was Devanagari (hi/mr) and we are now in something else, or vice-versa
+            if last_lang != target_language and target_language in ['hi', 'mr']:
+                lang_name = "Hindi" if target_language == 'hi' else "Marathi"
+                # More aggressive instruction for language switch
+                system_prompt += f"\n\nCRITICAL: The user has explicitly switched from {last_lang} to {lang_name}. "
+                system_prompt += f"You MUST ignore the language of the previous history and respond ONLY in {lang_name}. "
+                system_prompt += f"Even if the history is in {last_lang}, your new response must be 100% {lang_name}."
 
     messages: List[Dict[str, Any]] = [{"role": "system", "content": system_prompt}]
+    
+    # STEP 3: Add history (limit to last 10 messages)
+    if history:
+        for msg in history[-10:]:
+            role = msg.get('role')
+            content = msg.get('content', '')
+            if role and content:
+                # Clean up content for the AI
+                # 1. Remove file attachment markers
+                clean_content = re.sub(r'📎 .*\n\n', '', content)
+                # 2. If it's a dual-language message, extract only the part matching user's likely preferred view
+                # If we are in Hindi mode, and there's a translation, the Hindi part is better context.
+                if "[अनुवाद / Translation]:" in clean_content:
+                    parts = clean_content.split("[अनुवाद / Translation]:")
+                    clean_content = parts[-1].strip()
+                messages.append({"role": role, "content": clean_content})
 
     if image_path:
-        messages.append({"role": "user", "content": user_message, "images": [image_path]})
+        messages.append({"role": "user", "content": processed_message, "images": [image_path]})
     else:
-        messages.append({"role": "user", "content": user_message})
+        messages.append({"role": "user", "content": processed_message})
 
     try:
-        # Preflight check: ensure model backend is reachable to avoid streaming exceptions
         if not is_ollama_reachable(timeout=0.8):
-            logger.warning("Ollama not reachable for streaming; returning friendly notice")
-            yield "The AI engine is temporarily unavailable for streaming responses. Please try again shortly."
+            logger.warning("Ollama not reachable for streaming")
+            error_msg = "The AI engine is temporarily unavailable. Please try again shortly."
+            if target_language in ['hi', 'mr']:
+                error_msg = translation_service.translate_to_target(error_msg, target_lang=target_language)
+            yield error_msg
             return
 
         logger.info("Calling Ollama streaming chat...")
-        # Use ollama.chat with stream=True
         stream = ollama.chat(
             model=settings.MODEL_NAME,
             messages=messages,
-            options={"temperature": 0.7, "top_p": 0.9, "num_predict": 300},
+            options={"temperature": 0.7, "top_p": 0.9, "num_predict": 800},
             stream=True
         )
 
         full_response = ""
         chunk_buffer = ""
-        chunk_size = 10  # Yield every 10 tokens or at sentence end
+        
+        # Stream the response
         for chunk in stream:
             token = chunk['message']['content']
             full_response += token
             chunk_buffer += token
 
-            # Yield chunk if buffer reaches size or ends with sentence punctuation
-            if len(chunk_buffer.split()) >= chunk_size or chunk_buffer.strip().endswith(('.', '!', '?')):
+            # Yield chunks for real-time display
+            if len(chunk_buffer.split()) >= 8 or chunk_buffer.strip().endswith(('.', '!', '?', '।')):
                 yield chunk_buffer
                 chunk_buffer = ""
 
-        # Yield any remaining buffer
+        # Yield remaining buffer
         if chunk_buffer:
             yield chunk_buffer
 
-        # After streaming, apply guardrails to full response
+        # Apply guardrails (check the English version if we need to validate)
         validated = apply_response_guardrails(full_response)
+        
+        # If guardrails modified the response, yield the difference
         if validated != full_response:
-            # If guardrails modified the response, yield the difference or handle accordingly
             yield validated[len(full_response):]
+            full_response = validated
 
-        logger.info("Streaming chat response completed and validated")
+        # STEP 4: If target is Hindi but AI responded in English, translate the full response
+        # (This is a safety net - the system prompt should make AI respond in Hindi,
+        # but LLaMA 3:8b might not always follow instructions perfectly)
+        if target_language in ['hi', 'mr']:
+            # Check if response is mostly English or mismatch (e.g. Hindi when Marathi requested)
+            english_words = len(re.findall(r'\b[a-zA-Z]{4,}\b', full_response))
+            total_words = len(full_response.split())
+            
+            detected_out_lang = translation_service.detect_language(full_response)
+            
+            # Trigger translation if:
+            # 1. Mostly English
+            # 2. Target is Marathi but detected Hindi (or vice versa)
+            needs_translation = False
+            if total_words > 5 and english_words > total_words * 0.35:
+                needs_translation = True
+            elif target_language == 'mr' and detected_out_lang == 'hi':
+                # Target is Marathi but detected Hindi (now smarter detection)
+                needs_translation = True
+            elif target_language == 'hi' and detected_out_lang == 'mr':
+                # Target is Hindi but detected Marathi
+                needs_translation = True
+
+            if needs_translation:
+                lang_name = "Hindi" if target_language == 'hi' else "Marathi"
+                logger.info(f"AI response language mismatch for {target_language} (detected {detected_out_lang}), translating to {lang_name}...")
+                target_response = translation_service.translate_to_target(full_response, target_lang=target_language)
+                yield f"\n\n---\n[अनुवाद / Translation ({lang_name})]:\n"
+                yield target_response
+
+        logger.info("Streaming chat response completed")
 
     except Exception as e:
         logger.exception("Streaming chat response generation failed: %s", e)
-        lowered = str(e).lower()
-        if "failed to connect" in lowered or "connectionerror" in lowered:
-            yield "I couldn't reach the AI engine for streaming. Please try again shortly."
-        else:
-            yield "I ran into an issue generating the streamed response. Please try again or rephrase your question."
+        error_msg = "I ran into an issue generating the response. Please try again."
+        if target_language in ['hi', 'mr']:
+            error_msg = translation_service.translate_to_target(error_msg, target_lang=target_language)
+        yield error_msg
 
 
-def generate_chat_response(user_message: str, image_path: str = None) -> str:
-    """Generate a chat response using Ollama (via chat_with_retries) and apply guardrails.
+def generate_chat_response(user_message: str, history: List[Dict[str, str]] = None, image_path: str = None, target_language: str = 'en') -> str:
+    """Generate non-streaming chat response with multilingual support and history."""
+    logger.info(f"Generating chat response for: {user_message[:50]}..., target_language: {target_language}")
 
-    conversation_history: list of {"role": "user|assistant", "content": str}
-    """
-    logger.info("Generating chat response for message: %.100s...", user_message)
+    # STEP 1: Translate input to English if needed
+    processed_message = user_message
+    detected_lang = translation_service.detect_language(user_message)
+    if detected_lang in ['hi', 'mr']:
+        processed_message = translation_service.translate_to_english(user_message)
+        logger.info(f"Translated {detected_lang} input to English: {processed_message[:50]}...")
 
-    if is_simple_greeting(user_message):
-        return generate_greeting_response()
+    # Handle greetings
+    if is_simple_greeting(processed_message):
+        greeting_response = generate_greeting_response()
+        if target_language in ['hi', 'mr']:
+            greeting_response = translation_service.translate_to_target(greeting_response, target_lang=target_language)
+        return greeting_response
 
-    is_valid, err = validate_user_query(user_message)
+    # Validate
+    is_valid, err = validate_user_query(processed_message)
     if not is_valid:
+        if target_language in ['hi', 'mr']:
+            err = translation_service.translate_to_target(err, target_lang=target_language)
         return err
 
-    system_prompt = (
-        "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results."
-    )
+    # STEP 2: Language-specific system prompt
+    if target_language == 'hi':
+        system_prompt = (
+            "You are MedAnalyzer Assistant. "
+            "You MUST respond entirely in Hindi language. "
+            "Use simple Hindi suitable for patients. "
+            "Explain all medical terms in Hindi."
+        )
+    elif target_language == 'mr':
+        system_prompt = (
+            "You are MedAnalyzer Assistant. "
+            "You MUST respond entirely in Marathi language. "
+            "Use simple Marathi suitable for patients. "
+            "Explain all medical terms in Marathi."
+        )
+    else:
+        system_prompt = (
+            "You are MedAnalyzer Assistant, a professional medical information assistant "
+            "specialized in helping patients understand their medical reports and test results."
+        )
 
     messages: List[Dict[str, Any]] = [{"role": "system", "content": system_prompt}]
 
-    if image_path:
-        messages.append({"role": "user", "content": user_message, "images": [image_path]})
-    else:
-        messages.append({"role": "user", "content": user_message})
+    # STEP 3: Add history
+    if history:
+        for msg in history[-10:]:
+            role = msg.get('role')
+            content = msg.get('content', '')
+            if role and content:
+                clean_content = re.sub(r'📎 .*\n\n', '', content)
+                messages.append({"role": role, "content": clean_content})
 
-    # Preflight: if the model backend is unreachable, provide a clear user message instead of a generic error
+    if image_path:
+        messages.append({"role": "user", "content": processed_message, "images": [image_path]})
+    else:
+        messages.append({"role": "user", "content": processed_message})
+
     try:
         if not is_ollama_reachable(timeout=0.8):
-            logger.warning("Ollama server not reachable; returning friendly message")
-            return (
+            error_msg = (
                 "The AI engine is temporarily unavailable. Please try again soon. "
                 "If this keeps happening, ensure the model server is running."
             )
+            if target_language == 'hi':
+                error_msg = translation_service.translate_to_hindi(error_msg)
+            return error_msg
 
         logger.info("Calling Ollama via chat_with_retries...")
         resp = chat_with_retries(
             model=settings.MODEL_NAME,
             messages=messages,
-            options={"temperature": 0.7, "top_p": 0.9, "num_predict": 300},
+            options={"temperature": 0.7, "top_p": 0.9, "num_predict": 800},
         )
 
-        # Expect the client to return a structure with ['message']['content'] like ollama.chat
         raw_response = resp["message"].content
 
         if not raw_response:
-            logger.warning("Empty response from Ollama: %s", resp)
-            return "I apologize, but I couldn't generate a response. Please try again."
+            error_msg = "I apologize, but I couldn't generate a response. Please try again."
+            if target_language == 'hi':
+                error_msg = translation_service.translate_to_hindi(error_msg)
+            return error_msg
 
+        # Apply guardrails
         validated = apply_response_guardrails(raw_response)
+        
+        # STEP 4: Ensure Hindi output if requested
+        if target_language in ['hi', 'mr']:
+            # Devanagari range check for both Hindi and Marathi
+            target_chars = len(re.findall(r'[\u0900-\u097F]', validated))
+            total_chars = len(validated)
+            
+            if total_chars > 20 and target_chars < total_chars * 0.3:
+                logger.info(f"Response mostly in English for {target_language}, appending translation...")
+                target_trans = translation_service.translate_to_target(validated, target_lang=target_language)
+                validated = f"{validated}\n\n---\n[अनुवाद / Translation]:\n{target_trans}"
+        
         logger.info("Chat response validated and ready")
         return validated
 
     except Exception as e:
         logger.exception("Chat response generation failed")
-        lowered = str(e).lower()
-        if "failed to connect" in lowered or "connectionerror" in lowered:
-            return "I couldn't reach the AI engine. Please retry in a moment."
-        return "I ran into an issue processing that. Please try again or rephrase your question."
+        error_msg = "I ran into an issue processing that. Please try again."
+        if target_language == 'hi':
+            error_msg = translation_service.translate_to_hindi(error_msg)
+        return error_msg

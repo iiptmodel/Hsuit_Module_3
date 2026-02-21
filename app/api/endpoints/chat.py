@@ -11,7 +11,8 @@ import re
 
 from app.db import schemas, models
 from app.api.deps import get_db
-from app.services import chat_service, parser_service, summarizer_service, tts_service
+from app.services import chat_service, parser_service, summarizer_service
+from app.services.tts_service import tts_service
 from app.db.database import SessionLocal
 
 logger = logging.getLogger(__name__)
@@ -32,9 +33,29 @@ async def _generate_and_attach_tts(message_id: int, text: str, audio_filename: s
     """
     db = SessionLocal()
     try:
+        
         audio_path = AUDIO_DIR / audio_filename
-        # Generate audio in a thread to avoid blocking the event loop
-        await __import__("asyncio").to_thread(tts_service.generate_speech, text, language, str(audio_path))
+        
+        # If language is Hindi/Marathi and we have a translation marker, speak the Devanagari part
+        tts_text = text
+        if language in ['hi', 'mr'] and "[अनुवाद / Translation]:" in text:
+            logger.info(f"Extracting {language} part for TTS from dual-language response")
+            parts = text.split("[अनुवाद / Translation]:")
+            tts_text = parts[-1].strip()
+            
+        # Clean markdown/asterisks before TTS for better speech
+        clean_text = re.sub(r'[*#`_]', '', tts_text)
+        # Remove meta-comments for better speech
+        clean_text = re.sub(r'\(Continuation\)', '', clean_text, flags=re.IGNORECASE)
+        
+        logger.info(f"Generating voice for message {message_id} in {language} (length={len(clean_text)})")
+        
+        await asyncio.to_thread(
+            tts_service.generate_speech, 
+            clean_text, 
+            language,
+            str(audio_path)
+        )
 
         # Attach path (use web-accessible relative path)
         rel_path = str(Path('media') / 'audio' / audio_filename)
@@ -237,7 +258,18 @@ async def send_chat_message(
     db.commit()
     db.refresh(user_message)
     
-    logger.info(f"User message saved in session {session_id} (id={user_message.id})")
+    # Fetch previous messages for context
+    history_objs = db.query(models.ChatMessage).filter(
+        models.ChatMessage.session_id == session_id
+    ).order_by(models.ChatMessage.created_at.desc()).limit(11).all()
+    # history_objs includes the current user message at index 0 because we just added it. 
+    # Let's take the ones before it.
+    history_messages = [
+        {"role": m.role, "content": m.content} 
+        for m in reversed(history_objs[1:])
+    ]
+    
+    logger.info(f"User message saved in session {session_id} (id={user_message.id}), context_msgs={len(history_messages)}")
     
     try:
         # Generate AI response
@@ -317,9 +349,10 @@ async def send_chat_message(
                 logger.debug("Using local summarizer stream for session %s (approx %d chars)", session_id, len(summarizer_text))
             else:
                 stream_iter = chat_service.generate_chat_response_streaming(
-                    full_message,  # Use full message with file context
-                    image_path=image_path_for_vlm,  # Pass image directly to VLM
-                    language=language  # Pass language for multilingual responses
+                    full_message,
+                    history=history_messages,
+                    image_path=image_path_for_vlm,
+                    target_language=language
                 )
 
             async for token in stream_iter:
@@ -346,15 +379,9 @@ async def send_chat_message(
                     # Ignore websocket errors; clients may poll instead
                     pass
 
-                # Occasionally persist progress so refreshed clients can poll and catch up
-                now = time.monotonic()
-                if token_count_since_commit >= 20 or (now - last_commit) > 1.0:
-                    ai_message.content = full_response
-                    db.add(ai_message)
-                    db.commit()
-                    db.refresh(ai_message)
-                    token_count_since_commit = 0
-                    last_commit = now
+                # Skip frequent DB commits during streaming to improve performance.
+                # Real-time updates are handled via WebSocket deltas below.
+                pass
 
             # Clean the response text by removing asterisks and extra whitespace
             full_response = re.sub(r'\*+', '', full_response).strip()

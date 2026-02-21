@@ -1782,6 +1782,12 @@ select, textarea, input, button {
     border-bottom-color: rgba(var(--primary-rgb), 0.6);
 }
 
+/* Language select caret color closer to emerald */
+.language-select::after {
+    border-right-color: rgba(var(--primary-rgb), 0.6);
+    border-bottom-color: rgba(var(--primary-rgb), 0.6);
+}
+
 /* Subtle background patterns tuned to emerald */
 .messages-container::before,
 .welcome-screen::before {
