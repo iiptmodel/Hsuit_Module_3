@@ -12,6 +12,7 @@ Environment Variables:
 - PRELOAD_MODELS: Load AI models during startup (0=lazy, 1=preload) [Default: 0]
 - RUN_MIGRATIONS: Run Alembic migrations on startup (0=skip, 1=run) [Default: 0]
 - API_ONLY: Run in API-only mode without web UI (0=full, 1=api-only) [Default: 0]
+- REQUIRE_OLLAMA: Abort startup if Ollama/model is unavailable (1=enforce, 0=warn) [Default: 1]
 - LOG_LEVEL: Logging verbosity (DEBUG, INFO, WARNING, ERROR) [Default: INFO]
 """
 
@@ -114,55 +115,79 @@ def _run_migrations_if_possible():
 # MODEL PRELOADING (OPTIONAL)
 # ============================================================================
 
-async def _verify_ollama_model():
+# Verification outcomes returned by _verify_ollama_model().
+OLLAMA_READY = "ready"              # server reachable and model available
+OLLAMA_UNREACHABLE = "unreachable"  # Ollama server could not be contacted
+OLLAMA_MODEL_FAILED = "model_failed"  # reachable but model missing and pull failed
+
+
+def _model_matches(required: str, available: list) -> bool:
+    """Tag-aware match: treat 'X', 'X:latest', and any 'X:<tag>' as equivalent.
+
+    Ollama reports models with an explicit tag (e.g. 'name:latest'), while
+    MODEL_NAME is usually given without one — a plain ``in`` check would miss it.
     """
-    Verify that required Ollama model is available.
-    Downloads the model if not present.
+    required_base = required.split(":", 1)[0]
+    for name in available:
+        if name == required or name.split(":", 1)[0] == required_base:
+            return True
+    return False
+
+
+async def _verify_ollama_model() -> str:
+    """Verify the Ollama server and the required model.
+
+    Returns one of:
+        OLLAMA_READY        - server reachable and model available (pulled if needed)
+        OLLAMA_UNREACHABLE  - the Ollama server could not be contacted
+        OLLAMA_MODEL_FAILED - reachable, but the model is missing and the pull failed
     """
+    from app.services.ollama_client import is_ollama_reachable
+
+    required_model = settings.MODEL_NAME
+
+    # 1) Is the server reachable at all? Distinguishes "Ollama down" from
+    #    "model missing" so the caller can give an accurate message.
+    if not await asyncio.to_thread(is_ollama_reachable):
+        return OLLAMA_UNREACHABLE
+
     try:
         import ollama
-        
-        required_model = settings.MODEL_NAME
+
         logger.info(f"🔍 Checking for Ollama model: {required_model}")
-        
-        # List available models
-        def _check_model():
+
+        def _list_models():
+            return [m.model for m in ollama.list().models]
+
+        available = await asyncio.to_thread(_list_models)
+        logger.info(f"📋 Available Ollama models: {available}")
+
+        # 2) Already present (tag-aware) — use it.
+        if _model_matches(required_model, available):
+            logger.info(f"✅ Using Ollama model '{required_model}'")
+            return OLLAMA_READY
+
+        # 3) Missing — attempt to pull it.
+        logger.warning(f"⚠️  Model '{required_model}' not present in Ollama")
+        logger.info(f"📥 Pulling {required_model}... (this may take a while)")
+
+        def _pull_model():
             try:
-                models_list = ollama.list()
-                available_models = [m.model for m in models_list.models]
-                logger.info(f"📋 Available Ollama models: {available_models}")
-                return required_model in available_models
+                ollama.pull(required_model)
+                return True
             except Exception as e:
-                logger.error(f"Failed to list Ollama models: {e}")
+                logger.error(f"❌ Failed to pull model: {e}")
                 return False
-        
-        model_exists = await asyncio.to_thread(_check_model)
-        
-        if not model_exists:
-            logger.warning(f"⚠️  Model '{required_model}' not found locally")
-            logger.info(f"📥 Downloading {required_model}... (this may take a while)")
-            
-            def _pull_model():
-                try:
-                    ollama.pull(required_model)
-                    logger.info(f"✅ Successfully downloaded {required_model}")
-                    return True
-                except Exception as e:
-                    logger.error(f"❌ Failed to download model: {e}")
-                    return False
-            
-            success = await asyncio.to_thread(_pull_model)
-            if not success:
-                logger.error(f"❌ Could not download required model. Please run: ollama pull {required_model}")
-                return False
-        else:
-            logger.info(f"✅ Model '{required_model}' is available")
-        
-        return True
-        
+
+        if await asyncio.to_thread(_pull_model):
+            logger.info(f"✅ Pulled Ollama model '{required_model}'")
+            return OLLAMA_READY
+        return OLLAMA_MODEL_FAILED
+
     except Exception as e:
+        # Reachable a moment ago, but the API call failed.
         logger.error(f"❌ Error verifying Ollama model: {e}")
-        return False
+        return OLLAMA_MODEL_FAILED
 
 
 async def _preload_models_background(app: FastAPI):
@@ -264,10 +289,35 @@ async def lifespan(app: FastAPI):
         app.include_router(page_router, tags=["Pages"])
     logger.info("✅ Routers registered successfully")
     
-    # Always verify Ollama model on startup (quick check)
+    # Always verify Ollama model on startup. The LLM path is Ollama-only, so a
+    # missing/unreachable Ollama means summaries and chat can't work. By default
+    # we fail fast and exit; set REQUIRE_OLLAMA=0 to warn and continue (useful
+    # for tests, API-only deployments, or non-LLM development work).
     logger.info("🔍 Verifying Ollama model availability...")
-    await _verify_ollama_model()
-    
+    ollama_status = await _verify_ollama_model()
+    if ollama_status != OLLAMA_READY:
+        from app.services.ollama_client import _get_ollama_base_url
+
+        if ollama_status == OLLAMA_UNREACHABLE:
+            reason = (
+                f"Ollama server is not reachable at {_get_ollama_base_url()}. "
+                f"Start it with 'ollama serve' and restart this server."
+            )
+        else:  # OLLAMA_MODEL_FAILED
+            reason = (
+                f"Model '{settings.MODEL_NAME}' is unavailable and the automatic "
+                f"pull failed. Run 'ollama pull {settings.MODEL_NAME}' and restart."
+            )
+
+        require_ollama = os.environ.get("REQUIRE_OLLAMA", "1") != "0"
+        if require_ollama:
+            logger.error("❌ %s", reason)
+            logger.error("❌ Aborting startup (set REQUIRE_OLLAMA=0 to start anyway).")
+            # Raising before yield makes uvicorn report startup failure and exit.
+            raise RuntimeError(f"Ollama not ready: {reason}")
+        logger.warning("⚠️  %s", reason)
+        logger.warning("⚠️  REQUIRE_OLLAMA=0 — continuing without a working LLM.")
+
     # Optionally preload AI models in background
     preload = os.environ.get("PRELOAD_MODELS", "0")
     if preload == "1":

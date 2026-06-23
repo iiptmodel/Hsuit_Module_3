@@ -15,4 +15,4 @@ async def root(request: Request):
 @page_router.get("/chat", response_class=HTMLResponse)
 async def read_chat(request: Request):
     """Serve the main chat interface with all features."""
-    return templates.TemplateResponse("chat.html", {"request": request})
+    return templates.TemplateResponse(request, "chat.html")

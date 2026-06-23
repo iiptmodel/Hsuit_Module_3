@@ -54,7 +54,7 @@ _LEVEL_COLORS = {
 _NOISY_LOGGERS = (
     "urllib3", "watchfiles", "PIL", "rapidocr", "torch",
     "huggingface_hub", "transformers", "filelock", "asyncio",
-    "matplotlib", "numba", "fontTools",
+    "matplotlib", "numba", "fontTools", "httpx", "httpcore",
 )
 
 _configured = False
