@@ -100,6 +100,58 @@ def test_hindi_prescription_guardrail():
     assert result != hindi_rx, "Hindi prescription should be filtered by guardrails"
 
 
+async def _mock_stream(*args, **kwargs):
+    yield "यह एक परीक्षण प्रतिक्रिया है।"  # "This is a test response."
+
+
+def test_full_hindi_session_flow():
+    """Create session, send Hindi message, verify response saved and session language updated."""
+    from unittest.mock import AsyncMock
+
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    Base.metadata.create_all(bind=engine)
+
+    def override_get_db():
+        db = TestingSessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    app.dependency_overrides[deps.get_db] = override_get_db
+
+    with TestClient(app) as client:
+        sess = client.post("/api/v1/chat/sessions", json={"title": "Hindi Test"}).json()
+        sid = sess["id"]
+
+        with patch(
+            "app.services.chat_service.generate_chat_response_streaming",
+            side_effect=_mock_stream,
+        ), patch(
+            "app.api.endpoints.chat._generate_and_attach_tts",
+            new_callable=AsyncMock,
+        ):
+            resp = client.post(
+                f"/api/v1/chat/sessions/{sid}/messages",
+                data={"content": "रिपोर्ट समझाइए", "audience": "patient", "language": "Hindi"},
+            )
+
+        assert resp.status_code == 200
+        msg = resp.json()
+        assert msg["role"] == "assistant"
+
+        # Session language persisted
+        sess_data = client.get(f"/api/v1/chat/sessions/{sid}").json()
+        assert sess_data["language"] == "Hindi"
+
+    app.dependency_overrides.clear()
+
+
 def test_tts_falls_back_to_english_on_hindi_failure(tmp_path):
     """If Hindi pipeline init fails, TTS falls back to English without raising."""
     out = str(tmp_path / "test.wav")
