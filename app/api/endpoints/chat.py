@@ -24,7 +24,7 @@ CHAT_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 AUDIO_DIR = MEDIA_DIR / "audio"
 AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 
-async def _generate_and_attach_tts(message_id: int, text: str, audio_filename: str):
+async def _generate_and_attach_tts(message_id: int, text: str, audio_filename: str, language: str = 'English'):
     """Background task to generate TTS audio and update the ChatMessage record.
 
     This runs asynchronously and notifies any connected websocket clients for the
@@ -34,7 +34,7 @@ async def _generate_and_attach_tts(message_id: int, text: str, audio_filename: s
     try:
         audio_path = AUDIO_DIR / audio_filename
         # Generate audio in a thread to avoid blocking the event loop
-        await __import__("asyncio").to_thread(tts_service.generate_speech, text, 'en', str(audio_path))
+        await __import__("asyncio").to_thread(tts_service.generate_speech, text, language, str(audio_path))
 
         # Attach path (use web-accessible relative path)
         rel_path = str(Path('media') / 'audio' / audio_filename)
@@ -112,6 +112,7 @@ async def send_chat_message(
     content: str = Form(...),
     file: Optional[UploadFile] = File(None),
     audience: str = Form('patient'),
+    language: str = Form('English'),
     db: Session = Depends(get_db)
 ):
     """Sends a message in a chat session with optional file attachment and gets AI response."""
@@ -247,14 +248,14 @@ async def send_chat_message(
         if extracted_text and audience.lower() == 'doctor':
             logger.info("Audience=doctor => generating structured detailed report.")
             try:
-                ai_response_text = summarizer_service.generate_detailed_report_from_text(extracted_text, language='English')
+                ai_response_text = summarizer_service.generate_detailed_report_from_text(extracted_text, language=language)
             except Exception as e:
                 logger.error(f"Detailed report generation failed: {e}", exc_info=True)
                 ai_response_text = "I encountered an error generating the detailed report. Please try again."
         elif extracted_text and audience.lower() == 'patient':
             logger.info("Audience=patient => generating concise patient summary.")
             try:
-                ai_response_text = summarizer_service.generate_patient_summary_from_text(extracted_text, language='English')
+                ai_response_text = summarizer_service.generate_patient_summary_from_text(extracted_text, language=language)
             except Exception as e:
                 logger.error(f"Patient summary generation failed: {e}", exc_info=True)
                 ai_response_text = "I encountered an error generating the summary. Please try again."
@@ -316,8 +317,9 @@ async def send_chat_message(
                 logger.debug("Using local summarizer stream for session %s (approx %d chars)", session_id, len(summarizer_text))
             else:
                 stream_iter = chat_service.generate_chat_response_streaming(
-                    full_message,  # Use full message with file context
-                    image_path=image_path_for_vlm  # Pass image directly to VLM
+                    full_message,
+                    image_path=image_path_for_vlm,
+                    language=language
                 )
 
             async for token in stream_iter:
@@ -385,6 +387,7 @@ async def send_chat_message(
                     ai_message.id,
                     ai_message.content,
                     audio_filename,
+                    language,
                 )
                 logger.info(f"Scheduled background TTS for message {ai_message.id}")
             except Exception as e:

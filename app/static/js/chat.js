@@ -24,6 +24,7 @@ let uploadedFiles;
 let clearChatBtn;
 let sessionTitle;
 let audienceSelect;
+let languageSelect;
 let themeToggleBtn;
 let filesToggleBtn;
 let filesPanel;
@@ -64,6 +65,7 @@ function initDomElements() {
     clearChatBtn = document.getElementById('clearChatBtn');
     sessionTitle = document.getElementById('sessionTitle');
     audienceSelect = document.getElementById('audienceSelect');
+    languageSelect = document.getElementById('languageSelect');
     themeToggleBtn = document.getElementById('themeToggleBtn');
     filesToggleBtn = document.getElementById('filesToggleBtn');
     filesPanel = document.getElementById('filesPanel');
@@ -385,6 +387,8 @@ async function sendMessage() {
         // Append audience (patient/doctor)
         const audience = audienceSelect ? audienceSelect.value : 'patient';
         formData.append('audience', audience);
+        const language = languageSelect ? languageSelect.value : 'English';
+        formData.append('language', language);
         
         if (uploadedFile) {
             formData.append('file', uploadedFile);
@@ -472,14 +476,19 @@ function displayMessage(message) {
         contentHtml = card + (rest ? '<div class=\"attachment-user-text\">' + formatMessageContent(rest) + '</div>' : '');
     }
 
+    const hasContent = message.content && message.content.trim().length > 0;
     div.innerHTML = `
         <div class="message-avatar">${avatar}</div>
         <div class="message-content">
             ${contentHtml}
             ${audioHtml}
-            <div class="message-time">${time}</div>
+            ${hasContent ? `<div class="message-time">${time}</div>` : ''}
         </div>
     `;
+
+    if (message.role === 'assistant' && !hasContent) {
+        div.classList.add('streaming');
+    }
 
     messagesContainer.appendChild(div);
     scrollToBottom();
@@ -648,8 +657,9 @@ function handleAudioReady(payload) {
         function handleAssistantInit(payload) {
             try {
                 const existing = messagesContainer.querySelector(`[data-message-id='${payload.message_id}']`);
-                if (existing) return; // already present
+                if (existing) return;
 
+                removeTypingIndicator();
                 const msg = {
                     id: payload.message_id,
                     role: 'assistant',
@@ -697,16 +707,18 @@ function handleAudioReady(payload) {
                             contentEl.innerHTML = formatMessageContent(content) + audioHtml + (timeEl ? timeEl.outerHTML : '');
                         }
                         st.lastText = content;
+
+                        // Add timestamp on first content arrival
+                        if (content && !contentEl.querySelector('.message-time')) {
+                            const timeEl = document.createElement('div');
+                            timeEl.className = 'message-time';
+                            timeEl.textContent = new Date().toLocaleTimeString();
+                            contentEl.appendChild(timeEl);
+                        }
+
                         if (payload.final) {
                             st.final = true;
-                            // add completion indicator once
-                            const existingIndicator = contentEl.querySelector('.completion-indicator');
-                            if (!existingIndicator) {
-                                const doneEl = document.createElement('div');
-                                doneEl.className = 'completion-indicator';
-                                doneEl.textContent = '✓ complete';
-                                contentEl.appendChild(doneEl);
-                            }
+                            msgEl.classList.remove('streaming');
                         }
                         scrollToBottom();
                     }
@@ -1038,77 +1050,44 @@ function renderReports(reports) {
     list.style.gap = '0.5rem';
 
     reports.forEach(r => {
+        let fname = r.original_filename || (r.original_file_path ? r.original_file_path.split(/[/\\]/).pop() : 'File');
+        try { const m = fname.match(/^[0-9a-fA-F]{32}_(.+)$/); if (m) fname = m[1]; } catch (e) {}
+
+        const d = new Date(r.created_at);
+        const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const isImage = r.report_type === 'image';
+
+        const statusMap = { processing: 'status-processing', completed: 'status-done', done: 'status-done', error: 'status-error', failed: 'status-error' };
+        const statusClass = statusMap[(r.status || '').toLowerCase()] || 'status-processing';
+
         const item = document.createElement('div');
         item.className = 'file-preview';
-        item.style.display = 'flex';
-        item.style.alignItems = 'center';
-        item.style.justifyContent = 'space-between';
 
-        const left = document.createElement('div');
-        left.style.display = 'flex';
-        left.style.alignItems = 'center';
-        left.style.gap = '0.75rem';
+        // Thumbnail for images
+        const thumbHtml = (isImage && r.thumbnail_path)
+            ? `<img class="file-thumb" src="${encodeURI(r.thumbnail_path.startsWith('/') ? r.thumbnail_path : '/' + r.thumbnail_path)}" alt="${fname}">`
+            : '';
 
-    const icon = document.createElement('div');
-    icon.className = 'file-icon';
-    icon.textContent = r.report_type && r.report_type === 'image' ? '🖼️' : '📄';
+        const downloadHtml = r.original_file_path
+            ? `<a class="file-download-btn" href="${encodeURI(r.original_file_path.startsWith('/') ? r.original_file_path : '/' + r.original_file_path)}" target="_blank" rel="noopener" title="Download ${fname}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v13M7 11l5 5 5-5M3 21h18" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+               </a>`
+            : '';
 
-        const info = document.createElement('div');
-        info.style.display = 'flex';
-        info.style.flexDirection = 'column';
-        const name = document.createElement('div');
-        let fname = r.original_filename || (r.original_file_path ? r.original_file_path.split(/\\/).pop().split('/').pop() : 'File');
-        try {
-            const m = fname && fname.match(/^[0-9a-fA-F]{32}_(.+)$/);
-            if (m) fname = m[1];
-        } catch (e) {}
-        name.textContent = fname;
-        name.style.fontWeight = '600';
-        name.style.whiteSpace = 'nowrap';
-        name.style.overflow = 'hidden';
-        name.style.textOverflow = 'ellipsis';
+        item.innerHTML = `
+            <div class="file-icon">${isImage ? '🖼️' : '📄'}</div>
+            ${thumbHtml}
+            <div class="file-info">
+                <div class="file-name">${fname}</div>
+                <div class="file-meta">
+                    <span class="file-status ${statusClass}">${r.status || 'processing'}</span>
+                    <span class="file-date">${dateStr} · ${timeStr}</span>
+                </div>
+            </div>
+            ${downloadHtml}
+        `;
 
-        const meta = document.createElement('div');
-        meta.style.fontSize = '0.85rem';
-        meta.style.opacity = '0.8';
-        meta.textContent = `${r.status || ''} • ${new Date(r.created_at).toLocaleString()}`;
-
-        info.appendChild(name);
-        info.appendChild(meta);
-
-        left.appendChild(icon);
-        left.appendChild(info);
-
-        const right = document.createElement('div');
-        right.style.display = 'flex';
-        right.style.gap = '0.5rem';
-
-        // Thumbnail preview for images
-        if (r.report_type === 'image' && r.thumbnail_path) {
-            const img = document.createElement('img');
-            img.src = (r.thumbnail_path.startsWith('/') ? r.thumbnail_path : '/' + r.thumbnail_path);
-            img.alt = fname;
-            img.style.maxWidth = '48px';
-            img.style.maxHeight = '48px';
-            img.style.borderRadius = '6px';
-            img.style.border = '1px solid var(--border-light)';
-            img.style.marginRight = '8px';
-            left.prepend(img);
-        }
-
-        if (r.original_file_path) {
-            const link = document.createElement('a');
-            const url = r.original_file_path.startsWith('/') ? r.original_file_path : '/' + r.original_file_path;
-            link.href = encodeURI(url);
-            link.target = '_blank';
-            link.textContent = 'Download';
-            link.className = 'btn-icon';
-            link.style.padding = '0.4rem 0.6rem';
-            right.appendChild(link);
-        }
-
-        item.appendChild(left);
-        item.appendChild(right);
         list.appendChild(item);
     });
 

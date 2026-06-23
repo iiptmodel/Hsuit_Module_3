@@ -7,30 +7,34 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-# Lazy-initialized Kokoro pipeline to avoid blocking import/startup.
-_pipeline = None
+# Per-language Kokoro pipeline cache to avoid reinitializing on every call.
+_pipelines: dict = {}
 _pipeline_lock = threading.Lock()
 
-def _get_pipeline():
-    global _pipeline
-    if _pipeline is None:
+# Kokoro lang_code and default voice per language name
+_LANG_CONFIG = {
+    'english': ('a', 'af_heart'),
+    'hindi':   ('h', 'hf_alpha'),
+}
+
+def _get_pipeline(lang_code: str) -> KPipeline:
+    if lang_code not in _pipelines:
         with _pipeline_lock:
-            if _pipeline is None:
-                logger.info("Initializing Kokoro TTS pipeline (lazy)...")
+            if lang_code not in _pipelines:
+                logger.info(f"Initializing Kokoro TTS pipeline for lang_code='{lang_code}' (lazy)...")
                 try:
-                    _pipeline = KPipeline(lang_code='a')  # American English
-                    logger.info("Kokoro TTS pipeline initialized.")
+                    _pipelines[lang_code] = KPipeline(lang_code=lang_code)
+                    logger.info(f"Kokoro TTS pipeline initialized for lang_code='{lang_code}'.")
                 except Exception as e:
-                    logger.error(f"Failed to initialize Kokoro TTS pipeline: {e}", exc_info=True)
-                    _pipeline = None
+                    logger.error(f"Failed to initialize Kokoro TTS pipeline for lang_code='{lang_code}': {e}", exc_info=True)
                     raise
-    return _pipeline
+    return _pipelines[lang_code]
 
 
 def is_pipeline_ready() -> bool:
-    """Return True if the Kokoro pipeline is initialized and ready."""
+    """Return True if at least the default English pipeline can initialize."""
     try:
-        return _get_pipeline() is not None
+        return _get_pipeline('a') is not None
     except Exception:
         return False
 
@@ -38,21 +42,25 @@ def is_pipeline_ready() -> bool:
 def generate_speech(text: str, language: str, output_file_path: str):
     """
     Converts text to speech using Kokoro and saves it to a file.
+    Supports English and Hindi; falls back to English for unsupported languages.
     """
     logger.info(f"Generating speech for text (length: {len(text)}, language: {language}) to {output_file_path}")
 
-    try:
-        pipeline = _get_pipeline()
+    lang_key = language.lower()
+    if lang_key not in _LANG_CONFIG:
+        logger.warning(f"Language '{language}' not supported by Kokoro TTS; falling back to English.")
+        lang_key = 'english'
 
-        # Kokoro supports English, so assume language is 'en' or handle accordingly
-        if language.lower() != 'en':
-            logger.warning(f"Kokoro only supports English, but language is {language}. Proceeding with English.")
+    lang_code, voice = _LANG_CONFIG[lang_key]
+
+    try:
+        pipeline = _get_pipeline(lang_code)
 
         # Validate text input
         if not text or not text.strip():
             raise ValueError("Text input is empty or invalid")
 
-        logger.info("Starting TTS generation with Kokoro (streaming write)...")
+        logger.info(f"Starting TTS generation with Kokoro (lang={lang_code}, voice={voice}, streaming write)...")
 
         # Ensure output directory exists
         output_dir = os.path.dirname(output_file_path)
@@ -65,7 +73,7 @@ def generate_speech(text: str, language: str, output_file_path: str):
 
         # Use the pipeline generator and write chunks directly to file to avoid large memory use
         generator = pipeline(
-            text, voice='af_heart',  # American Female Heart voice
+            text, voice=voice,
             speed=1, split_pattern=r'\n+'
         )
 

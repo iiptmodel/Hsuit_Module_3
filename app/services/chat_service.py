@@ -145,7 +145,7 @@ def apply_response_guardrails(response: str) -> str:
 
     return response
 
-async def generate_chat_response_streaming(user_message: str, image_path: str = None):
+async def generate_chat_response_streaming(user_message: str, image_path: str = None, language: str = 'English'):
     """Generate a chat response using Ollama streaming API, yielding tokens in real-time.
 
     Applies guardrails after full response is received.
@@ -163,7 +163,8 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
         return
 
     system_prompt = (
-        "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results."
+        "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results. "
+        f"Always respond in {language}."
     )
 
     messages: List[Dict[str, Any]] = [{"role": "system", "content": system_prompt}]

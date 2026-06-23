@@ -500,6 +500,7 @@ h1, h2, h3, h4 {
   align-items: center;
   gap: 0.625rem;
   min-width: 0;
+  flex: 1;
 }
 
 .session-info h2 {
@@ -509,6 +510,7 @@ h1, h2, h3, h4 {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-shrink: 1;
 }
 
 .session-status {
@@ -1212,6 +1214,82 @@ h1, h2, h3, h4 {
   background: var(--surface);
   border-color: var(--border);
   color: var(--text-dim);
+}
+
+/* ── File panel card details ─────────────────────────── */
+.files-panel .file-preview { align-items: flex-start; }
+
+.file-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.2rem;
+}
+
+.file-status {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--r-full);
+  text-transform: lowercase;
+}
+
+.status-processing {
+  background: var(--amber-dim);
+  color: var(--amber);
+  border: 1px solid rgba(200, 164, 74, 0.25);
+}
+
+.status-done {
+  background: rgba(61, 171, 123, 0.10);
+  color: var(--success);
+  border: 1px solid rgba(61, 171, 123, 0.22);
+}
+
+.status-error {
+  background: rgba(224, 85, 85, 0.10);
+  color: var(--error);
+  border: 1px solid rgba(224, 85, 85, 0.22);
+}
+
+.file-date {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.file-thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.file-download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-muted);
+  text-decoration: none;
+  flex-shrink: 0;
+  margin-left: auto;
+  align-self: center;
+  transition: background 130ms var(--ease), color 130ms var(--ease), border-color 130ms var(--ease);
+}
+
+.file-download-btn:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
 }
 
 /* ── Reduced motion ──────────────────────────────────── */

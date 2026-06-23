@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediScan AI</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <link rel="stylesheet" href="/static/css/chat.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
@@ -120,22 +121,20 @@
             <div class="chat-screen" id="chatScreen" style="display: none;">
                 <div class="chat-header">
                     <div class="session-info">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <h2 id="sessionTitle">Medical Analysis Chat</h2>
-                            <button id="renameChatBtn" class="btn-icon" title="Rename session" aria-label="Rename session">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/></svg>
-                            </button>
-                        </div>
+                        <h2 id="sessionTitle">Medical Analysis Chat</h2>
                         <span class="session-status">Active</span>
                     </div>
                     <div class="chat-actions">
-                        <button class="btn-icon" id="clearChatBtn" title="Clear messages" aria-label="Clear messages">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <button class="btn-icon" id="renameChatBtn" title="Rename session" aria-label="Rename session">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/></svg>
+                        </button>
+                        <button class="btn-icon" id="clearChatBtn" title="Delete session" aria-label="Delete session">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
                                 <path d="M19 7L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 7M10 11V17M14 11V17M15 7V4C15 3.44772 14.5523 3 14 3H10C9.44772 3 9 3.44772 9 4V7M4 7H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </button>
                         <button class="btn-icon" id="filesToggleBtn" title="Uploaded files" aria-label="Toggle files panel">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M6 2h8l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M14 2v6h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
@@ -173,6 +172,13 @@
                         <select id="audienceSelect" title="Send as:" aria-label="Audience">
                             <option value="patient" selected>Patient</option>
                             <option value="doctor">Doctor</option>
+                        </select>
+                    </div>
+                    <div class="audience-select">
+                        <label for="languageSelect" class="visually-hidden">Language</label>
+                        <select id="languageSelect" title="Language:" aria-label="Language">
+                            <option value="English" selected>English</option>
+                            <option value="Hindi">Hindi</option>
                         </select>
                     </div>
                     <div class="input-wrapper">
