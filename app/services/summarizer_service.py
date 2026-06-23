@@ -98,7 +98,7 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
         logger.info(f"MedGemma VLM analysis completed: {analysis[:100]}...")
 
         # Apply guardrails to the response
-        return _guardrail_validator(analysis)
+        return _guardrail_validator(analysis, language=language)
 
     except Exception as e:
         logger.error(f"MedGemma VLM analysis failed: {e}", exc_info=True)
@@ -390,7 +390,7 @@ def summarize_chat_context(conversation_history: List[Dict[str, str]], language:
         summary = resp.get('message', {}).get('content', '').strip()
 
         # Apply guardrails to ensure no inappropriate content
-        validated_summary = _guardrail_validator(summary)
+        validated_summary = _guardrail_validator(summary, language=language)
 
         logger.info(f"Chat context summarized: {validated_summary[:100]}...")
         return validated_summary
