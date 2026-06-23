@@ -42,74 +42,47 @@ def is_pipeline_ready() -> bool:
 def generate_speech(text: str, language: str, output_file_path: str):
     """
     Converts text to speech using Kokoro and saves it to a file.
-    Supports English and Hindi; falls back to English for unsupported languages.
+    Supports English and Hindi; falls back to English for unsupported languages
+    or if the target pipeline fails to initialize.
     """
-    logger.info(f"Generating speech for text (length: {len(text)}, language: {language}) to {output_file_path}")
+    logger.info(f"Generating speech (length={len(text)}, language={language}) -> {output_file_path}")
 
     lang_key = language.lower()
     if lang_key not in _LANG_CONFIG:
-        logger.warning(f"Language '{language}' not supported by Kokoro TTS; falling back to English.")
+        logger.warning(f"Language '{language}' not in TTS config; falling back to English.")
         lang_key = 'english'
 
     lang_code, voice = _LANG_CONFIG[lang_key]
 
+    # Try target language; fall back to English if pipeline unavailable
     try:
         pipeline = _get_pipeline(lang_code)
-
-        # Validate text input
-        if not text or not text.strip():
-            raise ValueError("Text input is empty or invalid")
-
-        logger.info(f"Starting TTS generation with Kokoro (lang={lang_code}, voice={voice}, streaming write)...")
-
-        # Ensure output directory exists
-        output_dir = os.path.dirname(output_file_path)
-        if output_dir and not os.path.exists(output_dir):
-            os.makedirs(output_dir, exist_ok=True)
-            logger.info(f"Created output directory: {output_dir}")
-
-        # Open a soundfile for streaming write (WAV PCM 16)
-        samplerate = 24000
-
-        # Use the pipeline generator and write chunks directly to file to avoid large memory use
-        generator = pipeline(
-            text, voice=voice,
-            speed=1, split_pattern=r'\n+'
-        )
-
-        with sf.SoundFile(output_file_path, mode='w', samplerate=samplerate, channels=1, subtype='PCM_16') as sf_file:
-            chunk_count = 0
-            total_frames = 0
-            for i, (gs, ps, audio) in enumerate(generator):
-                # audio may be list or numpy array
-                arr = np.asarray(audio)
-                # If audio is multi-channel, collapse or handle accordingly
-                if arr.ndim > 1 and arr.shape[1] > 1:
-                    # If multi-channel, take first channel
-                    arr = arr[:, 0]
-                # Ensure float32 -> int16 conversion handled by soundfile
-                sf_file.write(arr)
-                frames = arr.shape[0]
-                total_frames += frames
-                chunk_count += 1
-                logger.debug(f"Processed chunk {i+1}: {frames} frames")
-
-        logger.info(f"Audio generation completed. Total chunks: {chunk_count}, Total frames: {total_frames}")
-
-        # Verify file was created and has content
-        if os.path.exists(output_file_path) and os.path.getsize(output_file_path) > 0:
-            logger.info(f"Audio file verification passed: {os.path.getsize(output_file_path)} bytes")
-        else:
-            raise IOError("Audio file was not created or is empty")
-
     except Exception as e:
-        logger.error(f"Kokoro TTS failed: {e}", exc_info=True)
-        # Fallback: create a dummy file with error info
-        try:
-            error_msg = f"Error generating audio: {str(e)}"
-            with open(output_file_path + ".txt", "w", encoding='utf-8') as f:
-                f.write(error_msg)
-            logger.info(f"Created error fallback file: {output_file_path}.txt")
-        except Exception as e2:
-            logger.error(f"Failed to create fallback file: {e2}")
-        raise  # Re-raise to let caller handle it
+        logger.warning(f"TTS pipeline for '{language}' (lang_code={lang_code}) unavailable: {e}. Falling back to English.")
+        lang_code, voice = _LANG_CONFIG['english']
+        pipeline = _get_pipeline(lang_code)
+
+    if not text or not text.strip():
+        raise ValueError("Text input is empty or invalid")
+
+    output_dir = os.path.dirname(output_file_path)
+    if output_dir and not os.path.exists(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
+
+    samplerate = 24000
+    generator = pipeline(text, voice=voice, speed=1, split_pattern=r'\n+')
+
+    with sf.SoundFile(output_file_path, mode='w', samplerate=samplerate, channels=1, subtype='PCM_16') as sf_file:
+        total_frames = 0
+        for i, (gs, ps, audio) in enumerate(generator):
+            arr = np.asarray(audio)
+            if arr.ndim > 1 and arr.shape[1] > 1:
+                arr = arr[:, 0]
+            sf_file.write(arr)
+            total_frames += arr.shape[0]
+            logger.debug(f"TTS chunk {i+1}: {arr.shape[0]} frames")
+
+    if not (os.path.exists(output_file_path) and os.path.getsize(output_file_path) > 0):
+        raise IOError("Audio file was not created or is empty")
+
+    logger.info(f"TTS complete: {os.path.getsize(output_file_path)} bytes at {output_file_path}")

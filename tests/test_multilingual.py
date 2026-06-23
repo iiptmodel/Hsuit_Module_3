@@ -1,5 +1,6 @@
 import asyncio
 import os
+from unittest.mock import patch, MagicMock
 
 # Must be set before importing app to suppress Ollama requirement at startup
 os.environ.setdefault("PRELOAD_MODELS", "0")
@@ -97,3 +98,25 @@ def test_hindi_prescription_guardrail():
     hindi_rx = "आप रोज़ 500 मिलीग्राम मेटफॉर्मिन लें।"  # "Take 500mg metformin daily."
     result = apply_response_guardrails(hindi_rx, language='Hindi')
     assert result != hindi_rx, "Hindi prescription should be filtered by guardrails"
+
+
+def test_tts_falls_back_to_english_on_hindi_failure(tmp_path):
+    """If Hindi pipeline init fails, TTS falls back to English without raising."""
+    out = str(tmp_path / "test.wav")
+
+    def bad_pipeline(lang_code):
+        if lang_code == 'h':
+            raise RuntimeError("voice hf_alpha not found")
+        # Return a real-ish mock for English
+        mock = MagicMock()
+        mock.return_value = iter([(None, None, [0.0] * 24000)])
+        return mock
+
+    # Clear cached pipelines so our mock takes effect
+    tts_service._pipelines.clear()
+    with patch("app.services.tts_service.KPipeline", side_effect=bad_pipeline):
+        # Should not raise — falls back to English
+        tts_service.generate_speech("Hello test", "Hindi", out)
+
+    # English pipeline was used; file exists
+    assert os.path.exists(out)
