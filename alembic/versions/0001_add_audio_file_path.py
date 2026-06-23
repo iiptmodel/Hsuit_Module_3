@@ -15,9 +15,13 @@ depends_on = None
 
 
 def upgrade():
-    # Check if column exists before adding to avoid duplicate column error
+    # Skip if the table or column already exists (tables are created by
+    # Base.metadata.create_all() at app startup; this keeps the migration
+    # idempotent and safe to run on an already-provisioned database).
     conn = op.get_bind()
     inspector = sa.inspect(conn)
+    if not inspector.has_table('chat_messages'):
+        return
     columns = [col['name'] for col in inspector.get_columns('chat_messages')]
     if 'audio_file_path' not in columns:
         # Add a nullable string column for audio file path
@@ -25,5 +29,11 @@ def upgrade():
 
 
 def downgrade():
-    # Remove the audio_file_path column
-    op.drop_column('chat_messages', 'audio_file_path')
+    # Remove the column only if it exists.
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    if not inspector.has_table('chat_messages'):
+        return
+    columns = [col['name'] for col in inspector.get_columns('chat_messages')]
+    if 'audio_file_path' in columns:
+        op.drop_column('chat_messages', 'audio_file_path')

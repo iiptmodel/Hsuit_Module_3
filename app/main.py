@@ -20,6 +20,16 @@ Environment Variables:
 # ============================================================================
 import os
 
+# Load .env into the process environment so os.environ-based flags below
+# (RUN_MIGRATIONS, API_ONLY, PRELOAD_MODELS) and tokens (HF_TOKEN) are honored.
+# pydantic-settings reads .env for the Settings model but does NOT populate
+# os.environ, so this is needed for the flags read via os.environ.get(...).
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
+
 # Ensure HuggingFace Hub won't attempt to create symlinks on Windows
 # This prevents permission errors when downloading models
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS", "1")

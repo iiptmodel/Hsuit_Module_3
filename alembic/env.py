@@ -1,5 +1,6 @@
 import sys
 import os
+import logging
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -14,8 +15,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # access to the values within the .ini file in use.
 config = context.config
 
-# Interpret the config file for Python logging.
-fileConfig(config.config_file_name)
+# Interpret the config file for Python logging — but only when logging is not
+# already configured. When migrations run in-process from the app (the root
+# logger already has our handler from app.core.logging_config.setup_logging),
+# calling fileConfig() would attach a second handler and double every log line.
+# For standalone `alembic` CLI use, root has no handlers so this runs normally.
+if config.config_file_name is not None and not logging.getLogger().hasHandlers():
+    fileConfig(config.config_file_name)
 
 # Import the app's SQLAlchemy metadata
 from app.db.database import Base

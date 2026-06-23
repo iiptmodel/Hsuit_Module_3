@@ -16,9 +16,11 @@ depends_on = None
 
 
 def upgrade():
-    # Check if columns exist before adding to avoid duplicate column error
+    # Skip if the table is missing; add each column only if it doesn't exist.
     conn = op.get_bind()
     inspector = sa.inspect(conn)
+    if not inspector.has_table('reports'):
+        return
     columns = [col['name'] for col in inspector.get_columns('reports')]
     if 'mime_type' not in columns:
         op.add_column('reports', sa.Column('mime_type', sa.String(), nullable=True))
@@ -27,5 +29,12 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_column('reports', 'thumbnail_path')
-    op.drop_column('reports', 'mime_type')
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    if not inspector.has_table('reports'):
+        return
+    columns = [col['name'] for col in inspector.get_columns('reports')]
+    if 'thumbnail_path' in columns:
+        op.drop_column('reports', 'thumbnail_path')
+    if 'mime_type' in columns:
+        op.drop_column('reports', 'mime_type')
