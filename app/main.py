@@ -36,9 +36,18 @@ from time import time
 import asyncio
 import importlib
 import uuid
-import contextvars
 import json
 import logging
+
+# ============================================================================
+# LOGGING CONFIGURATION
+# ============================================================================
+# Configure centralized, colorized logging BEFORE the remaining app imports so
+# that config validation and other import-time messages are formatted too.
+from app.core.logging_config import setup_logging, REQUEST_ID
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 # ============================================================================
 # APPLICATION IMPORTS
@@ -47,48 +56,11 @@ import scripts.download_models as _download_models
 from app.db import models, database
 from app.core.config import settings
 
+# Re-apply the configured level now that settings (and thus .env) are loaded.
+setup_logging(settings.LOG_LEVEL)
+
 # Note: api_router and page_router are imported INSIDE lifespan()
 # to avoid triggering heavy service imports too early during startup
-
-# ============================================================================
-# LOGGING CONFIGURATION
-# ============================================================================
-
-# Context variable to track request IDs across async operations
-REQUEST_ID = contextvars.ContextVar("request_id", default=None)
-
-
-class RequestIDFilter(logging.Filter):
-    """Injects request_id into every log record for request tracing."""
-    
-    def filter(self, record):
-        record.request_id = REQUEST_ID.get() or "-"
-        return True
-
-
-# Configure logging only once (avoid duplicate handlers)
-if not logging.getLogger().hasHandlers():
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter(
-        "%(asctime)s %(levelname)-5s [%(request_id)s] [%(name)s] %(message)s"
-    )
-    handler.setFormatter(formatter)
-    handler.addFilter(RequestIDFilter())
-    
-    root = logging.getLogger()
-    # Set log level from settings (default to INFO if not specified)
-    try:
-        root.setLevel(getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO))
-    except Exception:
-        root.setLevel(logging.INFO)
-    
-    root.addHandler(handler)
-
-# Reduce noise from verbose third-party libraries
-for noisy_lib in ["urllib3", "watchfiles", "PIL", "rapidocr", "torch"]:
-    logging.getLogger(noisy_lib).setLevel(logging.WARNING)
-
-logger = logging.getLogger(__name__)
 
 # ============================================================================
 # DATABASE INITIALIZATION

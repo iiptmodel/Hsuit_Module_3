@@ -2,37 +2,49 @@
 """
 AI Model Download and Initialization Script
 
-This script prepares the application environment by downloading and initializing
-required AI models for:
-- Kokoro TTS (Text-to-Speech)
-- Docling (Document parsing and OCR)
+Prepares the application environment by downloading and initializing the
+auxiliary AI models used by the app:
+- Kokoro TTS (text-to-speech)
+- Docling (document parsing and OCR)
 
-Note: MedGemma LLM is expected to be hosted via Ollama server.
-      This script does NOT download transformer-based models.
+Note: the MedGemma LLM is served via an Ollama server and is NOT downloaded
+here — it is pulled with ``ollama pull <model-name>`` and verified by the app
+on startup.
 
 Usage:
-    python scripts/download_models.py  # Download all models
-    
+    python scripts/download_models.py   # download/initialize all aux models
+
 Environment:
-    Called automatically during app startup if PRELOAD_MODELS=1
+    Also invoked from app startup (in a worker thread) when PRELOAD_MODELS=1.
 """
 
 import os
+import sys
+
+# ============================================================================
+# PATH SETUP — make the project root importable when run directly
+# ============================================================================
+# When launched as ``python scripts/download_models.py`` the interpreter only
+# puts the ``scripts/`` directory on sys.path, so ``import app.*`` would fail.
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 import logging
+
+from app.core.logging_config import setup_logging, banner
 
 # ============================================================================
 # CONFIGURATION
 # ============================================================================
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
 os.makedirs(MODELS_DIR, exist_ok=True)
 
-# This project uses Ollama for LLM inference
-# MedGemma models are expected to be available via Ollama server
+# This project uses Ollama for LLM inference; MedGemma is provided by Ollama.
 USE_OLLAMA = True
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("download_models")
 
 
 # ============================================================================
@@ -40,103 +52,62 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 def download_medgemma():
-    """
-    MedGemma download placeholder.
-    
-    NOTE: This project uses Ollama-first deployment.
-    MedGemma models should be pulled via Ollama:
-        ollama pull medgemma
-    
-    No transformer-based download is performed here.
-    """
-    logger.info("MedGemma: Using Ollama server (no local model download)")
-    logger.info("Ensure MedGemma is available via: ollama pull <model-name>")
+    """No-op: MedGemma is served via Ollama, not downloaded locally."""
+    logger.info("MedGemma : served via Ollama — no local download")
+    logger.info("           pull it once with: ollama pull <model-name>")
 
 
 def download_kokoro():
-    """
-    Download and initialize Kokoro TTS models.
-    
-    Kokoro is used for multilingual text-to-speech conversion.
-    Models are automatically downloaded on first initialization.
-    """
-    logger.info("📥 Initializing Kokoro TTS pipeline...")
+    """Initialize Kokoro TTS, downloading its weights on first run."""
+    logger.info("Kokoro   : initializing TTS pipeline (downloads on first run)...")
     try:
         from kokoro import KPipeline
-        
-        # Initialize pipeline - this will download models if not present
-        pipeline = KPipeline(lang_code='a')  # 'a' = auto-detect language
-        
-        logger.info("✅ Kokoro TTS models ready")
+
+        # Initializing the pipeline triggers the model download if not cached.
+        KPipeline(lang_code="a")  # 'a' = auto-detect language
+        logger.info("Kokoro   : ready ✓")
     except Exception as e:
-        logger.error(f"❌ Failed to download Kokoro models: {e}", exc_info=True)
+        logger.error("Kokoro   : download failed — %s", e, exc_info=True)
         raise
 
 
 def download_docling():
-    """
-    Initialize Docling document converter.
-    
-    Docling is used for:
-    - PDF parsing and text extraction
-    - OCR (Optical Character Recognition)
-    - Document structure analysis
-    
-    Models are downloaded automatically on first use.
-    """
-    logger.info("📥 Initializing Docling document converter...")
+    """Initialize the Docling converter, downloading its models on first run."""
+    logger.info("Docling  : initializing document converter (downloads on first run)...")
     try:
         from docling.document_converter import DocumentConverter
-        
-        # Initialize converter - models download automatically
-        converter = DocumentConverter()
-        
-        logger.info("✅ Docling models ready")
+
+        DocumentConverter()  # models download automatically
+        logger.info("Docling  : ready ✓")
     except Exception as e:
-        logger.error(f"❌ Failed to initialize Docling: {e}", exc_info=True)
+        logger.error("Docling  : initialization failed — %s", e, exc_info=True)
         raise
 
 
 # ============================================================================
-# MAIN FUNCTION
+# MAIN ENTRY POINTS
 # ============================================================================
 
 def check_and_download_models():
+    """Prepare auxiliary models (Kokoro, Docling).
+
+    Called from app startup (PRELOAD_MODELS=1). ``setup_logging`` is idempotent,
+    so this is a no-op when the app has already configured logging.
     """
-    Main entry point for model preparation.
-    
-    This function is called during application startup (if PRELOAD_MODELS=1)
-    or when running this script directly.
-    """
-    print("=" * 70)
-    print("🔧 Preparing Med Analyzer Environment")
-    print("=" * 70)
-    print("📋 Model Configuration:")
-    print("   • LLM: Ollama-hosted (MedGemma)")
-    print("   • TTS: Kokoro (auto-download)")
-    print("   • Document Parser: Docling (auto-download)")
-    print("=" * 70)
-    
-    # Initialize auxiliary models (Kokoro, Docling)
+    setup_logging()
+    banner(logger, "Preparing Med Analyzer models")
+    logger.info("LLM      : Ollama-hosted (MedGemma) — verified at app startup")
+    logger.info("TTS      : Kokoro (auto-download)")
+    logger.info("Parser   : Docling (auto-download)")
     download_kokoro()
     download_docling()
-    
-    print("=" * 70)
-    print("✅ Environment preparation complete")
-    print("=" * 70)
+    logger.info("Environment preparation complete ✓")
 
-
-# ============================================================================
-# COMMAND-LINE EXECUTION
-# ============================================================================
 
 if __name__ == "__main__":
-    print("🚀 Starting model downloads...\n")
-    
-    # Note: download_medgemma is a no-op (Ollama-only)
+    setup_logging()
+    banner(logger, "Starting model downloads")
     download_medgemma()
     download_kokoro()
     download_docling()
-    
-    print("\n✅ All model downloads completed.")
-
+    logger.info("All downloads completed ✓")

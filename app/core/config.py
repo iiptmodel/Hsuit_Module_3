@@ -58,8 +58,10 @@ class Settings(BaseSettings):
     MODEL_NAME: str
     """Ollama model name for medical analysis and chat."""
 
-    # Pydantic configuration
-    model_config = SettingsConfigDict(env_file=".env")
+    # Pydantic configuration. ``extra="ignore"`` lets the .env file carry
+    # optional keys that aren't modeled here (HF_TOKEN, ENVIRONMENT, TTS_*,
+    # feature flags) without raising a validation error.
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     def __init__(self, **kwargs):
         """
