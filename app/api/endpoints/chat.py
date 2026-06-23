@@ -129,7 +129,14 @@ async def send_chat_message(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Chat session not found"
         )
-    
+
+    # Keep session language in sync with what the user selected
+    if session.language != language:
+        session.language = language
+        db.add(session)
+        db.commit()
+        db.refresh(session)
+
     # Process file if uploaded
     file_context = ""
     image_path_for_vlm = None

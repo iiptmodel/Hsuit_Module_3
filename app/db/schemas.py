@@ -53,6 +53,7 @@ class ChatSession(BaseModel):
     id: int
     created_at: datetime
     title: str
+    language: str = 'English'
     messages: List[ChatMessage] = []
     reports: List[Report] = []
 
