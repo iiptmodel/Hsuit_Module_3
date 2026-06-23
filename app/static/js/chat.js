@@ -45,10 +45,20 @@ const PLACEHOLDERS = {
     'Hindi':   'अपने दस्तावेज़ के बारे में पूछें या प्रश्न टाइप करें…',
 };
 
+// Language badge mapping
+const LANG_CODES = { 'English': 'EN', 'Hindi': 'HI' };
+
+function updateLangBadge() {
+    const badge = document.getElementById('langBadge');
+    if (!badge || !languageSelect) return;
+    badge.textContent = LANG_CODES[languageSelect.value] || languageSelect.value.slice(0, 2).toUpperCase();
+}
+
 function updatePlaceholder() {
     if (!messageInput || !languageSelect) return;
     const lang = languageSelect.value;
     messageInput.placeholder = PLACEHOLDERS[lang] || PLACEHOLDERS['English'];
+    updateLangBadge();
 }
 
 // Initialize
