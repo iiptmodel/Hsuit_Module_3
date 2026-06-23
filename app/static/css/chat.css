@@ -1027,6 +1027,193 @@ h1, h2, h3, h4 {
 /* ── Utility ─────────────────────────────────────────── */
 .muted { color: var(--text-muted); }
 
+/* ── Modal ───────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms var(--ease);
+}
+
+.modal-overlay[aria-hidden="false"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--accent-border);
+  transform: scale(0.96) translateY(8px);
+  transition: transform 200ms var(--ease-out);
+}
+
+.modal-overlay[aria-hidden="false"] .modal {
+  transform: scale(1) translateY(0);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.25rem 0.875rem;
+  border-bottom: 1px solid var(--divider);
+}
+
+.modal-header h3 {
+  font-size: 0.975rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.modal-close {
+  margin-left: auto;
+}
+
+.modal-body {
+  padding: 1.125rem 1.25rem;
+}
+
+.modal-body p {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.modal-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  margin-bottom: 0.5rem;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 0.6rem 0.875rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 130ms var(--ease), box-shadow 130ms var(--ease);
+}
+
+.modal-input:focus {
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 3px rgba(75, 175, 212, 0.09);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem 1.25rem;
+}
+
+.btn-ghost {
+  padding: 0.55rem 1.125rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 130ms var(--ease), color 130ms var(--ease), border-color 130ms var(--ease);
+}
+
+.btn-ghost:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.btn-danger {
+  padding: 0.55rem 1.125rem;
+  background: rgba(224, 85, 85, 0.10);
+  border: 1px solid rgba(224, 85, 85, 0.22);
+  border-radius: var(--r-md);
+  color: var(--error);
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 130ms var(--ease), border-color 130ms var(--ease);
+}
+
+.btn-danger:hover {
+  background: rgba(224, 85, 85, 0.18);
+  border-color: rgba(224, 85, 85, 0.38);
+}
+
+/* ── Toast ───────────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 0.65rem 1rem;
+  border-radius: var(--r-md);
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 500;
+  max-width: 320px;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: opacity 200ms var(--ease), transform 200ms var(--ease);
+  pointer-events: auto;
+  border: 1px solid;
+}
+
+.toast.toast-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.toast.toast-error {
+  background: rgba(224, 85, 85, 0.10);
+  border-color: rgba(224, 85, 85, 0.22);
+  color: #e88080;
+}
+
+:root[data-theme="dark"] .toast.toast-error { color: #f09090; }
+
+.toast.toast-success {
+  background: rgba(61, 171, 123, 0.10);
+  border-color: rgba(61, 171, 123, 0.22);
+  color: var(--success);
+}
+
+.toast.toast-info {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-dim);
+}
+
 /* ── Reduced motion ──────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

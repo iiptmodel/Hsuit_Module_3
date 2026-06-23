@@ -205,6 +205,45 @@
         <div id="filesPanelContent" class="files-panel-content"></div>
     </div>
 
+    <!-- Rename modal -->
+    <div id="renameModal" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="renameModalTitle">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="renameModalTitle">Rename session</h3>
+                <button class="btn-icon modal-close" id="renameModalClose" aria-label="Close">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label class="modal-label" for="renameInput">Session name</label>
+                <input type="text" id="renameInput" class="modal-input" placeholder="e.g. CBC Results — June 2025" maxlength="120">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost" id="renameCancelBtn">Cancel</button>
+                <button class="btn-primary" id="renameConfirmBtn">Rename</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete confirm modal -->
+    <div id="confirmModal" class="modal-overlay" aria-hidden="true" role="alertdialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="confirmModalTitle">Delete session</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmModalBody">This will permanently delete this chat session and all its messages.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost" id="confirmCancelBtn">Cancel</button>
+                <button class="btn-danger" id="confirmDeleteBtn">Delete session</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
     <!-- Accessibility live region -->
     <div id="a11yLive" aria-live="polite" aria-atomic="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"></div>
 </body>

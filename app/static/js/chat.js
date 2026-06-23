@@ -178,10 +178,9 @@ async function renameChat() {
         return;
     }
     const oldTitle = sessionTitle ? sessionTitle.textContent : '';
-    const newTitle = prompt('Enter a new title for this chat', oldTitle || '');
+    const newTitle = await openRenameModal(oldTitle);
     if (!newTitle || newTitle.trim().length === 0) return;
     try {
-        // optimistic UI
         sessionTitle.textContent = newTitle;
         const resp = await fetch(`/api/v1/chat/sessions/${currentSessionId}`, {
             method: 'PATCH',
@@ -191,9 +190,9 @@ async function renameChat() {
         if (!resp.ok) {
             const txt = await resp.text();
             console.warn('Rename API failed', resp.status, txt);
-            showError('Failed to rename chat on server');
+            showError('Failed to rename session');
         } else {
-            // reload session list to reflect title change
+            showToast('Session renamed', 'success');
             loadSessions();
         }
     } catch (e) {
@@ -337,23 +336,27 @@ async function loadSession(sessionId) {
 
 async function clearCurrentSession() {
     if (!currentSessionId) return;
-    
-    if (!confirm('Are you sure you want to delete this chat session?')) return;
-    
+
+    const confirmed = await openConfirmModal(
+        'Delete session',
+        'This will permanently delete this chat session and all its messages.'
+    );
+    if (!confirmed) return;
+
     try {
         await fetch(`/api/v1/chat/sessions/${currentSessionId}`, {
             method: 'DELETE'
         });
-        
+
         currentSessionId = null;
         welcomeScreen.style.display = 'flex';
         chatScreen.style.display = 'none';
         loadSessions();
         loadStats();
-        
+
     } catch (error) {
         console.error('Error deleting session:', error);
-        showError('Failed to delete chat session');
+        showError('Failed to delete session');
     }
 }
 
@@ -933,8 +936,90 @@ function scrollToBottom() {
 }
 
 function showError(message) {
-    // Simple error display - can be enhanced with a modal or toast
-    alert('Error: ' + message);
+    showToast(message, 'error');
+}
+
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => toast.classList.add('toast-visible'));
+    });
+    setTimeout(() => {
+        toast.classList.remove('toast-visible');
+        setTimeout(() => toast.remove(), 280);
+    }, 4000);
+}
+
+function openRenameModal(currentTitle) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('renameModal');
+        const input   = document.getElementById('renameInput');
+        const confirm = document.getElementById('renameConfirmBtn');
+        const cancel  = document.getElementById('renameCancelBtn');
+        const close   = document.getElementById('renameModalClose');
+
+        input.value = currentTitle || '';
+        overlay.setAttribute('aria-hidden', 'false');
+        setTimeout(() => { input.focus(); input.select(); }, 60);
+
+        function cleanup(result) {
+            overlay.setAttribute('aria-hidden', 'true');
+            confirm.removeEventListener('click', onConfirm);
+            cancel.removeEventListener('click', onCancel);
+            close.removeEventListener('click', onCancel);
+            input.removeEventListener('keydown', onKey);
+            overlay.removeEventListener('click', onOverlay);
+            resolve(result);
+        }
+        function onConfirm() { const v = input.value.trim(); if (v) cleanup(v); }
+        function onCancel()  { cleanup(null); }
+        function onKey(e)    { if (e.key === 'Enter') onConfirm(); if (e.key === 'Escape') onCancel(); }
+        function onOverlay(e){ if (e.target === overlay) onCancel(); }
+
+        confirm.addEventListener('click', onConfirm);
+        cancel.addEventListener('click', onCancel);
+        close.addEventListener('click', onCancel);
+        input.addEventListener('keydown', onKey);
+        overlay.addEventListener('click', onOverlay);
+    });
+}
+
+function openConfirmModal(title, body) {
+    return new Promise((resolve) => {
+        const overlay  = document.getElementById('confirmModal');
+        const titleEl  = document.getElementById('confirmModalTitle');
+        const bodyEl   = document.getElementById('confirmModalBody');
+        const confirm  = document.getElementById('confirmDeleteBtn');
+        const cancel   = document.getElementById('confirmCancelBtn');
+
+        if (titleEl) titleEl.textContent = title;
+        if (bodyEl)  bodyEl.textContent  = body;
+        overlay.setAttribute('aria-hidden', 'false');
+        setTimeout(() => { if (cancel) cancel.focus(); }, 60);
+
+        function cleanup(result) {
+            overlay.setAttribute('aria-hidden', 'true');
+            confirm.removeEventListener('click', onConfirm);
+            cancel.removeEventListener('click', onCancel);
+            overlay.removeEventListener('click', onOverlay);
+            document.removeEventListener('keydown', onKey);
+            resolve(result);
+        }
+        function onConfirm()  { cleanup(true); }
+        function onCancel()   { cleanup(false); }
+        function onKey(e)     { if (e.key === 'Escape') onCancel(); }
+        function onOverlay(e) { if (e.target === overlay) onCancel(); }
+
+        confirm.addEventListener('click', onConfirm);
+        cancel.addEventListener('click', onCancel);
+        overlay.addEventListener('click', onOverlay);
+        document.addEventListener('keydown', onKey);
+    });
 }
 
 function renderReports(reports) {
