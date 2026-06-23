@@ -84,6 +84,18 @@ def is_simple_greeting(query: str) -> bool:
     return bool(re.fullmatch(r"(hi+|he+y+|hello|hey|howdy|greetings|good (morning|afternoon|evening))!?", q))
 
 
+_GUARDRAIL_SUFFIX = {
+    'hindi': (
+        " कभी भी निश्चित निदान न दें या दवाइयाँ न लिखें। "
+        "हमेशा रोगी को डॉक्टर से परामर्श लेने की सलाह दें।"
+    ),
+    'english': (
+        " Never provide a definitive diagnosis or prescribe medications. "
+        "Always recommend consulting a healthcare professional."
+    ),
+}
+
+
 _GREETINGS = {
     'hindi': (
         "नमस्ते! मैं आपका MedAnalyzer सहायक हूँ। "
@@ -140,8 +152,10 @@ def apply_response_guardrails(response: str, language: str = 'English') -> str:
                     "कृपया अपने स्वास्थ्य सेवा प्रदाता से परामर्श करें।"
                 )
             return (
-                "I can help you understand what these medical findings suggest, "
-                "but I cannot provide a definitive diagnosis. Please discuss with your healthcare provider."
+                "I can help you understand what these medical findings suggest, but I cannot provide a definitive diagnosis. "
+                "Based on the information, I recommend discussing these results with your healthcare provider who can properly evaluate "
+                "your complete medical history and provide an accurate diagnosis. "
+                "Would you like me to explain what these findings typically indicate?"
             )
 
     for pattern in PROHIBITED_PATTERNS["prescription"]:
@@ -153,8 +167,9 @@ def apply_response_guardrails(response: str, language: str = 'English') -> str:
                     "सही खुराक के लिए अपने डॉक्टर से मिलें।"
                 )
             return (
-                "I can explain how medications work, but I cannot prescribe specific medications or dosages. "
-                "Your doctor will determine the appropriate treatment."
+                "I can explain how certain medications work and their general purposes, but I cannot prescribe specific medications or dosages. "
+                "Your doctor will determine the appropriate medication and dosage based on your individual health needs. "
+                "Would you like me to explain what types of treatments are commonly used for this condition instead?"
             )
 
     for pattern in PROHIBITED_PATTERNS["mental_health_diagnosis"]:
@@ -166,14 +181,16 @@ def apply_response_guardrails(response: str, language: str = 'English') -> str:
                     "कृपया किसी मानसिक स्वास्थ्य विशेषज्ञ से परामर्श करें।"
                 )
             return (
-                "I cannot provide mental health diagnoses. "
-                "Please consult with a licensed mental health professional."
+                "I cannot provide mental health diagnoses or psychiatric evaluations. "
+                "If you're experiencing mental health concerns, please consult with a licensed mental health professional or psychiatrist."
             )
 
     for pattern in PROHIBITED_PATTERNS["jokes"]:
         if re.search(pattern, response_lower):
             logger.warning("Response contained humor: %s", pattern)
-            return "I apologize for the inappropriate response. Let me provide factual medical information instead."
+            if language.lower() == 'hindi':
+                return "मैं क्षमा चाहता हूँ। मैं केवल चिकित्सा जानकारी प्रदान करने के लिए यहाँ हूँ।"
+            return "I apologize for the inappropriate response. Let me provide you with factual medical information instead."
 
     # Hindi-specific guardrails (applied to original response, not lowercased, since Devanagari is case-neutral)
     if language.lower() == 'hindi':
@@ -210,17 +227,6 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
     if not is_valid:
         yield err
         return
-
-    _GUARDRAIL_SUFFIX = {
-        'hindi': (
-            " कभी भी निश्चित निदान न दें या दवाइयाँ न लिखें। "
-            "हमेशा रोगी को डॉक्टर से परामर्श लेने की सलाह दें।"
-        ),
-        'english': (
-            " Never provide a definitive diagnosis or prescribe medications. "
-            "Always recommend consulting a healthcare professional."
-        ),
-    }
 
     system_prompt = (
         "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results. "
@@ -304,17 +310,6 @@ def generate_chat_response(user_message: str, image_path: str = None, language: 
     is_valid, err = validate_user_query(user_message)
     if not is_valid:
         return err
-
-    _GUARDRAIL_SUFFIX = {
-        'hindi': (
-            " कभी भी निश्चित निदान न दें या दवाइयाँ न लिखें। "
-            "हमेशा रोगी को डॉक्टर से परामर्श लेने की सलाह दें।"
-        ),
-        'english': (
-            " Never provide a definitive diagnosis or prescribe medications. "
-            "Always recommend consulting a healthcare professional."
-        ),
-    }
 
     system_prompt = (
         "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results. "
