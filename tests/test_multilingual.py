@@ -1,6 +1,5 @@
-import asyncio
 import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 
 # Must be set before importing app to suppress Ollama requirement at startup
 os.environ.setdefault("PRELOAD_MODELS", "0")
@@ -106,8 +105,6 @@ async def _mock_stream(*args, **kwargs):
 
 def test_full_hindi_session_flow():
     """Create session, send Hindi message, verify response saved and session language updated."""
-    from unittest.mock import AsyncMock
-
     engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},

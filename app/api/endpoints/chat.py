@@ -130,10 +130,14 @@ async def send_chat_message(
             detail="Chat session not found"
         )
 
+    # Validate language against allowlist to prevent arbitrary strings reaching DB / prompts
+    _ALLOWED_LANGUAGES = {'English', 'Hindi'}
+    if language not in _ALLOWED_LANGUAGES:
+        language = 'English'
+
     # Keep session language in sync with what the user selected
     if session.language != language:
         session.language = language
-        db.add(session)
         db.commit()
         db.refresh(session)
 

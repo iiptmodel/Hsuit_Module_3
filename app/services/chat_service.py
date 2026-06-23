@@ -277,8 +277,8 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
         # After streaming, apply guardrails to full response
         validated = apply_response_guardrails(full_response, language=language)
         if validated != full_response:
-            # If guardrails modified the response, yield the difference or handle accordingly
-            yield validated[len(full_response):]
+            yield validated
+        full_response = validated
 
         logger.info("Streaming chat response completed and validated")
 
