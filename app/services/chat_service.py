@@ -72,8 +72,20 @@ def is_simple_greeting(query: str) -> bool:
     return bool(re.fullmatch(r"(hi+|he+y+|hello|hey|howdy|greetings|good (morning|afternoon|evening))!?", q))
 
 
-def generate_greeting_response() -> str:
-    """Static friendly greeting used for simple greeting fast-path."""
+_GREETINGS = {
+    'hindi': (
+        "नमस्ते! मैं आपका MedAnalyzer सहायक हूँ। "
+        "आप मुझसे इमेजिंग, लैब या अन्य चिकित्सा रिपोर्ट समझने में मदद माँग सकते हैं, "
+        "दस्तावेज़ अपलोड कर सकते हैं और पूछ सकते हैं जैसे: 'यह रिपोर्ट रोगी के लिए समझाइए।'"
+    ),
+}
+
+
+def generate_greeting_response(language: str = 'English') -> str:
+    """Static friendly greeting in the requested language."""
+    key = language.lower()
+    if key in _GREETINGS:
+        return _GREETINGS[key]
     return (
         "Hello! I'm your MedAnalyzer Assistant. You can ask me to explain imaging, lab, or other medical reports, "
         "summarize uploaded documents for a patient or a doctor, or clarify medical terms. "
@@ -154,7 +166,7 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
 
     # Allow simple greetings to yield a single static message (still via streaming interface)
     if is_simple_greeting(user_message):
-        yield generate_greeting_response()
+        yield generate_greeting_response(language)
         return
 
     is_valid, err = validate_user_query(user_message)
@@ -219,12 +231,18 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
         logger.exception("Streaming chat response generation failed: %s", e)
         lowered = str(e).lower()
         if "failed to connect" in lowered or "connectionerror" in lowered:
-            yield "I couldn't reach the AI engine for streaming. Please try again shortly."
+            if language.lower() == 'hindi':
+                yield "AI इंजन से कनेक्ट नहीं हो सका। कृपया थोड़ी देर बाद पुनः प्रयास करें।"
+            else:
+                yield "I couldn't reach the AI engine for streaming. Please try again shortly."
         else:
-            yield "I ran into an issue generating the streamed response. Please try again or rephrase your question."
+            if language.lower() == 'hindi':
+                yield "प्रतिक्रिया उत्पन्न करने में समस्या हुई। कृपया पुनः प्रयास करें।"
+            else:
+                yield "I ran into an issue generating the streamed response. Please try again or rephrase your question."
 
 
-def generate_chat_response(user_message: str, image_path: str = None) -> str:
+def generate_chat_response(user_message: str, image_path: str = None, language: str = 'English') -> str:
     """Generate a chat response using Ollama (via chat_with_retries) and apply guardrails.
 
     conversation_history: list of {"role": "user|assistant", "content": str}
@@ -232,14 +250,15 @@ def generate_chat_response(user_message: str, image_path: str = None) -> str:
     logger.info("Generating chat response for message: %.100s...", user_message)
 
     if is_simple_greeting(user_message):
-        return generate_greeting_response()
+        return generate_greeting_response(language)
 
     is_valid, err = validate_user_query(user_message)
     if not is_valid:
         return err
 
     system_prompt = (
-        "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results."
+        "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results. "
+        f"Always respond in {language}."
     )
 
     messages: List[Dict[str, Any]] = [{"role": "system", "content": system_prompt}]

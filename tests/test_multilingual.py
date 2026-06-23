@@ -18,6 +18,7 @@ from app.db.database import Base
 from app.api import deps
 import app.services.chat_service as chat_service
 import app.services.tts_service as tts_service
+from app.services.chat_service import generate_greeting_response
 
 
 def test_session_language_persists(monkeypatch):
@@ -69,3 +70,15 @@ def test_session_language_persists(monkeypatch):
 
     # Clean up dependency override
     app.dependency_overrides.clear()
+
+
+def test_greeting_in_hindi():
+    response = generate_greeting_response('Hindi')
+    # Must contain Devanagari script (any character in range U+0900-U+097F)
+    assert any('ऀ' <= ch <= 'ॿ' for ch in response), \
+        f"Expected Hindi text, got: {response[:100]}"
+
+
+def test_greeting_in_english():
+    response = generate_greeting_response('English')
+    assert 'MedAnalyzer' in response or 'medical' in response.lower()
