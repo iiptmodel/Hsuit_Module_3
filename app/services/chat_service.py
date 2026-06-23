@@ -228,9 +228,14 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
         yield err
         return
 
+    _lang_instr = (
+        "CRITICAL: Respond ONLY in Hindi (हिंदी). हिंदी में ही जवाब दें। अंग्रेज़ी का उपयोग न करें।\n"
+        if language.lower() == 'hindi'
+        else f"Always respond in {language}.\n"
+    )
     system_prompt = (
-        "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results. "
-        f"Always respond in {language}."
+        _lang_instr
+        + "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results."
         + _GUARDRAIL_SUFFIX.get(language.lower(), _GUARDRAIL_SUFFIX['english'])
     )
 
@@ -311,9 +316,14 @@ def generate_chat_response(user_message: str, image_path: str = None, language: 
     if not is_valid:
         return err
 
+    _lang_instr = (
+        "CRITICAL: Respond ONLY in Hindi (हिंदी). हिंदी में ही जवाब दें। अंग्रेज़ी का उपयोग न करें।\n"
+        if language.lower() == 'hindi'
+        else f"Always respond in {language}.\n"
+    )
     system_prompt = (
-        "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results. "
-        f"Always respond in {language}."
+        _lang_instr
+        + "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results."
         + _GUARDRAIL_SUFFIX.get(language.lower(), _GUARDRAIL_SUFFIX['english'])
     )
 
