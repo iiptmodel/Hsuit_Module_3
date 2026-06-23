@@ -129,7 +129,18 @@ async def send_chat_message(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Chat session not found"
         )
-    
+
+    # Validate language against allowlist to prevent arbitrary strings reaching DB / prompts
+    _ALLOWED_LANGUAGES = {'English', 'Hindi'}
+    if language not in _ALLOWED_LANGUAGES:
+        language = 'English'
+
+    # Keep session language in sync with what the user selected
+    if session.language != language:
+        session.language = language
+        db.commit()
+        db.refresh(session)
+
     # Process file if uploaded
     file_context = ""
     image_path_for_vlm = None

@@ -39,6 +39,28 @@ let fileChipRemove;
 const totalReportsEl = document.getElementById('total-reports');
 const totalChatsEl = document.getElementById('total-chats');
 
+// Language placeholder mapping
+const PLACEHOLDERS = {
+    'English': 'Ask about your document, or type a question…',
+    'Hindi':   'अपने दस्तावेज़ के बारे में पूछें या प्रश्न टाइप करें…',
+};
+
+// Language badge mapping
+const LANG_CODES = { 'English': 'EN', 'Hindi': 'HI' };
+
+function updateLangBadge() {
+    const badge = document.getElementById('langBadge');
+    if (!badge || !languageSelect) return;
+    badge.textContent = LANG_CODES[languageSelect.value] || languageSelect.value.slice(0, 2).toUpperCase();
+}
+
+function updatePlaceholder() {
+    if (!messageInput || !languageSelect) return;
+    const lang = languageSelect.value;
+    messageInput.placeholder = PLACEHOLDERS[lang] || PLACEHOLDERS['English'];
+    updateLangBadge();
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize DOM element references now that the DOM is ready
@@ -75,6 +97,8 @@ function initDomElements() {
     fileChip = document.getElementById('fileChip');
     fileChipName = document.getElementById('fileChipName');
     fileChipRemove = document.getElementById('fileChipRemove');
+    // Set initial placeholder based on currently selected language
+    updatePlaceholder();
 }
 
 function setupEventListeners() {
@@ -122,6 +146,11 @@ function setupEventListeners() {
     }
     if (filesPanelClose && filesPanel) {
         filesPanelClose.addEventListener('click', () => closeFilesPanel());
+    }
+
+    // Language dropdown — update placeholder whenever language changes
+    if (languageSelect) {
+        languageSelect.addEventListener('change', updatePlaceholder);
     }
 }
 
@@ -294,7 +323,13 @@ async function loadSession(sessionId) {
             // update currentSessionId and UI
             currentSessionId = sessionId;
             if (session.title) sessionTitle.textContent = session.title;
-        
+
+        // Restore language dropdown to match session language
+        if (languageSelect && session.language) {
+            languageSelect.value = session.language;
+        }
+        updatePlaceholder();
+
         // Show chat screen
         welcomeScreen.style.display = 'none';
         chatScreen.style.display = 'flex';

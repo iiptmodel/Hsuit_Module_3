@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 # Use local Ollama model for summarization rather than loading heavy transformers
 # This keeps the service lightweight and delegates model serving to Ollama.
 
-def _guardrail_validator(text: str) -> str:
+def _guardrail_validator(text: str, language: str = 'English') -> str:
     # Basic guardrail checks to avoid diagnoses, prescriptions, or casual chat
     prohibited = ['diagnos', 'prescrib', 'you have', 'take ', 'lol', 'omg']
     for p in prohibited:
@@ -25,9 +25,11 @@ def _guardrail_validator(text: str) -> str:
             )
             # If the model output already contains the disclaimer text, avoid duplicating it.
             if 'consult a' in text.lower() or 'i cannot provide a definitive diagnosis' in text.lower():
-                return text
-            return text + disclaimer
-    return text
+                break
+            text = text + disclaimer
+            break
+    from app.services.chat_service import apply_response_guardrails
+    return apply_response_guardrails(text, language=language)
 
 
 def generate_summary_from_text(text: str, language: str = 'English') -> str:
@@ -51,7 +53,7 @@ def generate_summary_from_text(text: str, language: str = 'English') -> str:
             options={"temperature": 0.0, "num_predict": 200}
         )
         summary = resp.get('message', {}).get('content', '')
-        return _guardrail_validator(summary)
+        return _guardrail_validator(summary, language=language)
     except Exception as e:
         logger.error(f"Ollama summarization failed: {e}", exc_info=True)
         # Fallback: return short snippet
@@ -96,7 +98,7 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
         logger.info(f"MedGemma VLM analysis completed: {analysis[:100]}...")
 
         # Apply guardrails to the response
-        return _guardrail_validator(analysis)
+        return _guardrail_validator(analysis, language=language)
 
     except Exception as e:
         logger.error(f"MedGemma VLM analysis failed: {e}", exc_info=True)
@@ -173,7 +175,7 @@ def generate_patient_summary_from_text(text: str, language: str = 'English') -> 
         )
 
         summary = resp.get('message', {}).get('content', '')
-        return _guardrail_validator(summary.strip())
+        return _guardrail_validator(summary.strip(), language=language)
     except Exception as e:
         logger.error(f"Expanded patient summary generation failed: {e}", exc_info=True)
         return generate_summary_from_text(text, language)
@@ -334,7 +336,7 @@ def generate_detailed_report_from_text(text: str, language: str = 'English') -> 
         )
 
         report = resp.get('message', {}).get('content', '')
-        return _guardrail_validator(report)
+        return _guardrail_validator(report, language=language)
     except Exception as e:
         logger.error(f"Expanded clinician report generation failed: {e}", exc_info=True)
         return generate_summary_from_text(text, language)
@@ -388,7 +390,7 @@ def summarize_chat_context(conversation_history: List[Dict[str, str]], language:
         summary = resp.get('message', {}).get('content', '').strip()
 
         # Apply guardrails to ensure no inappropriate content
-        validated_summary = _guardrail_validator(summary)
+        validated_summary = _guardrail_validator(summary, language=language)
 
         logger.info(f"Chat context summarized: {validated_summary[:100]}...")
         return validated_summary

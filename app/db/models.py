@@ -114,6 +114,9 @@ class ChatSession(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     title = Column(String, default="New Conversation")
     """User-friendly title for the conversation."""
+
+    language = Column(String, default='English', nullable=False, server_default='English')
+    """Language for AI responses in this session (e.g. 'English', 'Hindi')."""
     
     # Relationships
     messages = relationship(

@@ -56,6 +56,18 @@ PROHIBITED_PATTERNS: Dict[str, List[str]] = {
         r"\byou (have|are suffering from) schizophrenia\b",
         r"\bI diagnose you with\b.*\b(depression|anxiety|bipolar|ptsd)\b",
     ],
+    "hindi_diagnosis": [
+        r"आपको.*(है|हैं|हो)",          # "You have [condition]"
+        r"आप.*(बीमारी|रोग|विकार).*(से पीड़ित|है)",
+        r"(मेरा|मैं).*(निदान|डायग्नोसिस)",
+        r"निश्चित रूप से.*(है|हैं)",
+    ],
+    "hindi_prescription": [
+        r"आप.*(मिलीग्राम|mg|ml).*(लें|खाएं|पियें)",
+        r"(रोज़|प्रतिदिन|दिन में).*(मिलीग्राम|mg)",
+        r"मैं.*(दवाई|दवा|औषधि).*(देता|देती|लिखता)",
+        r"(शुरू करें|लेना शुरू करें).*(मिलीग्राम|mg)",
+    ],
 }
 
 
@@ -72,8 +84,32 @@ def is_simple_greeting(query: str) -> bool:
     return bool(re.fullmatch(r"(hi+|he+y+|hello|hey|howdy|greetings|good (morning|afternoon|evening))!?", q))
 
 
-def generate_greeting_response() -> str:
-    """Static friendly greeting used for simple greeting fast-path."""
+_GUARDRAIL_SUFFIX = {
+    'hindi': (
+        " कभी भी निश्चित निदान न दें या दवाइयाँ न लिखें। "
+        "हमेशा रोगी को डॉक्टर से परामर्श लेने की सलाह दें।"
+    ),
+    'english': (
+        " Never provide a definitive diagnosis or prescribe medications. "
+        "Always recommend consulting a healthcare professional."
+    ),
+}
+
+
+_GREETINGS = {
+    'hindi': (
+        "नमस्ते! मैं आपका MedAnalyzer सहायक हूँ। "
+        "आप मुझसे इमेजिंग, लैब या अन्य चिकित्सा रिपोर्ट समझने में मदद माँग सकते हैं, "
+        "दस्तावेज़ अपलोड कर सकते हैं और पूछ सकते हैं जैसे: 'यह रिपोर्ट रोगी के लिए समझाइए।'"
+    ),
+}
+
+
+def generate_greeting_response(language: str = 'English') -> str:
+    """Static friendly greeting in the requested language."""
+    key = language.lower()
+    if key in _GREETINGS:
+        return _GREETINGS[key]
     return (
         "Hello! I'm your MedAnalyzer Assistant. You can ask me to explain imaging, lab, or other medical reports, "
         "summarize uploaded documents for a patient or a doctor, or clarify medical terms. "
@@ -103,45 +139,75 @@ def validate_user_query(query: str) -> Tuple[bool, str]:
     return True, ""
 
 
-def apply_response_guardrails(response: str) -> str:
+def apply_response_guardrails(response: str, language: str = 'English') -> str:
     """Filter AI response to enforce medical safety guardrails."""
     response_lower = (response or "").lower()
 
     for pattern in PROHIBITED_PATTERNS["diagnosis"]:
         if re.search(pattern, response_lower):
             logger.warning("Response contained diagnosis language: %s", pattern)
+            if language.lower() == 'hindi':
+                return (
+                    "मैं चिकित्सा निष्कर्षों को समझाने में मदद कर सकता हूँ, लेकिन निश्चित निदान नहीं दे सकता। "
+                    "कृपया अपने स्वास्थ्य सेवा प्रदाता से परामर्श करें।"
+                )
             return (
-                "I can help you understand what these medical findings suggest, "
-                "but I cannot provide a definitive diagnosis. Based on the information, "
-                "I recommend discussing these results with your healthcare provider who can "
-                "properly evaluate your complete medical history and provide an accurate diagnosis. "
+                "I can help you understand what these medical findings suggest, but I cannot provide a definitive diagnosis. "
+                "Based on the information, I recommend discussing these results with your healthcare provider who can properly evaluate "
+                "your complete medical history and provide an accurate diagnosis. "
                 "Would you like me to explain what these findings typically indicate?"
             )
 
     for pattern in PROHIBITED_PATTERNS["prescription"]:
         if re.search(pattern, response_lower):
             logger.warning("Response contained prescription language: %s", pattern)
+            if language.lower() == 'hindi':
+                return (
+                    "मैं दवाइयाँ लिख या सुझाव नहीं दे सकता। "
+                    "सही खुराक के लिए अपने डॉक्टर से मिलें।"
+                )
             return (
-                "I can explain how certain medications work and their general purposes, "
-                "but I cannot prescribe specific medications or dosages. "
-                "Your doctor will determine the appropriate medication and dosage based on "
-                "your individual health needs. Would you like me to explain what types of "
-                "treatments are commonly used for this condition instead?"
+                "I can explain how certain medications work and their general purposes, but I cannot prescribe specific medications or dosages. "
+                "Your doctor will determine the appropriate medication and dosage based on your individual health needs. "
+                "Would you like me to explain what types of treatments are commonly used for this condition instead?"
             )
 
     for pattern in PROHIBITED_PATTERNS["mental_health_diagnosis"]:
         if re.search(pattern, response_lower):
             logger.warning("Response contained mental health diagnosis: %s", pattern)
+            if language.lower() == 'hindi':
+                return (
+                    "मैं मानसिक स्वास्थ्य निदान नहीं कर सकता। "
+                    "कृपया किसी मानसिक स्वास्थ्य विशेषज्ञ से परामर्श करें।"
+                )
             return (
                 "I cannot provide mental health diagnoses or psychiatric evaluations. "
-                "If you're experiencing mental health concerns, please consult "
-                "with a licensed mental health professional or psychiatrist."
+                "If you're experiencing mental health concerns, please consult with a licensed mental health professional or psychiatrist."
             )
 
     for pattern in PROHIBITED_PATTERNS["jokes"]:
         if re.search(pattern, response_lower):
             logger.warning("Response contained humor: %s", pattern)
+            if language.lower() == 'hindi':
+                return "मैं क्षमा चाहता हूँ। मैं केवल चिकित्सा जानकारी प्रदान करने के लिए यहाँ हूँ।"
             return "I apologize for the inappropriate response. Let me provide you with factual medical information instead."
+
+    # Hindi-specific guardrails (applied to original response, not lowercased, since Devanagari is case-neutral)
+    if language.lower() == 'hindi':
+        for pattern in PROHIBITED_PATTERNS["hindi_diagnosis"]:
+            if re.search(pattern, response):
+                logger.warning("Hindi response contained diagnosis language: %s", pattern)
+                return (
+                    "मैं चिकित्सा निष्कर्षों को समझाने में मदद कर सकता हूँ, लेकिन निश्चित निदान नहीं दे सकता। "
+                    "कृपया अपने स्वास्थ्य सेवा प्रदाता से परामर्श करें।"
+                )
+        for pattern in PROHIBITED_PATTERNS["hindi_prescription"]:
+            if re.search(pattern, response):
+                logger.warning("Hindi response contained prescription language: %s", pattern)
+                return (
+                    "मैं दवाइयाँ लिख या सुझाव नहीं दे सकता। "
+                    "सही खुराक के लिए अपने डॉक्टर से मिलें।"
+                )
 
     return response
 
@@ -154,7 +220,7 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
 
     # Allow simple greetings to yield a single static message (still via streaming interface)
     if is_simple_greeting(user_message):
-        yield generate_greeting_response()
+        yield generate_greeting_response(language)
         return
 
     is_valid, err = validate_user_query(user_message)
@@ -165,6 +231,7 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
     system_prompt = (
         "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results. "
         f"Always respond in {language}."
+        + _GUARDRAIL_SUFFIX.get(language.lower(), _GUARDRAIL_SUFFIX['english'])
     )
 
     messages: List[Dict[str, Any]] = [{"role": "system", "content": system_prompt}]
@@ -208,10 +275,10 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
             yield chunk_buffer
 
         # After streaming, apply guardrails to full response
-        validated = apply_response_guardrails(full_response)
+        validated = apply_response_guardrails(full_response, language=language)
         if validated != full_response:
-            # If guardrails modified the response, yield the difference or handle accordingly
-            yield validated[len(full_response):]
+            yield validated
+        full_response = validated
 
         logger.info("Streaming chat response completed and validated")
 
@@ -219,12 +286,18 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
         logger.exception("Streaming chat response generation failed: %s", e)
         lowered = str(e).lower()
         if "failed to connect" in lowered or "connectionerror" in lowered:
-            yield "I couldn't reach the AI engine for streaming. Please try again shortly."
+            if language.lower() == 'hindi':
+                yield "AI इंजन से कनेक्ट नहीं हो सका। कृपया थोड़ी देर बाद पुनः प्रयास करें।"
+            else:
+                yield "I couldn't reach the AI engine for streaming. Please try again shortly."
         else:
-            yield "I ran into an issue generating the streamed response. Please try again or rephrase your question."
+            if language.lower() == 'hindi':
+                yield "प्रतिक्रिया उत्पन्न करने में समस्या हुई। कृपया पुनः प्रयास करें।"
+            else:
+                yield "I ran into an issue generating the streamed response. Please try again or rephrase your question."
 
 
-def generate_chat_response(user_message: str, image_path: str = None) -> str:
+def generate_chat_response(user_message: str, image_path: str = None, language: str = 'English') -> str:
     """Generate a chat response using Ollama (via chat_with_retries) and apply guardrails.
 
     conversation_history: list of {"role": "user|assistant", "content": str}
@@ -232,14 +305,16 @@ def generate_chat_response(user_message: str, image_path: str = None) -> str:
     logger.info("Generating chat response for message: %.100s...", user_message)
 
     if is_simple_greeting(user_message):
-        return generate_greeting_response()
+        return generate_greeting_response(language)
 
     is_valid, err = validate_user_query(user_message)
     if not is_valid:
         return err
 
     system_prompt = (
-        "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results."
+        "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results. "
+        f"Always respond in {language}."
+        + _GUARDRAIL_SUFFIX.get(language.lower(), _GUARDRAIL_SUFFIX['english'])
     )
 
     messages: List[Dict[str, Any]] = [{"role": "system", "content": system_prompt}]
@@ -272,7 +347,7 @@ def generate_chat_response(user_message: str, image_path: str = None) -> str:
             logger.warning("Empty response from Ollama: %s", resp)
             return "I apologize, but I couldn't generate a response. Please try again."
 
-        validated = apply_response_guardrails(raw_response)
+        validated = apply_response_guardrails(raw_response, language=language)
         logger.info("Chat response validated and ready")
         return validated
 
