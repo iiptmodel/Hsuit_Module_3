@@ -15,6 +15,7 @@ import re
 import ollama
 
 from app.services.ollama_client import chat_with_retries, is_ollama_reachable
+from app.services.translation_service import maybe_translate
 from app.core.config import settings
 
 
@@ -228,15 +229,12 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
         yield err
         return
 
-    _lang_instr = (
-        "CRITICAL: Respond ONLY in Hindi (हिंदी). हिंदी में ही जवाब दें। अंग्रेज़ी का उपयोग न करें।\n"
-        if language.lower() == 'hindi'
-        else f"Always respond in {language}.\n"
-    )
+    # Always generate in English — the model is English-only.
+    # Translation to the target language happens after generation.
     system_prompt = (
-        _lang_instr
-        + "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results."
-        + _GUARDRAIL_SUFFIX.get(language.lower(), _GUARDRAIL_SUFFIX['english'])
+        "You are MedAnalyzer Assistant, a professional medical information assistant "
+        "specialized in helping patients understand their medical reports and test results."
+        + _GUARDRAIL_SUFFIX['english']
     )
 
     messages: List[Dict[str, Any]] = [{"role": "system", "content": system_prompt}]
@@ -250,11 +248,12 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
         # Preflight check: ensure model backend is reachable to avoid streaming exceptions
         if not is_ollama_reachable(timeout=0.8):
             logger.warning("Ollama not reachable for streaming; returning friendly notice")
-            yield "The AI engine is temporarily unavailable for streaming responses. Please try again shortly."
+            yield maybe_translate(
+                "The AI engine is temporarily unavailable. Please try again shortly.", language
+            )
             return
 
         logger.info("Calling Ollama streaming chat...")
-        # Use ollama.chat with stream=True
         stream = ollama.chat(
             model=settings.MODEL_NAME,
             messages=messages,
@@ -264,26 +263,32 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
 
         full_response = ""
         chunk_buffer = ""
-        chunk_size = 10  # Yield every 10 tokens or at sentence end
+        chunk_size = 10
+        needs_translation = language.lower() != 'english'
+
         for chunk in stream:
             token = chunk['message']['content']
             full_response += token
             chunk_buffer += token
 
-            # Yield chunk if buffer reaches size or ends with sentence punctuation
-            if len(chunk_buffer.split()) >= chunk_size or chunk_buffer.strip().endswith(('.', '!', '?')):
-                yield chunk_buffer
-                chunk_buffer = ""
+            # Stream English chunks in real-time; buffer for non-English (translate at end)
+            if not needs_translation:
+                if len(chunk_buffer.split()) >= chunk_size or chunk_buffer.strip().endswith(('.', '!', '?')):
+                    yield chunk_buffer
+                    chunk_buffer = ""
 
-        # Yield any remaining buffer
-        if chunk_buffer:
+        if not needs_translation and chunk_buffer:
             yield chunk_buffer
 
-        # After streaming, apply guardrails to full response
-        validated = apply_response_guardrails(full_response, language=language)
-        if validated != full_response:
-            yield validated
-        full_response = validated
+        # Apply guardrails on the English output, then translate
+        validated = apply_response_guardrails(full_response, language='English')
+        final = maybe_translate(validated, language)
+        if needs_translation:
+            # Yield the entire translated response as one chunk
+            yield final
+        elif final != full_response:
+            yield final
+        full_response = final
 
         logger.info("Streaming chat response completed and validated")
 
@@ -291,15 +296,13 @@ async def generate_chat_response_streaming(user_message: str, image_path: str = 
         logger.exception("Streaming chat response generation failed: %s", e)
         lowered = str(e).lower()
         if "failed to connect" in lowered or "connectionerror" in lowered:
-            if language.lower() == 'hindi':
-                yield "AI इंजन से कनेक्ट नहीं हो सका। कृपया थोड़ी देर बाद पुनः प्रयास करें।"
-            else:
-                yield "I couldn't reach the AI engine for streaming. Please try again shortly."
+            yield maybe_translate(
+                "I couldn't reach the AI engine. Please try again shortly.", language
+            )
         else:
-            if language.lower() == 'hindi':
-                yield "प्रतिक्रिया उत्पन्न करने में समस्या हुई। कृपया पुनः प्रयास करें।"
-            else:
-                yield "I ran into an issue generating the streamed response. Please try again or rephrase your question."
+            yield maybe_translate(
+                "I ran into an issue generating a response. Please try again or rephrase your question.", language
+            )
 
 
 def generate_chat_response(user_message: str, image_path: str = None, language: str = 'English') -> str:
@@ -316,15 +319,10 @@ def generate_chat_response(user_message: str, image_path: str = None, language: 
     if not is_valid:
         return err
 
-    _lang_instr = (
-        "CRITICAL: Respond ONLY in Hindi (हिंदी). हिंदी में ही जवाब दें। अंग्रेज़ी का उपयोग न करें।\n"
-        if language.lower() == 'hindi'
-        else f"Always respond in {language}.\n"
-    )
     system_prompt = (
-        _lang_instr
-        + "You are MedAnalyzer Assistant, a professional medical information assistant specialized in helping patients understand their medical reports and test results."
-        + _GUARDRAIL_SUFFIX.get(language.lower(), _GUARDRAIL_SUFFIX['english'])
+        "You are MedAnalyzer Assistant, a professional medical information assistant "
+        "specialized in helping patients understand their medical reports and test results."
+        + _GUARDRAIL_SUFFIX['english']
     )
 
     messages: List[Dict[str, Any]] = [{"role": "system", "content": system_prompt}]
@@ -334,13 +332,11 @@ def generate_chat_response(user_message: str, image_path: str = None, language: 
     else:
         messages.append({"role": "user", "content": user_message})
 
-    # Preflight: if the model backend is unreachable, provide a clear user message instead of a generic error
     try:
         if not is_ollama_reachable(timeout=0.8):
             logger.warning("Ollama server not reachable; returning friendly message")
-            return (
-                "The AI engine is temporarily unavailable. Please try again soon. "
-                "If this keeps happening, ensure the model server is running."
+            return maybe_translate(
+                "The AI engine is temporarily unavailable. Please try again soon.", language
             )
 
         logger.info("Calling Ollama via chat_with_retries...")
@@ -350,20 +346,26 @@ def generate_chat_response(user_message: str, image_path: str = None, language: 
             options={"temperature": 0.7, "top_p": 0.9, "num_predict": 300},
         )
 
-        # Expect the client to return a structure with ['message']['content'] like ollama.chat
         raw_response = resp["message"].content
 
         if not raw_response:
             logger.warning("Empty response from Ollama: %s", resp)
-            return "I apologize, but I couldn't generate a response. Please try again."
+            return maybe_translate(
+                "I couldn't generate a response. Please try again.", language
+            )
 
-        validated = apply_response_guardrails(raw_response, language=language)
+        validated = apply_response_guardrails(raw_response, language='English')
+        final = maybe_translate(validated, language)
         logger.info("Chat response validated and ready")
-        return validated
+        return final
 
     except Exception as e:
         logger.exception("Chat response generation failed")
         lowered = str(e).lower()
         if "failed to connect" in lowered or "connectionerror" in lowered:
-            return "I couldn't reach the AI engine. Please retry in a moment."
-        return "I ran into an issue processing that. Please try again or rephrase your question."
+            return maybe_translate(
+                "I couldn't reach the AI engine. Please retry in a moment.", language
+            )
+        return maybe_translate(
+            "I ran into an issue processing that. Please try again or rephrase your question.", language
+        )

@@ -3,26 +3,13 @@ import os
 import ollama
 from typing import List, Dict
 from app.services import parser_service
+from app.services.translation_service import maybe_translate as _translate
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 # Use local Ollama model for summarization rather than loading heavy transformers
 # This keeps the service lightweight and delegates model serving to Ollama.
-
-
-def _lang_prefix(language: str) -> str:
-    """Return a mandatory language instruction that must lead every LLM system prompt.
-
-    Placing this first ensures the model treats language as the highest-priority
-    constraint, preventing English template examples from overriding it.
-    """
-    if language.lower() == 'hindi':
-        return (
-            "CRITICAL INSTRUCTION: You MUST respond ONLY in Hindi (हिंदी). "
-            "हिंदी में ही जवाब दें। अंग्रेज़ी का उपयोग बिल्कुल न करें।\n\n"
-        )
-    return f"Respond in {language} only.\n\n"
 
 
 def _guardrail_validator(text: str, language: str = 'English') -> str:
@@ -52,8 +39,7 @@ def generate_summary_from_text(text: str, language: str = 'English') -> str:
     logger.info(f"Generating summary via Ollama (text length={len(text)})")
     try:
         system_prompt = (
-            _lang_prefix(language)
-            + "You are a concise, professional medical assistant. Summarize the following extracted text from a medical report. "
+            "You are a concise, professional medical assistant. Summarize the following extracted text from a medical report. "
             "Do not diagnose or prescribe. Keep it clear and patient-friendly. Aim for 2-4 short sentences suitable for a patient."
         )
 
@@ -69,7 +55,8 @@ def generate_summary_from_text(text: str, language: str = 'English') -> str:
             options={"temperature": 0.0, "num_predict": 200}
         )
         summary = resp.get('message', {}).get('content', '')
-        return _guardrail_validator(summary, language=language)
+        validated = _guardrail_validator(summary, language='English')
+        return _translate(validated, language)
     except Exception as e:
         logger.error(f"Ollama summarization failed: {e}", exc_info=True)
         # Fallback: return short snippet
@@ -84,8 +71,7 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
     logger.info(f"Analyzing medical image directly with MedGemma VLM: {image_path}")
     try:
         system_prompt = (
-            _lang_prefix(language)
-            + "You are a medical assistant specialized in analyzing medical images. "
+            "You are a medical assistant specialized in analyzing medical images. "
             "Describe what you see in this medical image in clear, professional language. "
             "Do NOT diagnose or prescribe. Focus on describing visible findings and what they typically indicate. "
             "Always recommend consulting with a healthcare professional for proper diagnosis."
@@ -113,8 +99,9 @@ def generate_summary_from_image(image_path: str, language: str) -> str:
         analysis = resp.get('message', {}).get('content', '')
         logger.info(f"MedGemma VLM analysis completed: {analysis[:100]}...")
 
-        # Apply guardrails to the response
-        return _guardrail_validator(analysis, language=language)
+        # Apply guardrails then translate
+        validated = _guardrail_validator(analysis, language='English')
+        return _translate(validated, language)
 
     except Exception as e:
         logger.error(f"MedGemma VLM analysis failed: {e}", exc_info=True)
@@ -144,64 +131,38 @@ def generate_patient_summary_from_text(text: str, language: str = 'English') -> 
     """
     logger.info(f"Generating patient summary (expanded) via Ollama (text length={len(text)})")
     try:
-        lang_key = language.lower()
-        if lang_key == 'hindi':
-            heading_example = '📋 आपके परीक्षण परिणाम सारांश'
-            example_format = (
-                "📋 आपके परीक्षण परिणाम सारांश\n\n"
-                "परीक्षण का नाम: [रिपोर्ट से निकालें]\n"
-                "आपका परिणाम: [मूल्य] [इकाई]\n"
-                "सामान्य सीमा: [संदर्भ सीमा]\n\n"
-                "इसका क्या अर्थ है:\n"
-                "[यह परीक्षण क्या मापता है इसकी सरल व्याख्या]\n\n"
-                "आपके परिणाम:\n"
-                "✓ आपके स्तर सामान्य सीमा के भीतर हैं / ⚠️ आपके स्तर सामान्य सीमा से [अधिक/कम] हैं\n\n"
-                "जानने योग्य बातें:\n"
-                "[संक्षिप्त, गैर-निदानात्मक संदर्भ]\n\n"
-                "अगले कदम:\n"
-                "• [सरल स्वास्थ्य सुझाव]\n"
-                "• व्यक्तिगत सलाह के लिए अपने स्वास्थ्य प्रदाता से इन परिणामों पर चर्चा करें\n\n"
-                "याद रखें: यह एक सरलीकृत सारांश है। आपके डॉक्टर संपूर्ण व्याख्या और व्यक्तिगत सिफारिशें प्रदान कर सकते हैं।"
-            )
-        else:
-            heading_example = '📋 Your Test Results Summary'
-            example_format = (
-                "📋 Your Test Results Summary\n\n"
-                "Test Name: [Extract from report]\n"
-                "Your Result: [Value] [Unit]\n"
-                "Normal Range: [Reference range]\n\n"
-                "What This Means:\n"
-                "[Plain language explanation of what this test measures]\n\n"
-                "Your Results:\n"
-                "✓ Your levels are within the normal range / ⚠️ Your levels are [higher/lower] than the normal range\n\n"
-                "What to Know:\n"
-                "[Brief, non-diagnostic context about what this generally indicates]\n\n"
-                "Next Steps:\n"
-                "• [Simple health tip or monitoring suggestion]\n"
-                "• Discuss these results with your healthcare provider for personalized advice\n\n"
-                "Remember: This is a simplified summary. Your doctor can provide a complete interpretation and personalized recommendations."
-            )
-
         system_prompt = (
-            _lang_prefix(language)
-            + "You are a medical assistant writing a friendly, easy-to-read summary for a patient.\n\n"
-            + "**Instructions:**\n"
-            + f"1. Start with a clear heading: '{heading_example}'\n"
-            + "2. Extract the key test name and values from the report\n"
-            + "3. Explain what the test measures in simple terms\n"
-            + "4. State if the results are within normal range or not (in plain language)\n"
-            + "5. Provide a brief, general explanation of what this might indicate\n"
-            + "6. Give one simple health tip or next step (but NO medications)\n"
-            + "7. End with a reminder to discuss with their healthcare provider\n\n"
-            + "**Format Requirements:**\n"
-            + "- Use short paragraphs with line breaks for readability\n"
-            + "- Use bullet points (•) for lists\n"
-            + "- Use emojis sparingly for visual appeal (✓ for normal, ⚠️ for attention needed)\n"
-            + "- Avoid medical jargon or explain it in parentheses\n"
-            + "- Be reassuring but honest\n"
-            + "- NEVER diagnose or prescribe medications\n\n"
-            + "**Example Format:**\n"
-            + example_format
+            "You are a medical assistant writing a friendly, easy-to-read summary for a patient.\n\n"
+            "**Instructions:**\n"
+            "1. Start with a clear heading: '📋 Your Test Results Summary'\n"
+            "2. Extract the key test name and values from the report\n"
+            "3. Explain what the test measures in simple terms\n"
+            "4. State if the results are within normal range or not (in plain language)\n"
+            "5. Provide a brief, general explanation of what this might indicate\n"
+            "6. Give one simple health tip or next step (but NO medications)\n"
+            "7. End with a reminder to discuss with their healthcare provider\n\n"
+            "**Format Requirements:**\n"
+            "- Use short paragraphs with line breaks for readability\n"
+            "- Use bullet points (•) for lists\n"
+            "- Use emojis sparingly for visual appeal (✓ for normal, ⚠️ for attention needed)\n"
+            "- Avoid medical jargon or explain it in parentheses\n"
+            "- Be reassuring but honest\n"
+            "- NEVER diagnose or prescribe medications\n\n"
+            "**Example Format:**\n"
+            "📋 Your Test Results Summary\n\n"
+            "Test Name: [Extract from report]\n"
+            "Your Result: [Value] [Unit]\n"
+            "Normal Range: [Reference range]\n\n"
+            "What This Means:\n"
+            "[Plain language explanation of what this test measures]\n\n"
+            "Your Results:\n"
+            "✓ Your levels are within the normal range / ⚠️ Your levels are [higher/lower] than the normal range\n\n"
+            "What to Know:\n"
+            "[Brief, non-diagnostic context about what this generally indicates]\n\n"
+            "Next Steps:\n"
+            "• [Simple health tip or monitoring suggestion]\n"
+            "• Discuss these results with your healthcare provider for personalized advice\n\n"
+            "Remember: This is a simplified summary. Your doctor can provide a complete interpretation and personalized recommendations."
         )
 
         messages = [
@@ -213,11 +174,12 @@ def generate_patient_summary_from_text(text: str, language: str = 'English') -> 
         resp = chat_with_retries(
             model=settings.MODEL_NAME,
             messages=messages,
-            options={"temperature": 0.2, "num_predict": 500}  # Allow more length for structured format
+            options={"temperature": 0.2, "num_predict": 500}
         )
 
         summary = resp.get('message', {}).get('content', '')
-        return _guardrail_validator(summary.strip(), language=language)
+        validated = _guardrail_validator(summary.strip(), language='English')
+        return _translate(validated, language)
     except Exception as e:
         logger.error(f"Expanded patient summary generation failed: {e}", exc_info=True)
         return generate_summary_from_text(text, language)
@@ -244,9 +206,8 @@ def generate_detailed_report_from_text(text: str, language: str = 'English') -> 
     logger.info(f"Generating expanded clinician report via Ollama (text length={len(text)})")
     try:
         system_prompt = (
-            _lang_prefix(language)
-            + "You are an advanced clinical decision support assistant creating a comprehensive, structured medical report for healthcare professionals.\n\n"
-            + "**CRITICAL INSTRUCTIONS:**\n"
+            "You are an advanced clinical decision support assistant creating a comprehensive, structured medical report for healthcare professionals.\n\n"
+            "**CRITICAL INSTRUCTIONS:**\n"
             "You MUST create a detailed, well-structured report using the EXACT format and sections below. Each section is MANDATORY.\n\n"
             
             "**REQUIRED REPORT STRUCTURE:**\n\n"
@@ -378,7 +339,8 @@ def generate_detailed_report_from_text(text: str, language: str = 'English') -> 
         )
 
         report = resp.get('message', {}).get('content', '')
-        return _guardrail_validator(report, language=language)
+        validated = _guardrail_validator(report, language='English')
+        return _translate(validated, language)
     except Exception as e:
         logger.error(f"Expanded clinician report generation failed: {e}", exc_info=True)
         return generate_summary_from_text(text, language)
@@ -407,8 +369,7 @@ def summarize_chat_context(conversation_history: List[Dict[str, str]], language:
             conversation_text += f"{role.upper()}: {content}\n\n"
 
         system_prompt = (
-            _lang_prefix(language)
-            + "You are a medical conversation summarizer. Given a chat conversation between a user and a medical assistant, "
+            "You are a medical conversation summarizer. Given a chat conversation between a user and a medical assistant, "
             "create a concise summary that captures: "
             "- Key medical topics discussed "
             "- Important symptoms or findings mentioned "
@@ -433,10 +394,11 @@ def summarize_chat_context(conversation_history: List[Dict[str, str]], language:
         summary = resp.get('message', {}).get('content', '').strip()
 
         # Apply guardrails to ensure no inappropriate content
-        validated_summary = _guardrail_validator(summary, language=language)
+        validated_summary = _guardrail_validator(summary, language='English')
+        translated = _translate(validated_summary, language)
 
-        logger.info(f"Chat context summarized: {validated_summary[:100]}...")
-        return validated_summary
+        logger.info(f"Chat context summarized: {translated[:100]}...")
+        return translated
 
     except Exception as e:
         logger.error(f"Chat context summarization failed: {e}", exc_info=True)

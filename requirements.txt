@@ -20,3 +20,4 @@ soundfile
 numpy
 colorama
 onnxruntime
+deep-translator
