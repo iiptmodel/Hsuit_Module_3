@@ -18,7 +18,7 @@ from app.db.database import Base
 from app.api import deps
 import app.services.chat_service as chat_service
 import app.services.tts_service as tts_service
-from app.services.chat_service import generate_greeting_response
+from app.services.chat_service import generate_greeting_response, apply_response_guardrails
 
 
 def test_session_language_persists(monkeypatch):
@@ -82,3 +82,18 @@ def test_greeting_in_hindi():
 def test_greeting_in_english():
     response = generate_greeting_response('English')
     assert 'MedAnalyzer' in response or 'medical' in response.lower()
+
+
+def test_hindi_diagnosis_guardrail():
+    """A Hindi diagnosis statement must be caught by guardrails."""
+    hindi_diagnosis = "आपको निश्चित रूप से मधुमेह है।"  # "You definitely have diabetes."
+    result = apply_response_guardrails(hindi_diagnosis, language='Hindi')
+    # Must not pass through unchanged
+    assert result != hindi_diagnosis, "Hindi diagnosis should be filtered by guardrails"
+
+
+def test_hindi_prescription_guardrail():
+    """A Hindi prescription statement must be caught by guardrails."""
+    hindi_rx = "आप रोज़ 500 मिलीग्राम मेटफॉर्मिन लें।"  # "Take 500mg metformin daily."
+    result = apply_response_guardrails(hindi_rx, language='Hindi')
+    assert result != hindi_rx, "Hindi prescription should be filtered by guardrails"
