@@ -9,6 +9,8 @@ An intelligent AI-powered system that analyzes medical reports, generates clear 
 
 ## 🎯 Overview
 
+**Contributors:** [Rushil Dhube](https://github.com/rushildhube) (Team Lead and AI Engineer)
+
 ### Problem Statement
 Patients often receive complex medical reports filled with technical jargon that are difficult to understand without medical training. This leads to confusion, anxiety, and delayed understanding of important health information.
 
